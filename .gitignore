@@ -1,53 +1,115 @@
-########################
-# OS / 공통
-########################
+# ============================================================
+# 🚗 Mobility Hub 모노레포 .gitignore
+# ============================================================
+
+# ========================
+# 🖥️  OS 생성 파일
+# ========================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-*.log
 *.tmp
 
-########################
+# ========================
+# 📝 로그 파일
+# ========================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ========================
+# 🔧 IDE / 에디터
+# ========================
 # IntelliJ IDEA
-########################
 .idea/
 *.iml
 *.iws
 *.ipr
+out/
 
-# 만약 backend만 따로 IntelliJ로 열었을 때를 대비
-backend/.idea/
-backend/*.iml
+# Eclipse / STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
 
-########################
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
 # VS Code
-########################
 .vscode/
-frontend/.vscode/
-raspi/.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 
-########################
-# Java / Gradle (backend)
-########################
-backend/.gradle/
-backend/build/
-backend/out/
+# ========================
+# ☕ Java / Gradle (backend/)
+# ========================
+.gradle/
+**/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+!gradle/wrapper/gradle-wrapper.jar
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+HELP.md
 
-########################
-# Node / React (frontend)
-########################
-frontend/node_modules/
-frontend/dist/
-frontend/build/
+# ========================
+# ⚛️  Node / React (frontend/)
+# ========================
+node_modules/
+dist/
+dist-ssr/
+*.local
+.eslintcache
+.parcel-cache
 
-########################
-# Python / Raspi
-########################
-raspi/__pycache__/
-raspi/*.pyc
-raspi/.venv/
-raspi/venv/
+# ========================
+# 🐍 Python / Raspberry Pi (raspi/)
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+.env
+*.egg-info/
+.eggs/
 
-########################
-# 기타
-########################
+# ========================
+# 🔐 환경 변수 / 시크릿
+# ========================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+
+# ========================
+# 📦 기타
+# ========================
+*.bak
+*.swp
+*~
 .gitignore~
