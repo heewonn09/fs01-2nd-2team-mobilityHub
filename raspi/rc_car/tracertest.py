@@ -49,8 +49,8 @@ SPACE = 1   # 바닥(선 없음)
 # =========================
 # 속도 설정
 # =========================
-BASE_SPEED_RIGHT = 40  # 오른쪽 바퀴 기본 속도
-BASE_SPEED_LEFT  = 40  # 왼쪽 바퀴 기본 속도
+BASE_SPEED_RIGHT = 46  # 오른쪽 바퀴 기본 속도
+BASE_SPEED_LEFT  = 50  # 왼쪽 바퀴 기본 속도
 
 # 미세 보정용 (가드라인 가까워졌을 때)
 ADJUST_DELTA = 15      # 보정 강도 (원하면 10~20 사이로 바꿔보기)
@@ -128,8 +128,8 @@ def is_node_pattern(left, center, right):
         return True
 
     # 만약 노드에서 세 개 다 선을 밟게 그릴 거라면 아래도 허용
-    # if (left == LINE) and (center == LINE) and (right == LINE):
-    #     return True
+    if (left == LINE) and (center == LINE) and (right == LINE):
+        return True
 
     return False
 
@@ -139,21 +139,27 @@ def handle_node(node_index):
     노드별 행동 정의하는 곳.
     예: 1번 노드에서 좌회전, 2번 노드에서 우회전, 3번에서 정지 등등.
     """
-    print(f"[NODE] 노드 {node_index} 통과")
+    print(f"[NODE] 노드 {node_index} 진입 - 방향 탐색(제자리 회전) 시작")
 
-    # 예시:
-    # if node_index == 1:
-    #     # 잠깐 멈췄다가 왼쪽으로 회전
-    #     setMotor(CH1, 0, STOP)
-    #     setMotor(CH2, 0, STOP)
-    #     sleep(0.5)
-    #     # 왼쪽으로 회전
-    #     setMotor(CH1, 30, FORWARD)
-    #     setMotor(CH2, 0, STOP)
-    #     sleep(0.7)
-    # elif node_index == 2:
-    #     # 우회전 등등...
-    #     pass
+    # 제자리 회전 (예: 왼쪽으로 회전)
+    # CH1(우) 전진, CH2(좌) 후진
+    # 속도는 적절히 설정 (너무 빠르면 000을 놓칠 수 있음)
+    SEARCH_SPEED = 45
+    setMotor(CH1, SEARCH_SPEED, FORWARD)
+    setMotor(CH2, SEARCH_SPEED, BACKWORD)
+
+    # 000 (가드라인 안쪽)이 될 때까지 대기
+    while True:
+        left, center, right = read_line_sensors()
+        if is_inside_corridor(left, center, right):
+            print("[NODE] 길 찾음 (000 감지) - 회전 중지")
+            break
+        sleep(0.01)
+    
+    # 회전 멈춤
+    setMotor(CH1, 0, STOP)
+    setMotor(CH2, 0, STOP)
+    sleep(0.2) # 잠시 안정화
 
 
 def line_follow_with_nodes():
@@ -163,7 +169,7 @@ def line_follow_with_nodes():
     while True:
         left, center, right = read_line_sensors()
         # 디버깅용
-        # print(f"L={left}, C={center}, R={right}")
+        print(f"L={left}, C={center}, R={right}")
 
         # 1) 노드 패턴인지 먼저 확인
         if is_node_pattern(left, center, right):
@@ -172,6 +178,7 @@ def line_follow_with_nodes():
                 node_count += 1
                 in_node = True
                 handle_node(node_count)
+                continue
 
             # 노드 위에서는 원하는 만큼 속도 조정
             # 여기서는 일단 살짝 감속 직진
@@ -190,12 +197,14 @@ def line_follow_with_nodes():
             # 3) 왼쪽 센서가 선을 감지 → 왼쪽 가드라인에 가까워짐 → 오른쪽으로 살짝 틀기
             elif (left == LINE) and (right == SPACE):
                 # 오른쪽으로 보정: 왼쪽 속도 ↑, 오른쪽 속도 ↓
+                print("Turn Right (Left sensor hit)")
                 setMotor(CH1, BASE_SPEED_RIGHT - ADJUST_DELTA, FORWARD)
                 setMotor(CH2, BASE_SPEED_LEFT  + ADJUST_DELTA, FORWARD)
 
             # 4) 오른쪽 센서가 선을 감지 → 오른쪽 가드라인에 가까워짐 → 왼쪽으로 살짝 틀기
             elif (right == LINE) and (left == SPACE):
                 # 왼쪽으로 보정: 오른쪽 속도 ↑, 왼쪽 속도 ↓
+                print("Turn Left (Right sensor hit)")
                 setMotor(CH1, BASE_SPEED_RIGHT + ADJUST_DELTA, FORWARD)
                 setMotor(CH2, BASE_SPEED_LEFT  - ADJUST_DELTA, FORWARD)
 
