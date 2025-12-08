@@ -1,8 +1,15 @@
-import { Button } from "./ui/button";
-import { Card, CardContent } from "./ui/card";
 import { Car, History, User } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function MainMenu({ userId, onNavigate, onLogout }) {
+export default function MainMenu({ userId, onLogout }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 현재 페이지 확인 후 active 클래스 도움
+  const getClassName = (path) => {
+    return location.pathname === path ? "menu-item active" : "menu-item";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
@@ -11,62 +18,57 @@ export default function MainMenu({ userId, onNavigate, onLogout }) {
           <div className="text-sm text-gray-500">로그인 사용자</div>
           <div>{userId}</div>
         </div>
-        <Button variant="outline" size="sm" onClick={onLogout}>
+        <button
+          className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition"
+          onClick={onLogout}
+        >
           로그아웃
-        </Button>
+        </button>
       </div>
 
       {/* 메뉴 */}
       <div className="p-4 space-y-3">
         <h2 className="text-gray-700 mb-4">서비스 선택</h2>
 
-        {/* 주차장 서비스 이용 */}
-        <Card
-          className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => onNavigate("service")}
+        {/* 서비스 카드 */}
+        <div
+          className="cursor-pointer bg-white shadow-sm rounded-lg hover:shadow-md transition p-4 flex items-center gap-4"
+          onClick={() => navigate("/service")}
         >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <Car className="size-6 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <div>주차장 서비스 이용</div>
-              <div className="text-sm text-gray-500">차량 등록 및 서비스 이용</div>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="bg-blue-100 p-3 rounded-lg">
+            <Car className="w-6 h-6 text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <div className={getClassName("/service")}>주차장 서비스 이용</div>
+            <div className="text-sm text-gray-500">차량 등록 및 서비스 이용</div>
+          </div>
+        </div>
 
-        {/* 이용 내역 */}
-        <Card
-          className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => onNavigate("history")}
+        <div
+          className="cursor-pointer bg-white shadow-sm rounded-lg hover:shadow-md transition p-4 flex items-center gap-4"
+          onClick={() => navigate("/history")}
         >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="bg-green-100 p-3 rounded-lg">
-              <History className="size-6 text-green-600" />
-            </div>
-            <div className="flex-1">
-              <div>주차장 이용 내역</div>
-              <div className="text-sm text-gray-500">이용 내역 및 결제 정보</div>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="bg-green-100 p-3 rounded-lg">
+            <History className="w-6 h-6 text-green-600" />
+          </div>
+          <div className="flex-1">
+            <div className={getClassName("/history")}>주차장 이용 내역</div>
+            <div className="text-sm text-gray-500">이용 내역 및 결제 정보</div>
+          </div>
+        </div>
 
-        {/* My정보 수정 */}
-        <Card
-          className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => onNavigate("profile")}
+        <div
+          className="cursor-pointer bg-white shadow-sm rounded-lg hover:shadow-md transition p-4 flex items-center gap-4"
+          onClick={() => navigate("/profile")}
         >
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <User className="size-6 text-purple-600" />
-            </div>
-            <div className="flex-1">
-              <div>My정보 수정</div>
-              <div className="text-sm text-gray-500">개인정보 관리</div>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="bg-purple-100 p-3 rounded-lg">
+            <User className="w-6 h-6 text-purple-600" />
+          </div>
+          <div className="flex-1">
+            <div className={getClassName("/profile")}>My정보 수정</div>
+            <div className="text-sm text-gray-500">개인정보 관리</div>
+          </div>
+        </div>
       </div>
     </div>
   );

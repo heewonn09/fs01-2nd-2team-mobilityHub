@@ -1,192 +1,175 @@
 import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Input } from "./ui/input";
-import { ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export default function UsageHistory({ userId, onBack }) {
+export function UsageHistory({ userId}) {
+    const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [filteredHistory, setFilteredHistory] = useState([]);
+  const [filterType, setFilterType] = useState("all"); // "all" | "date" | "vehicle"
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedVehicle, setSelectedVehicle] = useState("");
+  const [availableVehicles, setAvailableVehicles] = useState([]);
+  const [availableDates, setAvailableDates] = useState([]);
 
-  // 🔥 필터 상태값
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [selectedPlate, setSelectedPlate] = useState("all");
-
+      // 뒤로 가기 함수
+  const handleBack = () => {
+    navigate(-1); // 이전 페이지로 이동
+  };
   useEffect(() => {
     loadHistory();
   }, [userId]);
 
   useEffect(() => {
-    applyFilters();
-  }, [history, startDate, endDate, selectedPlate]);
+    applyFilter();
+  }, [history, filterType, selectedDate, selectedVehicle]);
 
   const loadHistory = () => {
     const users = JSON.parse(localStorage.getItem("users") || "{}");
     const userHistory = users[userId]?.history || [];
 
-    // 샘플 데이터 주입 (처음 띄울 때만)
     if (userHistory.length === 0) {
-      const sample = [
-        {
-          id: "1",
-          plateNumber: "12가3456",
-          date: "2025-11-28",
-          services: ["주차", "세차"],
-          payment: 15000,
-        },
-        {
-          id: "2",
-          plateNumber: "78나9012",
-          date: "2025-11-25",
-          services: ["주차", "세차", "정비"],
-          payment: 85000,
-        },
-        {
-          id: "3",
-          plateNumber: "12가3456",
-          date: "2025-11-20",
-          services: ["주차"],
-          payment: 5000,
-        },
+      const sampleHistory = [
+        { id: "1", plateNumber: "12가3456", date: "2025-11-28", services: ["주차", "세차"], payment: 15000 },
+        { id: "2", plateNumber: "78나9012", date: "2025-11-25", services: ["주차", "세차", "정비"], payment: 85000 },
+        { id: "3", plateNumber: "12가3456", date: "2025-11-20", services: ["주차"], payment: 5000 },
       ];
-
-      users[userId].history = sample;
+      users[userId] = { history: sampleHistory };
       localStorage.setItem("users", JSON.stringify(users));
-      setHistory(sample);
+      setHistory(sampleHistory);
     } else {
       setHistory(userHistory);
     }
+
+    const vehicles = Array.from(new Set(userHistory.map(item => item.plateNumber)));
+    setAvailableVehicles(vehicles);
+
+    const dates = Array.from(new Set(userHistory.map(item => item.date))).sort(
+      (a, b) => new Date(b).getTime() - new Date(a).getTime()
+    );
+    setAvailableDates(dates);
   };
 
-  // 🔥 필터 적용 함수
-  const applyFilters = () => {
-    let data = [...history];
+  const applyFilter = () => {
+    let filtered = [...history];
 
-    // 차량 필터
-    if (selectedPlate !== "all") {
-      data = data.filter((item) => item.plateNumber === selectedPlate);
+    if (filterType === "date" && selectedDate) {
+      filtered = filtered.filter(item => item.date === selectedDate);
+    } else if (filterType === "vehicle" && selectedVehicle) {
+      filtered = filtered.filter(item => item.plateNumber === selectedVehicle);
     }
 
-    // 날짜 필터
-    if (startDate) {
-      data = data.filter((item) => item.date >= startDate);
-    }
-    if (endDate) {
-      data = data.filter((item) => item.date <= endDate);
-    }
-
-    setFilteredHistory(data);
+    setFilteredHistory(filtered);
   };
 
-  // 차량번호 리스트 생성
-  const plateList = [...new Set(history.map((h) => h.plateNumber))];
+  const resetFilter = () => {
+    setFilterType("all");
+    setSelectedDate("");
+    setSelectedVehicle("");
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb", padding: "16px" }}>
       {/* 헤더 */}
-      <div className="bg-white shadow-sm p-4 flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={onBack}>
-          <ChevronLeft className="size-5" />
-        </Button>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px", backgroundColor: "#fff", padding: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.1)" }}>
+        <button onClick={handleBack} style={{ padding: "4px 8px" }}>&lt; 뒤로</button>
         <div>
-          <div className="text-sm text-gray-500">로그인 사용자</div>
+          <div style={{ fontSize: "12px", color: "#6b7280" }}>로그인 사용자</div>
           <div>{userId}</div>
         </div>
       </div>
 
-      {/* 본문 */}
-      <div className="p-4">
-        <h2 className="text-gray-700 mb-4">주차장 이용 내역</h2>
+      {/* 필터 */}
+      <div style={{ marginTop: "16px", marginBottom: "16px" }}>
+        <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+          <button
+            onClick={() => setFilterType("date")}
+            style={{
+              flex: 1,
+              padding: "8px",
+              backgroundColor: filterType === "date" ? "#3b82f6" : "#fff",
+              color: filterType === "date" ? "#fff" : "#000",
+              border: "1px solid #d1d5db",
+              borderRadius: "4px",
+            }}
+          >
+            날짜별 조회
+          </button>
+          <button
+            onClick={() => setFilterType("vehicle")}
+            style={{
+              flex: 1,
+              padding: "8px",
+              backgroundColor: filterType === "vehicle" ? "#3b82f6" : "#fff",
+              color: filterType === "vehicle" ? "#fff" : "#000",
+              border: "1px solid #d1d5db",
+              borderRadius: "4px",
+            }}
+          >
+            차량별 조회
+          </button>
+          <button
+            onClick={resetFilter}
+            style={{
+              flex: 1,
+              padding: "8px",
+              backgroundColor: "#f3f4f6",
+              color: "#000",
+              border: "1px solid #d1d5db",
+              borderRadius: "4px",
+            }}
+          >
+            전체보기
+          </button>
+        </div>
 
-        {/* 🔥 필터 UI */}
-        <Card className="mb-4">
-          <CardContent className="space-y-3 p-4">
-            {/* 차량별 조회 */}
-            <div>
-              <div className="text-sm mb-1">차량 선택</div>
-              <select
-                className="w-full border p-2 rounded"
-                value={selectedPlate}
-                onChange={(e) => setSelectedPlate(e.target.value)}
-              >
-                <option value="all">전체 차량</option>
-                {plateList.map((plate) => (
-                  <option key={plate} value={plate}>
-                    {plate}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 날짜별 조회 */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <div className="text-sm mb-1">시작 날짜</div>
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <div className="text-sm mb-1">종료 날짜</div>
-                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-              </div>
-            </div>
-
-            <Button className="w-full" onClick={applyFilters}>
-              필터 적용
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* 🔥 필터링된 데이터 출력 */}
-        {filteredHistory.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center text-gray-500">
-              조회된 내역이 없습니다.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {filteredHistory.map((item) => (
-              <Card key={item.id}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>{item.plateNumber}</span>
-                    <span className="text-sm text-gray-500">{item.date}</span>
-                  </CardTitle>
-                </CardHeader>
-
-                <CardContent className="space-y-2">
-                  {/* 이용 서비스 */}
-                  <div>
-                    <div className="text-sm text-gray-500 mb-1">이용 서비스</div>
-                    <div className="flex gap-2 flex-wrap">
-                      {item.services.map((service, idx) => (
-                        <span
-                          key={idx}
-                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
-                        >
-                          {service}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 결제 금액 */}
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <span className="text-gray-600">결제 금액</span>
-                    <span className="text-lg">{item.payment.toLocaleString()}원</span>
-                  </div>
-                </CardContent>
-              </Card>
+        {filterType === "date" && (
+          <select value={selectedDate} onChange={e => setSelectedDate(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #d1d5db" }}>
+            <option value="">날짜를 선택하세요</option>
+            {availableDates.map(date => (
+              <option key={date} value={date}>{date}</option>
             ))}
-          </div>
+          </select>
+        )}
+
+        {filterType === "vehicle" && (
+          <select value={selectedVehicle} onChange={e => setSelectedVehicle(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #d1d5db" }}>
+            <option value="">차량을 선택하세요</option>
+            {availableVehicles.map(vehicle => (
+              <option key={vehicle} value={vehicle}>{vehicle}</option>
+            ))}
+          </select>
         )}
       </div>
+
+      {/* 내역 */}
+      {filteredHistory.length === 0 ? (
+        <div style={{ backgroundColor: "#fff", padding: "16px", borderRadius: "8px", textAlign: "center", color: "#6b7280" }}>
+          {history.length === 0 ? "이용 내역이 없습니다." : "조회 결과가 없습니다."}
+        </div>
+      ) : (
+        filteredHistory.map(item => (
+          <div key={item.id} style={{ backgroundColor: "#fff", borderRadius: "8px", marginBottom: "12px", padding: "12px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+              <span>{item.plateNumber}</span>
+              <span style={{ fontSize: "12px", color: "#6b7280" }}>{item.date}</span>
+            </div>
+            <div style={{ marginBottom: "8px" }}>
+              <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>이용 서비스</div>
+              <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                {item.services.map((service, index) => (
+                  <span key={index} style={{ padding: "2px 8px", backgroundColor: "#bfdbfe", color: "#1d4ed8", borderRadius: "9999px", fontSize: "12px" }}>
+                    {service}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e5e7eb", paddingTop: "4px", color: "#4b5563" }}>
+              <span>결제 금액</span>
+              <span>{item.payment.toLocaleString()}원</span>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }
