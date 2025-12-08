@@ -52,14 +52,9 @@ SPACE = 0   # 바닥(선 없음)
 BASE_SPEED_RIGHT = 62  # 오른쪽 바퀴 기본 속도
 BASE_SPEED_LEFT  = 65  # 왼쪽 바퀴 기본 속도
 
-# PID 제어 상수
-Kp = 18.0  # 비례 게인 (현재 오차에 비례)
-Ki = 0.0   # 적분 게인 (누적 오차)
-Kd = 6.0   # 미분 게인 (오차 변화율)
-
-# PID 제어 변수
-previous_error = 0
-integral = 0
+###########################################
+# 간단한 보정 기반 주행 (PID 미사용)
+###########################################
 
 
 def setPinConfig(EN, INA, INB):        
@@ -154,31 +149,31 @@ def calculate_line_position(left, center, right):
     return position
 
 
-def pid_control(current_position):
+def apply_simple_correction(position):
     """
-    PID 제어로 모터 보정값 계산
+    센서 위치(-1~1)로부터 단순한 속도 보정값을 계산한다.
+    멀리 치우칠수록 보정폭을 크게 적용한다.
     """
-    global previous_error, integral
-    
-    # 목표는 중앙(0), 현재 위치와의 차이가 오차
-    error = current_position
-    
-    # 적분 (누적 오차)
-    integral += error
-    # 적분 windup 방지
-    if integral > 100:
-        integral = 100
-    elif integral < -100:
-        integral = -100
-    
-    # 미분 (오차 변화율)
-    derivative = error - previous_error
-    previous_error = error
-    
-    # PID 출력
-    correction = (Kp * error) + (Ki * integral) + (Kd * derivative)
-    
-    return correction
+    right_speed = BASE_SPEED_RIGHT
+    left_speed = BASE_SPEED_LEFT
+
+    if position <= -0.7:
+        right_speed += 22
+        left_speed -= 22
+    elif position <= -0.2:
+        right_speed += 12
+        left_speed -= 12
+    elif position >= 0.7:
+        right_speed -= 22
+        left_speed += 22
+    elif position >= 0.2:
+        right_speed -= 12
+        left_speed += 12
+
+    right_speed = max(20, min(100, right_speed))
+    left_speed = max(20, min(100, left_speed))
+
+    return right_speed, left_speed
 
 
 def is_inside_corridor(left, center, right):
@@ -295,7 +290,6 @@ def handle_node(node_index):
 
 
 def line_follow_with_nodes():
-    global previous_error, integral
     node_count = 0
     in_node = False  # 노드 안에 있는 중인지 플래그
 
@@ -308,9 +302,6 @@ def line_follow_with_nodes():
             if not in_node:
                 node_count += 1
                 in_node = True
-                # PID 변수 초기화
-                previous_error = 0
-                integral = 0
                 handle_node(node_count)
                 continue
 
@@ -326,8 +317,6 @@ def line_follow_with_nodes():
             # 2) 평소 주행: PID 제어 사용
             if is_inside_corridor(left, center, right):
                 # 가드라인 안: 직진 + PID 초기화
-                previous_error = 0
-                integral = 0
                 setMotor(CH1, BASE_SPEED_RIGHT, FORWARD)
                 setMotor(CH2, BASE_SPEED_LEFT, FORWARD)
             else:
@@ -336,23 +325,12 @@ def line_follow_with_nodes():
                 
                 # 모든 센서가 꺼져 있으면 직진
                 if position == 0 and (left == SPACE and center == SPACE and right == SPACE):
-                    previous_error = 0
-                    integral = 0
                     setMotor(CH1, BASE_SPEED_RIGHT, FORWARD)
                     setMotor(CH2, BASE_SPEED_LEFT, FORWARD)
                 else:
-                    correction = pid_control(position)
-                    
-                    # 보정값 적용 (correction이 양수면 오른쪽으로 치우침 → 왼쪽으로 보정)
-                    right_speed = BASE_SPEED_RIGHT - correction
-                    left_speed = BASE_SPEED_LEFT + correction
-                    
-                    # 속도 제한 (최소 20으로 완화)
-                    right_speed = max(20, min(100, right_speed))
-                    left_speed = max(20, min(100, left_speed))
-                    
-                    print(f"Pos={position:.1f}, Corr={correction:.1f}, R={right_speed:.0f}, L={left_speed:.0f}")
-                    
+                    right_speed, left_speed = apply_simple_correction(position)
+                    print(f"Pos={position:.1f}, R={right_speed:.0f}, L={left_speed:.0f}")
+
                     setMotor(CH1, right_speed, FORWARD)
                     setMotor(CH2, left_speed, FORWARD)
 
