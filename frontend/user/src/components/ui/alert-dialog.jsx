@@ -1,37 +1,24 @@
-﻿"use client";
+"use client";
 
-import * as React from "react";
+import React from "react";
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 
 import { cn } from "./utils";
 import { buttonVariants } from "./button";
 
-function AlertDialog({
-  ...props
-}) {
+function AlertDialog(props) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
 }
 
-function AlertDialogTrigger({
-  ...props
-}) {
-  return (
-    <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
-  );
+function AlertDialogTrigger(props) {
+  return <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />;
 }
 
-function AlertDialogPortal({
-  ...props
-}) {
-  return (
-    <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
-  );
+function AlertDialogPortal(props) {
+  return <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />;
 }
 
-function AlertDialogOverlay({
-  className,
-  ...props
-}) {
+function AlertDialogOverlay({ className, ...props }) {
   return (
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
@@ -44,10 +31,7 @@ function AlertDialogOverlay({
   );
 }
 
-function AlertDialogContent({
-  className,
-  ...props
-}) {
+function AlertDialogContent({ className, ...props }) {
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -63,10 +47,7 @@ function AlertDialogContent({
   );
 }
 
-function AlertDialogHeader({
-  className,
-  ...props
-}) {
+function AlertDialogHeader({ className, ...props }) {
   return (
     <div
       data-slot="alert-dialog-header"
@@ -76,26 +57,17 @@ function AlertDialogHeader({
   );
 }
 
-function AlertDialogFooter({
-  className,
-  ...props
-}) {
+function AlertDialogFooter({ className, ...props }) {
   return (
     <div
       data-slot="alert-dialog-footer"
-      className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-        className
-      )}
+      className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)}
       {...props}
     />
   );
 }
 
-function AlertDialogTitle({
-  className,
-  ...props
-}) {
+function AlertDialogTitle({ className, ...props }) {
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
@@ -105,10 +77,7 @@ function AlertDialogTitle({
   );
 }
 
-function AlertDialogDescription({
-  className,
-  ...props
-}) {
+function AlertDialogDescription({ className, ...props }) {
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
@@ -118,22 +87,11 @@ function AlertDialogDescription({
   );
 }
 
-function AlertDialogAction({
-  className,
-  ...props
-}) {
-  return (
-    <AlertDialogPrimitive.Action
-      className={cn(buttonVariants(), className)}
-      {...props}
-    />
-  );
+function AlertDialogAction({ className, ...props }) {
+  return <AlertDialogPrimitive.Action className={cn(buttonVariants(), className)} {...props} />;
 }
 
-function AlertDialogCancel({
-  className,
-  ...props
-}) {
+function AlertDialogCancel({ className, ...props }) {
   return (
     <AlertDialogPrimitive.Cancel
       className={cn(buttonVariants({ variant: "outline" }), className)}
