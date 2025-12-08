@@ -1,8 +1,0 @@
-.sign-button {
-  min-height: 100vh; /* min-h-screen */
-  display: flex; /* flex */
-  align-items: center; /* items-center */
-  justify-content: center; /* justify-center */
-  background-color: #f9fafb; /* bg-gray-50 */
-  padding: 1rem; /* p-4 (Tailwind 기본: 1rem) */
-}
