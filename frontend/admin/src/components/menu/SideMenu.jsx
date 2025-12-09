@@ -60,7 +60,7 @@ const SideMenu = () => {
             </div>
           </div>
           <div className="today">
-            <span>현재 날짜</span>
+            <span>{currentDate}</span>
           </div>
         </div>
       </aside>

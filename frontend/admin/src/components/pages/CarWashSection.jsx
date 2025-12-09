@@ -66,7 +66,7 @@ const CarWashSection = () => {
                 <div className="car-number">(이용중인 차량번호)</div>
                 <span className="state">(진행상황)</span>
               </div>
-              <span classname="job-state">
+              <span className="job-state">
                 <p className="state">(변환필요) 진행중</p>
               </span>
             </div>
