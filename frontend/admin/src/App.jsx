@@ -13,6 +13,7 @@ import LicenseModal from "./components/pages/LicenseModal";
 import MaintenanceSection from "./components/pages/MaintenanceSection";
 import AdminSection from "./components/pages/AdminSection";
 import ParkingSection from "./components/pages/ParkingSection";
+import AdminLogin from "./components/pages/AdminLogin";
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
           <Header />
           <main className="layout-content">
             <Routes>
-              <Route path="/" element={<MainSection />} />
+              <Route path="/" element={<AdminLogin />} />
             </Routes>
             <Routes>
               <Route path="/entrance" element={<EntranceExitSection />} />

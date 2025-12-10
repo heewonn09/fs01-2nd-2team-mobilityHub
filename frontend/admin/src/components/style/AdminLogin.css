@@ -1,0 +1,90 @@
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #3b82f6, #1d4ed8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.login-card {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 28rem;
+  padding: 2rem;
+}
+
+.text-block {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background-color: #dbeafe;
+  border-radius: 9999px;
+  margin-bottom: 1rem;
+}
+
+.text-title {
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.text-subtitle {
+  color: #6b7280;
+}
+
+.login-form-space > * + * {
+  margin-top: 1.5rem;
+}
+
+.text-block {
+  display: block;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.block-relative {
+  position: relative;
+}
+
+.input-field {
+  width: 100%; /* w-full */
+  padding-left: 2.5rem; /* pl-10 */
+  padding-right: 1rem; /* pr-4 */
+  padding-top: 0.75rem; /* py-3 */
+  padding-bottom: 0.75rem; /* py-3 */
+  border: 1px solid #d1d5db; /* border-gray-300 */
+  border-radius: 0.5rem; /* rounded-lg */
+  outline: none; /* focus:outline-none */
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.input-field:focus {
+  box-shadow: 0 0 0 2px #3b82f6; /* focus:ring-2 + focus:ring-blue-500 */
+  border-color: transparent; /* focus:border-transparent */
+}
+
+.login-subButton {
+  width: 100%; /* w-full */
+  background-color: #2563eb; /* bg-blue-600 */
+  color: white; /* text-white */
+  padding-top: 0.75rem; /* py-3 */
+  padding-bottom: 0.75rem; /* py-3 */
+  border-radius: 0.5rem; /* rounded-lg */
+  cursor: pointer;
+  transition: background-color 0.2s; /* transition-colors */
+  border: none;
+  text-align: center;
+}
+
+.login-subButton:hover {
+  background-color: #1d4ed8; /* hover:bg-blue-700 */
+}

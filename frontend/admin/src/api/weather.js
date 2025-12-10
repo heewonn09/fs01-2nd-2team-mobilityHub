@@ -3,7 +3,6 @@
 // 오늘 날씨 조회
 export const getWeatherInfo = async () => {
   const apikey = import.meta.env.VITE_WEATHER_API_KEY;
-  console.log(apikey);
   const lang = "kr";
   const units = "metric";
   const city = "Seoul";
