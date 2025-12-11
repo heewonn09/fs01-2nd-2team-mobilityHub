@@ -1,7 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../style/CarWashSection.css";
+import { getCarWashing } from "../../api/carWashAPI";
 
 const CarWashSection = () => {
+  // 세차장 데이터 목록
+  const [carWashing, setCarWashing] = useState([]);
+
+  useEffect(() => {
+    getCarWashing(3)
+      .then((res) => setCarWashing(res))
+      .catch((err) => console.error("차량 정보 조회 실패", err));
+  }, []);
+
+  console.log(carWashing);
+  console.log("차량번호");
+
   return (
     <div className="wash-page">
       <div className="statistics-card">
@@ -61,15 +74,18 @@ const CarWashSection = () => {
             <h3>이용 현황</h3>
           </div>
           <div className="list-content">
-            <div className="list-data">
-              <div>
-                <div className="car-number">(이용중인 차량번호)</div>
-                <span className="state">(진행상황)</span>
+            {carWashing.map((list) => (
+              <div key={list.id} className="list-data">
+                <div>
+                  {/* <div className="car-number">{carWashing[0].carNumber}</div> */}
+                  <div className="car-number">{list.carNumber}</div>
+                  <span className="state">(진행상황)</span>
+                </div>
+                <span className="job-state">
+                  <p className="state">(변환필요) 진행중</p>
+                </span>
               </div>
-              <span className="job-state">
-                <p className="state">(변환필요) 진행중</p>
-              </span>
-            </div>
+            ))}
           </div>
         </div>
       </div>

@@ -30,13 +30,13 @@ public class UserEntity {
     @Id
     private String userId; // 유저아이디
 
-    @Column(nullable = false)
+    @Column(name = "user_password", nullable = false)
     private String password; // 패스워드
 
     @Column(nullable = false)
     private String userName; // 이름
 
-    @Column(nullable = false)
+    @Column(name = "phone_number", nullable = false)
     private String tel; // 휴대폰번호
 
     @CreationTimestamp

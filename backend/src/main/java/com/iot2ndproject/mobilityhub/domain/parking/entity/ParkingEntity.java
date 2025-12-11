@@ -33,6 +33,6 @@ public class ParkingEntity {
     @JoinColumn(name = "adminId")
     private AdminEntity admin; // 관리자ID(fk)
 
-    @OneToMany(mappedBy = "parkingLot")
+    @OneToMany(mappedBy = "sectorId")
     List<StockStatusEntity> stockStatus = new ArrayList<>();
 }
