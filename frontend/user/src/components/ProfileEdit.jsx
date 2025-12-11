@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ProfileEdit({ userId, onBack }) {
+export function ProfileEdit({ userId, onBack, isLogin }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -9,7 +9,11 @@ export default function ProfileEdit({ userId, onBack }) {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const navigate = useNavigate();
-
+  useEffect(() => {
+    if (!isLogin()) {
+      navigate("/login");
+    }
+  }, [isLogin, navigate]);
   // 뒤로 가기 함수
   const handleBack = () => {
     navigate(-1); // 이전 페이지로 이동

@@ -29,7 +29,7 @@ public class StockStatusEntity {
     private String stockCategory; // 카테고리
 
     @Column(nullable = false)
-    private int stockQantity; // 수량
+    private int stockQuantity; // 수량
 
     @UpdateTimestamp
     private LocalDateTime updateTime; // 업데이트 날짜
@@ -39,18 +39,18 @@ public class StockStatusEntity {
     private ParkingEntity sectorId;
 
     // 재고 수량 변동시 <- 필요없으면 삭제 또는 변경
-    public StockStatusEntity(String inventoryId, int stockQantity){
+    public StockStatusEntity(String inventoryId, int stockQuantity){
         this.InventoryId = inventoryId;
-        this.stockQantity = stockQantity;
+        this.stockQuantity = stockQuantity;
         this.updateTime = LocalDateTime.now();
     }
 
     // 제품 등록시
-    public StockStatusEntity(String inventoryId, String productName, String stockCategory, int stockQantity) {
+    public StockStatusEntity(String inventoryId, String productName, String stockCategory, int stockQuantity) {
         this.InventoryId = inventoryId;
         this.productName = productName;
         this.stockCategory = stockCategory;
-        this.stockQantity = stockQantity;
+        this.stockQuantity = stockQuantity;
         this.updateTime = LocalDateTime.now();
     }
 
