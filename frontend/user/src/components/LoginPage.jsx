@@ -1,32 +1,58 @@
 import { useState } from "react";
+import { login, createUser } from "../api/userApi";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
-export default function LoginPage({ onLogin }) {
+export default function LoginPage({ isLogin }) {
+  const navigate = useNavigate();
+  console.log(isLogin);
+  useEffect(() => {
+    if (isLogin()) {
+      navigate("/main");
+    }
+  }, [isLogin, navigate]);
+  const [loginData, setLoginData] = useState({ userId: "", password: "" });
+  const [signupData, setSignupData] = useState({
+    userId: "",
+    password: "",
+    userName: "",
+    tel: "",
+    role: "USER",
+  });
   const [isSignup, setIsSignup] = useState(false);
-  const [userId, setUserId] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!userId.trim()) return;
-
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    const currentUserId = isSignup ? signupData.userId : loginData.userId;
+    if (!currentUserId || !currentUserId.trim()) return;
 
     if (isSignup) {
       // 회원가입
-      users[userId] = { password, name, phone, vehicles: [], history: [] };
-      localStorage.setItem("users", JSON.stringify(users));
-      alert("회원가입이 완료되었습니다!");
-      setIsSignup(false);
+      createUser(signupData)
+        .then((data) => {
+          alert("회원가입이 완료되었습니다!");
+          setIsSignup(false);
+          setSignupData({ ...signupData, userId: "", password: "", userName: "", tel: "" });
+        })
+        .catch((error) => {
+          console.error(error);
+          alert("회원가입 실패: 관리자에게 문의하세요.");
+        });
     } else {
       // 로그인
-      if (users[userId] && users[userId].password === password) {
-        onLogin(userId);
-      } else {
-        alert("아이디 또는 비밀번호가 일치하지 않습니다.");
-      }
+      login(loginData)
+        .then((data) => {
+          console.log("로그인 성공", data);
+          if (data && data.accessToken) {
+            console.log("인증성공");
+            localStorage.setItem("accessToken", data.accessToken);
+            navigate("/main");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          alert("로그인 실패: 아이디와 패스워드를 확인하세요.");
+        });
     }
   };
 
@@ -43,8 +69,12 @@ export default function LoginPage({ onLogin }) {
             <input
               id="userId"
               type="text"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
+              value={isSignup ? signupData.userId : loginData.userId}
+              onChange={(e) =>
+                isSignup
+                  ? setSignupData({ ...signupData, userId: e.target.value })
+                  : setLoginData({ ...loginData, userId: e.target.value })
+              }
               placeholder="아이디를 입력하세요"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -58,8 +88,12 @@ export default function LoginPage({ onLogin }) {
             <input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={isSignup ? signupData.password : loginData.password}
+              onChange={(e) =>
+                isSignup
+                  ? setSignupData({ ...signupData, password: e.target.value })
+                  : setLoginData({ ...loginData, password: e.target.value })
+              }
               placeholder="비밀번호를 입력하세요"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -75,8 +109,8 @@ export default function LoginPage({ onLogin }) {
                 <input
                   id="name"
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={signupData.userName}
+                  onChange={(e) => setSignupData({ ...signupData, userName: e.target.value })}
                   placeholder="이름을 입력하세요"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -89,8 +123,8 @@ export default function LoginPage({ onLogin }) {
                 <input
                   id="phone"
                   type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  value={signupData.tel}
+                  onChange={(e) => setSignupData({ ...signupData, tel: e.target.value })}
                   placeholder="전화번호를 입력하세요"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />

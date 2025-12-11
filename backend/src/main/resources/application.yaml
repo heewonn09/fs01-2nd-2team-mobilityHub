@@ -17,9 +17,9 @@ spring:
   jpa:
     show-sql: true #JPA가 생성하는 sql문을 콘솔에 보여준다
     hibernate:
-#      ddl-auto: none
+      # ddl-auto: none
 #      ddl-auto: create #서버가 시작되면 create문이 실행된다 - 데이터가 있어도 삭제하고 만든다
-      ddl-auto: update
+     ddl-auto: update
     properties:
       hibernate:
         format_sql: true

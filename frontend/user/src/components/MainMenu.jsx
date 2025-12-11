@@ -1,10 +1,14 @@
 import { Car, History, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-
-export default function MainMenu({ userId, onLogout }) {
+import { useEffect } from "react";
+export default function MainMenu({ userId, isLogin, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
-
+  useEffect(() => {
+    if (!isLogin()) {
+      navigate("/login");
+    }
+  }, [isLogin, navigate]);
   // 현재 페이지 확인 후 active 클래스 도움
   const getClassName = (path) => {
     return location.pathname === path ? "menu-item active" : "menu-item";
@@ -20,7 +24,10 @@ export default function MainMenu({ userId, onLogout }) {
         </div>
         <button
           className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition"
-          onClick={onLogout}
+          onClick={() => {
+            console.log("로그아웃 클릭됨");
+            onLogout();
+          }}
         >
           로그아웃
         </button>

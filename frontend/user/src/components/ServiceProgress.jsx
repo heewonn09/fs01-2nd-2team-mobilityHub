@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ServiceProgress({ selectedVehicle }) {
+export function ServiceProgress({ selectedVehicle, isLogin }) {
   const navigate = useNavigate();
+  useEffect(() => {
+    if (!isLogin()) {
+      navigate("/login");
+    }
+  }, [isLogin, navigate]);
   const SERVICE_NAMES = {
     maintenance: "정비",
     carwash: "세차",
