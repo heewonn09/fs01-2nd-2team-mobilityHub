@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-    Optional<CarEntity> findByCarNumber(String carNumber );
+public interface CarRepository extends JpaRepository<CarEntity,Long> {
+    Optional<CarEntity> findByCarNumber(String carNumber);
 }
