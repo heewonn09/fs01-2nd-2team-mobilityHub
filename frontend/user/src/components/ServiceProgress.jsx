@@ -1,15 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export function ServiceProgress({ selectedVehicle }) {
-     const navigate = useNavigate();
+export function ServiceProgress({ selectedVehicle, isLogin }) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!isLogin()) {
+      navigate("/login");
+    }
+  }, [isLogin, navigate]);
   const SERVICE_NAMES = {
     maintenance: "정비",
     carwash: "세차",
     parking: "주차",
   };
 
-    // 뒤로 가기 함수
+  // 뒤로 가기 함수
   const handleBack = () => {
     navigate(-1); // 이전 페이지로 이동
   };
@@ -38,7 +43,9 @@ export function ServiceProgress({ selectedVehicle }) {
     <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb", padding: "16px" }}>
       {/* 헤더 */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-        <button onClick={handleBack} style={{ padding: "4px 8px" }}>&lt; 뒤로</button>
+        <button onClick={handleBack} style={{ padding: "4px 8px" }}>
+          &lt; 뒤로
+        </button>
         <div>
           <div style={{ fontSize: "12px", color: "#6b7280" }}>선택된 차량</div>
           <div>{selectedVehicle}</div>
@@ -68,7 +75,14 @@ export function ServiceProgress({ selectedVehicle }) {
 
       {/* 정비 추가 요청 */}
       {selectedServices.has("maintenance") && (
-        <div style={{ border: "1px solid #d1d5db", borderRadius: "8px", padding: "12px", marginBottom: "16px" }}>
+        <div
+          style={{
+            border: "1px solid #d1d5db",
+            borderRadius: "8px",
+            padding: "12px",
+            marginBottom: "16px",
+          }}
+        >
           <label>
             <input
               type="checkbox"
@@ -77,7 +91,8 @@ export function ServiceProgress({ selectedVehicle }) {
                 setHasAdditionalRequest(e.target.checked);
                 if (!e.target.checked) setAdditionalRequest("");
               }}
-            /> 추가 서비스 요청이 있으십니까?
+            />{" "}
+            추가 서비스 요청이 있으십니까?
           </label>
           {hasAdditionalRequest && (
             <div style={{ marginTop: "8px" }}>
@@ -93,20 +108,30 @@ export function ServiceProgress({ selectedVehicle }) {
       )}
 
       {/* 전송 버튼 */}
-      <button
-        onClick={handleSubmit}
-        style={{ width: "100%", padding: "12px" }}
-      >
+      <button onClick={handleSubmit} style={{ width: "100%", padding: "12px" }}>
         전송
       </button>
 
       {/* 확인 다이얼로그 */}
       {showConfirmDialog && (
-        <div style={{
-          position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)",
-          display: "flex", justifyContent: "center", alignItems: "center"
-        }}>
-          <div style={{ backgroundColor: "#fff", padding: "16px", borderRadius: "8px", width: "300px" }}>
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: "16px",
+              borderRadius: "8px",
+              width: "300px",
+            }}
+          >
             <h3>서비스 확인</h3>
             <div style={{ marginBottom: "8px" }}>
               {Array.from(selectedServices).map((type) => (
@@ -118,7 +143,9 @@ export function ServiceProgress({ selectedVehicle }) {
                 </div>
               )}
             </div>
-            <button onClick={() => setShowConfirmDialog(false)} style={{ marginRight: "8px" }}>확인</button>
+            <button onClick={() => setShowConfirmDialog(false)} style={{ marginRight: "8px" }}>
+              확인
+            </button>
             <button onClick={() => setShowConfirmDialog(false)}>취소</button>
           </div>
         </div>

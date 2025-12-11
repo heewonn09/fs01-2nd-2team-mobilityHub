@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export function UsageHistory({ userId}) {
-    const navigate = useNavigate();
+export function UsageHistory({ userId, isLogin }) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!isLogin()) {
+      navigate("/login");
+    }
+  }, [isLogin, navigate]);
   const [history, setHistory] = useState([]);
   const [filteredHistory, setFilteredHistory] = useState([]);
   const [filterType, setFilterType] = useState("all"); // "all" | "date" | "vehicle"
@@ -11,7 +16,7 @@ export function UsageHistory({ userId}) {
   const [availableVehicles, setAvailableVehicles] = useState([]);
   const [availableDates, setAvailableDates] = useState([]);
 
-      // 뒤로 가기 함수
+  // 뒤로 가기 함수
   const handleBack = () => {
     navigate(-1); // 이전 페이지로 이동
   };
@@ -29,8 +34,20 @@ export function UsageHistory({ userId}) {
 
     if (userHistory.length === 0) {
       const sampleHistory = [
-        { id: "1", plateNumber: "12가3456", date: "2025-11-28", services: ["주차", "세차"], payment: 15000 },
-        { id: "2", plateNumber: "78나9012", date: "2025-11-25", services: ["주차", "세차", "정비"], payment: 85000 },
+        {
+          id: "1",
+          plateNumber: "12가3456",
+          date: "2025-11-28",
+          services: ["주차", "세차"],
+          payment: 15000,
+        },
+        {
+          id: "2",
+          plateNumber: "78나9012",
+          date: "2025-11-25",
+          services: ["주차", "세차", "정비"],
+          payment: 85000,
+        },
         { id: "3", plateNumber: "12가3456", date: "2025-11-20", services: ["주차"], payment: 5000 },
       ];
       users[userId] = { history: sampleHistory };
@@ -40,10 +57,10 @@ export function UsageHistory({ userId}) {
       setHistory(userHistory);
     }
 
-    const vehicles = Array.from(new Set(userHistory.map(item => item.plateNumber)));
+    const vehicles = Array.from(new Set(userHistory.map((item) => item.plateNumber)));
     setAvailableVehicles(vehicles);
 
-    const dates = Array.from(new Set(userHistory.map(item => item.date))).sort(
+    const dates = Array.from(new Set(userHistory.map((item) => item.date))).sort(
       (a, b) => new Date(b).getTime() - new Date(a).getTime()
     );
     setAvailableDates(dates);
@@ -53,9 +70,9 @@ export function UsageHistory({ userId}) {
     let filtered = [...history];
 
     if (filterType === "date" && selectedDate) {
-      filtered = filtered.filter(item => item.date === selectedDate);
+      filtered = filtered.filter((item) => item.date === selectedDate);
     } else if (filterType === "vehicle" && selectedVehicle) {
-      filtered = filtered.filter(item => item.plateNumber === selectedVehicle);
+      filtered = filtered.filter((item) => item.plateNumber === selectedVehicle);
     }
 
     setFilteredHistory(filtered);
@@ -70,8 +87,20 @@ export function UsageHistory({ userId}) {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb", padding: "16px" }}>
       {/* 헤더 */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px", backgroundColor: "#fff", padding: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.1)" }}>
-        <button onClick={handleBack} style={{ padding: "4px 8px" }}>&lt; 뒤로</button>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          marginBottom: "16px",
+          backgroundColor: "#fff",
+          padding: "8px",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+        }}
+      >
+        <button onClick={handleBack} style={{ padding: "4px 8px" }}>
+          &lt; 뒤로
+        </button>
         <div>
           <div style={{ fontSize: "12px", color: "#6b7280" }}>로그인 사용자</div>
           <div>{userId}</div>
@@ -123,19 +152,41 @@ export function UsageHistory({ userId}) {
         </div>
 
         {filterType === "date" && (
-          <select value={selectedDate} onChange={e => setSelectedDate(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #d1d5db" }}>
+          <select
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #d1d5db",
+            }}
+          >
             <option value="">날짜를 선택하세요</option>
-            {availableDates.map(date => (
-              <option key={date} value={date}>{date}</option>
+            {availableDates.map((date) => (
+              <option key={date} value={date}>
+                {date}
+              </option>
             ))}
           </select>
         )}
 
         {filterType === "vehicle" && (
-          <select value={selectedVehicle} onChange={e => setSelectedVehicle(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #d1d5db" }}>
+          <select
+            value={selectedVehicle}
+            onChange={(e) => setSelectedVehicle(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #d1d5db",
+            }}
+          >
             <option value="">차량을 선택하세요</option>
-            {availableVehicles.map(vehicle => (
-              <option key={vehicle} value={vehicle}>{vehicle}</option>
+            {availableVehicles.map((vehicle) => (
+              <option key={vehicle} value={vehicle}>
+                {vehicle}
+              </option>
             ))}
           </select>
         )}
@@ -143,27 +194,62 @@ export function UsageHistory({ userId}) {
 
       {/* 내역 */}
       {filteredHistory.length === 0 ? (
-        <div style={{ backgroundColor: "#fff", padding: "16px", borderRadius: "8px", textAlign: "center", color: "#6b7280" }}>
+        <div
+          style={{
+            backgroundColor: "#fff",
+            padding: "16px",
+            borderRadius: "8px",
+            textAlign: "center",
+            color: "#6b7280",
+          }}
+        >
           {history.length === 0 ? "이용 내역이 없습니다." : "조회 결과가 없습니다."}
         </div>
       ) : (
-        filteredHistory.map(item => (
-          <div key={item.id} style={{ backgroundColor: "#fff", borderRadius: "8px", marginBottom: "12px", padding: "12px" }}>
+        filteredHistory.map((item) => (
+          <div
+            key={item.id}
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: "8px",
+              marginBottom: "12px",
+              padding: "12px",
+            }}
+          >
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
               <span>{item.plateNumber}</span>
               <span style={{ fontSize: "12px", color: "#6b7280" }}>{item.date}</span>
             </div>
             <div style={{ marginBottom: "8px" }}>
-              <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>이용 서비스</div>
+              <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>
+                이용 서비스
+              </div>
               <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
                 {item.services.map((service, index) => (
-                  <span key={index} style={{ padding: "2px 8px", backgroundColor: "#bfdbfe", color: "#1d4ed8", borderRadius: "9999px", fontSize: "12px" }}>
+                  <span
+                    key={index}
+                    style={{
+                      padding: "2px 8px",
+                      backgroundColor: "#bfdbfe",
+                      color: "#1d4ed8",
+                      borderRadius: "9999px",
+                      fontSize: "12px",
+                    }}
+                  >
                     {service}
                   </span>
                 ))}
               </div>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e5e7eb", paddingTop: "4px", color: "#4b5563" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                borderTop: "1px solid #e5e7eb",
+                paddingTop: "4px",
+                color: "#4b5563",
+              }}
+            >
               <span>결제 금액</span>
               <span>{item.payment.toLocaleString()}원</span>
             </div>

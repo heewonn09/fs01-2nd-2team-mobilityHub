@@ -1,9 +1,16 @@
 import { useState } from "react";
 import { login, createUser } from "../api/userApi";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
-export default function LoginPage({ onLogin }) {
+export default function LoginPage({ isLogin }) {
   const navigate = useNavigate();
+  console.log(isLogin);
+  useEffect(() => {
+    if (isLogin()) {
+      navigate("/main");
+    }
+  }, [isLogin, navigate]);
   const [loginData, setLoginData] = useState({ userId: "", password: "" });
   const [signupData, setSignupData] = useState({
     userId: "",
