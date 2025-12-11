@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function UsageHistory({ userId }) {
+export function UsageHistory({ userId, isLogin }) {
   const navigate = useNavigate();
+  useEffect(() => {
+    if (!isLogin()) {
+      navigate("/login");
+    }
+  }, [isLogin, navigate]);
   const [history, setHistory] = useState([]);
   const [filteredHistory, setFilteredHistory] = useState([]);
   const [filterType, setFilterType] = useState("all"); // "all" | "date" | "vehicle"

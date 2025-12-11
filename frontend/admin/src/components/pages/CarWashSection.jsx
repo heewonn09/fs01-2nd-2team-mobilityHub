@@ -1,7 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../style/CarWashSection.css";
+import { getCarWashing } from "../../api/carWashAPI";
 
 const CarWashSection = () => {
+  // 세차장 데이터 목록
+  const [carWashing, setCarWashing] = useState("");
+
+  // 목록 API 가져오기
+  useEffect(() => {
+    getCarWashing(3)
+      .then((res) => setCarWashing(res))
+      .catch((err) => console.error("차량 정보 조회 실패", err));
+  }, []);
+
+  console.log(carWashing);
+  console.log("차량번호", carWashing[0].carNumber);
+  if (carWashing.length > 0) {
+    console.log("인덱스", carWashing[0].carNumber); // ✔ 첫 번째 요소의 차량번호
+  }
+
   return (
     <div className="wash-page">
       <div className="statistics-card">
@@ -63,7 +80,7 @@ const CarWashSection = () => {
           <div className="list-content">
             <div className="list-data">
               <div>
-                <div className="car-number">(이용중인 차량번호)</div>
+                <div className="car-number">{carWashing[0].carNumber}</div>
                 <span className="state">(진행상황)</span>
               </div>
               <span className="job-state">

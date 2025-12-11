@@ -1,6 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.work.dto;
 
 
+import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class WashResponse {
     private Long carId;  // 세차장 차량번호
     private Date requestTime;  // 서비스 요청시간
     private int workId;    // 작업 장소 아이디
+    private String carNumber;   // CarEntity의 차량 번호 가져오기
 
 
 }

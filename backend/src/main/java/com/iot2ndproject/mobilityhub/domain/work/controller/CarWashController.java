@@ -1,6 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.work.controller;
 
 
+import com.iot2ndproject.mobilityhub.domain.work.dto.WashResponse;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
 import com.iot2ndproject.mobilityhub.domain.work.service.CarWashService;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,8 @@ import java.util.List;
 public class CarWashController {
     private final CarWashService carWashService;
 
-    @GetMapping("/list")
-    public List<WorkInfoEntity> washing(@RequestParam("workId")int workId){
+    @GetMapping("/select")
+    public List<WashResponse> washing(@RequestParam("workId")int workId){
         return  carWashService.findByWokrId(workId);
     }
 }

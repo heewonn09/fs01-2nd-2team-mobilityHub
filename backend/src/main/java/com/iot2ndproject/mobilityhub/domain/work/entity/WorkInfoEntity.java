@@ -24,7 +24,7 @@ public class WorkInfoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 자동생성용 ID, 추후에 삭제해도 됌
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "carId")
     private CarEntity car; // 차 ID
 
