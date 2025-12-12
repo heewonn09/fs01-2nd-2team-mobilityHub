@@ -53,8 +53,8 @@ public class WorkInfoService {
         dto.setExitTime(e.getExitTime());
 
         // 차량 정보
-        if (e.getCar() != null) {
-            dto.setCarNumber(e.getCar().getCarNumber());
+        if (e.getUserCar().getCar() != null) {
+            dto.setCarNumber(e.getUserCar().getCar().getCarNumber());
         }
 
         // 이미지 정보

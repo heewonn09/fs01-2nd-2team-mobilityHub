@@ -31,8 +31,8 @@ public class RepairServiceImpl implements RepairService {
                 .filter(response -> response.getRequestTime().toLocalDate().isEqual(LocalDate.now()))
                 .map(repair -> {
                     RepairResponseDTO dto = modelMapper.map(repair, RepairResponseDTO.class);
-                    if(repair.getCar() != null){
-                        dto.setCar_number(repair.getCar().getCarNumber());
+                    if(repair.getUserCar().getCar() != null){
+                        dto.setCar_number(repair.getUserCar().getCar().getCarNumber());
                     }
                     return dto;
                 })

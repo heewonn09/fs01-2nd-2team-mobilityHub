@@ -4,7 +4,7 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import SideMenu from "./components/menu/SideMenu";
 import Header from "./components/menu/Header";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import MainSection from "./components/pages/MainSection";
 import EntranceExitSection from "./components/pages/EntranceExitSection";
 import StatisticsSection from "./components/pages/StatisticsSection";
@@ -25,8 +25,6 @@ function App() {
           <main className="layout-content">
             <Routes>
               <Route path="/" element={<AdminLogin />} />
-            </Routes>
-            <Routes>
               <Route path="/entrance" element={<EntranceExitSection />} />
               <Route path="/main" element={<MainSection />} />
               <Route path="/statistics" element={<StatisticsSection />} />
@@ -35,6 +33,7 @@ function App() {
               <Route path="/admin" element={<AdminSection />} />
               <Route path="/maintenance" element={<MaintenanceSection />} />
               <Route path="/parking" element={<ParkingSection />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
         </div>

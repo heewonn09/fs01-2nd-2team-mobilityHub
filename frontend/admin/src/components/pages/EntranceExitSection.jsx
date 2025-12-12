@@ -1,17 +1,12 @@
 import "../style/EntranceExitSection.css";
 import { useState, useEffect } from "react";
 import LicenseModal from "./LicenseModal.jsx";
-import { getTodayEntry, getTodayExit } from "../api/Entrance";
+import { getTodayEntry, getTodayExit } from "../../api/EntranceAPI.js";
 
 export default function EntranceExitSection() {
   const [modalData, setModalData] = useState(null);
   const [entryList, setEntryList] = useState([]);
   const [exitList, setExitList] = useState([]);
-
-  // 페이지 로드 시 데이터 가져오기
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const loadData = async () => {
     const entry = await getTodayEntry();
@@ -20,6 +15,10 @@ export default function EntranceExitSection() {
     setEntryList(entry);
     setExitList(exit);
   };
+  // 페이지 로드 시 데이터 가져오기
+  useEffect(() => {
+    loadData();
+  }, []);
 
   // 보기 버튼 클릭 → 모달 띄우기
   const openModal = (item, type) => {

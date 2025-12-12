@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
-import com.iot2ndproject.mobilityhub.domain.stock.entity.StockStatusEntity;
+import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
 
 
 @Entity

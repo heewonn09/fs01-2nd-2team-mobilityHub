@@ -52,8 +52,8 @@ public class CarWashServiceImpl implements CarWashService {
                 .filter(w -> w.getRequestTime().toLocalDate().isEqual(LocalDate.now()))
                 .map(w -> {
                     WashResponse dto = modelMapper.map(w, WashResponse.class);
-                    if(w.getCar() != null){
-                        dto.setCarNumber(w.getCar().getCarNumber());
+                    if(w.getUserCar().getCar() != null){
+                        dto.setCarNumber(w.getUserCar().getCar().getCarNumber());
                     }
                     return dto;
                 })
