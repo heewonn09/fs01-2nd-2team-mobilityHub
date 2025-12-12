@@ -35,7 +35,7 @@ public class EntryService {
         imageRepository.save(image);
 
         // 2) 차량 조회
-        UserCarEntity car = carRepository.findByCarNumber(req.getCarNumber());
+        UserCarEntity car = carRepository.findByCarCarNumber(req.getCarNumber());
 
         // 3) 해당 카메라ID가 sector_id와 같은 Parking 조회
         ParkingEntity parking = parkingRepository.findById(req.getCameraId())

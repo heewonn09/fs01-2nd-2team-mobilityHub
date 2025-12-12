@@ -25,7 +25,7 @@ public class WorkInfoEntity {
     private Long id; // 자동생성용 ID, 추후에 삭제해도 됌
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "userCarId")
     private UserCarEntity userCar; // 유저-차 ID
 
     @CreationTimestamp
