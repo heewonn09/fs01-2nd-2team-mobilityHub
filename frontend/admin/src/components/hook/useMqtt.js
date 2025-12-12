@@ -1,6 +1,6 @@
-const TOPIC_NAME = "parking/web/*"; // 토픽명
+const TOPIC_NAME = "parking/web/#"; // 토픽명
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import mqtt from "mqtt";
 
 const useMqtt = (brokerUrl) => {
@@ -37,10 +37,12 @@ const useMqtt = (brokerUrl) => {
     });
 
     // 메시지가 subscribe되면 실행될 콜백함수를 등록
-     mqttClient.on("message", (topic, message) => {
-      if (topic == "heaves/home/web/cam") {
+    mqttClient.on("message", (topic, message) => {
+      if (topic == "parking/web/carwash/cam") {
         const base64Image = message.toString();
         setImageState(`data:image/jpeg;base64,${base64Image}`);
+        const payload = message.toString();
+        console.log(payload);
       } else if (topic === "heaves/home/web/sensor/dht11") {
         const payload = message.toString();
         //console.log(payload);
@@ -53,10 +55,10 @@ const useMqtt = (brokerUrl) => {
           // 온도습도데이터로 구글 게이지 차트를 생성 - 온도습도데이터를 state로 만들어서
           // 온도습도를 subscribe할때마다 state가 변경되도록 작업
           // setSensorData({ temp: data.temp, humi: data.humi });
-          setsensorValues({
-            temp: Number(data.temp),
-            humi: Number(data.humi),
-          });
+          //   setsensorValues({
+          //     temp: Number(data.temp),
+          //     humi: Number(data.humi),
+          //   });
         } catch (e) {
           console.error("JSON파싱오류(데이터의 형식이 JSON이 아님:::::", e);
         }
@@ -72,7 +74,7 @@ const useMqtt = (brokerUrl) => {
     // cleanup코드를 정의 - 컴포넌트가 사라질때 연결 끊기
     return () => {
       if (mqttClient) {
-        mqttClient.publish("heaves/home/web/cam", "stop");
+        mqttClient.publish("parking/web/carwash/cam", "stop");
         mqttClient.end();
         setConnectStatus("connecting");
         console.log("MQTT연결종료");
@@ -90,10 +92,7 @@ const useMqtt = (brokerUrl) => {
     },
     [client]
   );
-  return { connectStatus, imageSrc, sensorValues, publish };
-
-    return <div>useMqtt</div>;
-  });
+  return { connectStatus, imageSrc, publish };
 };
 
 export default useMqtt;

@@ -3,10 +3,29 @@ import "../style/CarWashSection.css";
 import { getCarWashing } from "../../api/carWashAPI";
 import { Clock, Droplets, CheckCircle } from "lucide-react";
 import CarWashBarChart from "../chart/CarWashBarChart";
+import useMqtt from "../hook/useMqtt";
+
+//const BROKER_URL = "ws://192.168.14.38:9001";
+const BROKER_URL = import.meta.env.VITE_BROKER_URL;
+
+console.log("브로커: ", BROKER_URL);
 
 const CarWashSection = () => {
   // 세차장 데이터 목록
   const [carWashing, setCarWashing] = useState([]);
+
+  // NEW: MQTT메시지 로그 상태
+  const [mqttLogs, setMqttLogs] = useState([]);
+
+  // 사용자정의 훅으로 정의된 함수를 호출해서 결과를 받기
+  const { connectStatus, imageSrc, publish } = useMqtt(BROKER_URL);
+
+  // 페이지가 로딩되면 라즈베리파이로 start를 전송 - 페이지가 로딩되면 카메라스트리밍을 할 수 있도록 작업
+  useEffect(() => {
+    if (connectStatus === "connected") {
+      publish("parking/web/carwash/cam", "start");
+    }
+  }, [connectStatus, publish]);
 
   const currentDate = new Date().toLocaleDateString("ko-KR", {
     year: "numeric",
@@ -78,7 +97,7 @@ const CarWashSection = () => {
       {/* CCTV와 이용 현황 */}
       <div className="wash-components">
         <div className="wash-cctv">
-          <div className="cctv-view">cctv 화면</div>
+          <img src={imageSrc} alt="camera" />
         </div>
         <div className="wash-car-list">
           <div className="list-title">
