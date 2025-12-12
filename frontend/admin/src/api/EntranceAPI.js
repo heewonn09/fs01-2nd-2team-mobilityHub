@@ -18,7 +18,7 @@ export const getTodayExit = async () => {
     const response = await backendServer.get(request.todayExit);
     return response.data;
   } catch (error) {
-    console.error("금일 출차 조회 오류:", error);
+    console.error("금일 출차 조회오류:", error);
     return [];
   }
 };

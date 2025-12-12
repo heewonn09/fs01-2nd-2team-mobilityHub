@@ -82,6 +82,7 @@ export default function EntranceExitSection() {
                     <span className="badge-complete">완료</span>
                   )}
                 </td>
+
                 <td>
                   <button className="btn-view" onClick={() => openModal(item, "입차")}>
                     보기
