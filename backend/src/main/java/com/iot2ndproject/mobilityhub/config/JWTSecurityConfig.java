@@ -43,11 +43,11 @@ public class JWTSecurityConfig {
                 //특정 필터가 실행되기 전에 실행되도록 작업
 //                .addFilterBefore(new CustomJWTFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth-> auth
-                        .requestMatchers("/user/create","/user/login", "/carwash/select").permitAll()
+                        .requestMatchers("/user/create","/user/login",  "/carwash/select", "/api/entry/ocr").permitAll()
 //                        .requestMatchers("/customer/create").hasAnyRole("ADMIN")
 //                        .requestMatchers("product/**").hasAnyRole("USER","ADMIN")
-//                        .anyRequest().authenticated())
-                        .anyRequest().permitAll())
+                        //.anyRequest().authenticated())
+                .anyRequest().permitAll())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

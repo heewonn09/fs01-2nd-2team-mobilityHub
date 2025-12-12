@@ -33,4 +33,5 @@ public class ImageEntity {
         this.cameraId = cameraId;
         this.imagePath = imagePath;
     }
+
 }

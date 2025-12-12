@@ -2,6 +2,10 @@
 
 const request = {
   carWashing: "/carwash/select",
+
+  // 입출구 API 추가
+  todayEntry: "/entrance/today/entry",
+  todayExit: "/entrance/today/exit",
 };
 
 export default request;

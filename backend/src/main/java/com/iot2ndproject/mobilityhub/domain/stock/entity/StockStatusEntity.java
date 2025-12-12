@@ -54,4 +54,5 @@ public class StockStatusEntity {
         this.updateTime = LocalDateTime.now();
     }
 
+    
 }

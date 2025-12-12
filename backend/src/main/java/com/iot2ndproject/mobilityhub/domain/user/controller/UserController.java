@@ -7,9 +7,7 @@ import com.iot2ndproject.mobilityhub.domain.user.jwt.TokenProvider;
 import com.iot2ndproject.mobilityhub.domain.user.service.UserService;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +15,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -61,8 +56,8 @@ public class UserController {
                         "userId",responseDTO.getUserId(),
                         "roles",responseDTO.getRole(),
                         "cars",responseDTO.getUserCars().stream()
-                                        .map(UserCarEntity::getCar)
-                                        .map(CarEntity::getCarNumber)
+                                .map(UserCarEntity::getCar)
+                                .map(CarEntity::getCarNumber)
                                 .collect(Collectors.joining(", "))
                 ));
     }
