@@ -25,8 +25,6 @@ function App() {
           <main className="layout-content">
             <Routes>
               <Route path="/" element={<AdminLogin />} />
-            </Routes>
-            <Routes>
               <Route path="/entrance" element={<EntranceExitSection />} />
               <Route path="/main" element={<MainSection />} />
               <Route path="/statistics" element={<StatisticsSection />} />

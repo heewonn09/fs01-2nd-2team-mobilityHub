@@ -16,7 +16,7 @@ import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "workInfo")
+@Table(name = "work_info")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -36,11 +36,11 @@ public class WorkInfoEntity {
     private LocalDateTime requestTime; // 사용자 요청시간(컬럼생성시 자동생성)
 
     @ManyToOne
-    @JoinColumn(name = "workId")
+    @JoinColumn(name = "work_id")
     private WorkEntity work; // 작업 ID
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "sectorId")
+    @JoinColumn(name = "sector_id")
     private ParkingEntity sectorId; // 차 위치
 
     @Column(nullable = false)
@@ -58,7 +58,7 @@ public class WorkInfoEntity {
 
     // 이미지ID 연관관계해서 추가하기
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "imageId")
+    @JoinColumn(name = "image_id")
     private ImageEntity image;
 
     // 사용자 요청 받았을 때

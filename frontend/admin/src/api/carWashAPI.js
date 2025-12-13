@@ -9,5 +9,6 @@ export const getCarWashing = async () => {
     return response.data;
   } catch (error) {
     console.error("에러발생: ", error);
+    return [];
   }
 };

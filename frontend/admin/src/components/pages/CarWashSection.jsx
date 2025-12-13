@@ -7,9 +7,12 @@ const CarWashSection = () => {
   const [carWashing, setCarWashing] = useState([]);
 
   useEffect(() => {
-    getCarWashing(3)
-      .then((res) => setCarWashing(res))
-      .catch((err) => console.error("차량 정보 조회 실패", err));
+    getCarWashing()
+      .then((res) => setCarWashing(Array.isArray(res) ? res : []))
+      .catch((err) => {
+        console.error("차량 정보 조회 실패", err);
+        setCarWashing([]);
+      });
   }, []);
 
   console.log(carWashing);
