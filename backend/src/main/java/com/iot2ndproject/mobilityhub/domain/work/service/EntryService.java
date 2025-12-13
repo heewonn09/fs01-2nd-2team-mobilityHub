@@ -4,6 +4,9 @@ import com.iot2ndproject.mobilityhub.domain.image.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.image.repository.ImageRepository;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.repository.ParkingRepository;
+import com.iot2ndproject.mobilityhub.domain.parkingmap.entity.ParkingMapNodeEntity;
+import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapEdgeRepository;
+import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapNodeRepository;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.repository.CarRepository;
@@ -27,6 +30,7 @@ public class EntryService {
     private final UserCarRepository carRepository;
     private final ParkingRepository parkingRepository;
     private final WorkInfoRepository workInfoRepository;
+    private final ParkingMapNodeRepository mapNodeRepository;
 
     public WorkInfoEntity handleEntry(OcrEntryRequest req) {
 
@@ -46,7 +50,9 @@ public class EntryService {
         work.setUserCar(car);
         work.setImage(image);
         work.setSectorId(parking);
-        work.setCarState("WAIT");           // 관리자 승인 전
+        // car_state는 parking_map_node.node_id (숫자)로 저장
+        // 입차 시점 기본 위치는 '입구'(node_id=1)로 설정
+        work.setCarState(mapNodeRepository.findById(1).get());
         work.setEntryTime(LocalDateTime.now());
         work.setRequestTime(LocalDateTime.now());
 

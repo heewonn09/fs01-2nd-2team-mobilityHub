@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import com.iot2ndproject.mobilityhub.domain.image.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
+import com.iot2ndproject.mobilityhub.domain.parkingmap.entity.ParkingMapNodeEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import java.time.LocalDateTime;
@@ -39,11 +40,10 @@ public class WorkInfoEntity {
     @JoinColumn(name = "sector_id")
     private ParkingEntity sectorId; // 차 위치
 
-    @Column(nullable = false)
-    private String carState; // 차 상태
-
-    @Column
-    private String status; // 해당 작업(서비스)의 상태 (REQUESTED/IN_PROGRESS/DONE)
+    // car_state 숫자(FK) -> parking_map_node.node_id
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "car_state", referencedColumnName = "node_id")
+    private ParkingMapNodeEntity carState;
 
     @Column(columnDefinition = "TEXT")
     private String additionalRequest; // 추가요청(주로 정비)

@@ -48,7 +48,7 @@ public class WorkInfoService {
         WorkInfoResponseDTO dto = new WorkInfoResponseDTO();
 
         dto.setId(e.getId());
-        dto.setCarState(e.getCarState());
+        dto.setCarState(e.getCarState() != null ? e.getCarState().getNodeName() : null);
         dto.setEntryTime(e.getEntryTime());
         dto.setExitTime(e.getExitTime());
 

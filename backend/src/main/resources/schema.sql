@@ -88,8 +88,7 @@ CREATE TABLE `work_info` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `request_time` datetime(6) DEFAULT NULL,
   `user_car_id` bigint DEFAULT NULL,
-  `car_state` varchar(255) NOT NULL,
-  `status` varchar(255) DEFAULT NULL,
+  `car_state` int DEFAULT NULL,
   `additional_request` text,
   `sector_id` char(3) DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -136,6 +135,10 @@ CREATE TABLE `parking_map_node` (
   `node_name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`node_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+ALTER TABLE `work_info`
+  ADD CONSTRAINT `FK_work_info_car_state_node_id`
+  FOREIGN KEY (`car_state`) REFERENCES `parking_map_node` (`node_id`);
 
 CREATE TABLE `parking_map_edge` (
   `edge_id` int NOT NULL AUTO_INCREMENT,

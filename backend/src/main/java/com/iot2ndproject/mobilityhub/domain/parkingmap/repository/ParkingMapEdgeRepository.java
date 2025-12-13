@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ParkingMapEdgeRepository extends JpaRepository<ParkingMapEdgeEntity, Long> {
+public interface ParkingMapEdgeRepository extends JpaRepository<ParkingMapEdgeEntity, Integer> {
 
     List<ParkingMapEdgeEntity> findByFromNode(ParkingMapNodeEntity fromNode);
 }

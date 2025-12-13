@@ -1,5 +1,6 @@
 package com.iot2ndproject.mobilityhub.domain.work.service;
 
+import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapNodeRepository;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.repository.UserCarRepository;
 import com.iot2ndproject.mobilityhub.domain.work.dao.ServiceRequestDAO;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +26,7 @@ import java.util.stream.Collectors;
 public class ServiceRequestServiceImpl implements ServiceRequestService {
 
     private final ServiceRequestDAO serviceRequestDAO;
-
+    private final ParkingMapNodeRepository mapNodeRepository;
     private final UserCarRepository userCarRepository;
     private final WorkRepository workRepository;
 
@@ -54,8 +56,9 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
                     WorkInfoEntity workInfo = new WorkInfoEntity();
                     workInfo.setUserCar(userCar);
                     workInfo.setWork(work);
-                    workInfo.setStatus("REQUESTED");
-                    workInfo.setCarState("REQUESTED");
+                    // car_state는 parking_map_node.node_id (숫자)
+                    // 서비스 요청 생성 시 기본 위치는 '입구'(node_id=1)로 설정
+                    workInfo.setCarState(mapNodeRepository.findById(1).get());
 
                     if ("maintenance".equalsIgnoreCase(serviceType) && dto.getAdditionalRequest() != null) {
                         workInfo.setAdditionalRequest(dto.getAdditionalRequest());
@@ -103,8 +106,19 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
             return false;
         }
 
-        representative.setStatus(status);
-        representative.setCarState(status);
+        // status 컬럼 제거: entry_time / exit_time 기반으로 상태를 기록
+        if (status != null) {
+            if (status.equalsIgnoreCase("IN_PROGRESS")) {
+                if (representative.getEntryTime() == null) {
+                    representative.setEntryTime(LocalDateTime.now());
+                }
+            } else if (status.equalsIgnoreCase("DONE")) {
+                if (representative.getExitTime() == null) {
+                    representative.setExitTime(LocalDateTime.now());
+                }
+            }
+        }
+
         serviceRequestDAO.save(representative);
         return true;
     }
@@ -146,7 +160,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
             if (w.getWork() == null || w.getWork().getWorkType() == null) {
                 continue;
             }
-            serviceStatus.put(w.getWork().getWorkType().toLowerCase(), w.getStatus());
+            serviceStatus.put(w.getWork().getWorkType().toLowerCase(), deriveStatus(w));
         }
 
         dto.setParkingStatus(serviceStatus.get("parking"));
@@ -157,9 +171,19 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         return dto;
     }
 
+    private String deriveStatus(WorkInfoEntity w) {
+        if (w.getExitTime() != null) {
+            return "DONE";
+        }
+        if (w.getEntryTime() != null) {
+            return "IN_PROGRESS";
+        }
+        return "REQUESTED";
+    }
+
     private String calculateOverallStatus(List<WorkInfoEntity> group) {
         List<String> statuses = group.stream()
-                .map(WorkInfoEntity::getStatus)
+                .map(this::deriveStatus)
                 .filter(s -> s != null && !s.isBlank())
                 .toList();
 
