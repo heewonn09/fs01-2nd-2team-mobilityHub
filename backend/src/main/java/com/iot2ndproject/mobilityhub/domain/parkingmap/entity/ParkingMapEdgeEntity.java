@@ -33,7 +33,7 @@ public class ParkingMapEdgeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "edge_id")
-    private Integer edgeId;
+    private int edgeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "from_node_id", nullable = false)

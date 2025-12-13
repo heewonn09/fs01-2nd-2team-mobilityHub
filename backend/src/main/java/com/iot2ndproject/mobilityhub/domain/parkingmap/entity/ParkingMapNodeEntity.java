@@ -17,7 +17,7 @@ public class ParkingMapNodeEntity {
 
     @Id
     @Column(name = "node_id")
-    private Integer nodeId;
+    private int nodeId;
 
     @Column(name = "node_name")
     private String nodeName;
