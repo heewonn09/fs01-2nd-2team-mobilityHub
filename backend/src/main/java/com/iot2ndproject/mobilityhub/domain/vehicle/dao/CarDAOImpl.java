@@ -18,6 +18,6 @@ public class CarDAOImpl implements CarDAO{
 
     @Override
     public CarEntity findByCarNumber(String carNumber) {
-        return null;
+        return carRepository.findByCarNumber(carNumber).get();
     }
 }

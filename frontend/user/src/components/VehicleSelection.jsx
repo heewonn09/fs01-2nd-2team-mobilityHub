@@ -1,53 +1,59 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { addUserCar, fetchUserCars } from "../api/vehicleApi";
 
-export default function VehicleSelection({ userId, onVehicleSelect }) {
+export default function VehicleSelection({ isLogin }) {
   const [vehicles, setVehicles] = useState([]);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newPlateNumber, setNewPlateNumber] = useState("");
   const [newModel, setNewModel] = useState("");
+  const [userId, setUserId] = useState("");
   const navigate = useNavigate();
   const handleBack = () => {
     navigate(-1); // 이전 페이지로 이동
   };
-  // useEffect(() => {
-  //   loadUserInfo();
-  // }, [userId]);
-  // useEffect(() => {
-  //   loadVehicles();
-  // }, [userId]);
+  useEffect(() => {
+    if (!isLogin()) {
+      navigate("/login");
+      return;
+    }
+    const id = localStorage.getItem("userId");
+    setUserId(id || "");
+    if (id) {
+      loadVehicles(id);
+    }
+  }, [isLogin, navigate]);
 
-  const loadVehicles = () => {
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
-    const userVehicles = users[userId]?.vehicles || [];
-    setVehicles(userVehicles);
+  const loadVehicles = async (id) => {
+    try {
+      const list = await fetchUserCars(id);
+      const mapped = list.map((carNumber) => ({
+        id: carNumber,
+        plateNumber: carNumber,
+        model: "",
+      }));
+      setVehicles(mapped);
+    } catch (e) {
+      console.error(e);
+      alert("차량 목록을 불러올 수 없습니다. 다시 로그인해주세요.");
+    }
   };
 
-  const handleAddVehicle = () => {
+  const handleAddVehicle = async () => {
     if (!newPlateNumber.trim() || !newModel.trim()) {
       alert("차량번호와 모델을 모두 입력해주세요.");
       return;
     }
-
-    const users = localStorage.getItem("userId");
-
-    const newVehicle = {
-      id: Date.now().toString(),
-      plateNumber: newPlateNumber,
-      model: newModel,
-    };
-
-    if (!users[userId].vehicles) {
-      users[userId].vehicles = [];
+    try {
+      await addUserCar({ userId, carNumber: newPlateNumber, carModel: newModel });
+      await loadVehicles(userId);
+      setNewPlateNumber("");
+      setNewModel("");
+      setShowAddDialog(false);
+    } catch (e) {
+      console.error(e);
+      alert("차량 등록에 실패했습니다. 다시 시도해주세요.");
     }
-
-    users[userId].vehicles.push(newVehicle);
-    localStorage.setItem("users", JSON.stringify(users));
-
-    setVehicles([...vehicles, newVehicle]); // 화면에도 즉시 반영
-    setNewPlateNumber("");
-    setNewModel("");
-    setShowAddDialog(false);
   };
 
   return (
@@ -149,7 +155,9 @@ export default function VehicleSelection({ userId, onVehicleSelect }) {
                 </div>
 
                 <button
-                  onClick={() => onVehicleSelect(vehicle.plateNumber)}
+                  onClick={() =>
+                    navigate("/service", { state: { selectedVehicle: vehicle.plateNumber } })
+                  }
                   style={{
                     padding: "6px 16px",
                     backgroundColor: "#3b82f6",

@@ -35,19 +35,24 @@ const CarWashSection = () => {
 
   useEffect(() => {
     getCarWashing()
-      .then((res) => setCarWashing(res))
+      .then((res) => {
+        console.log("API 응답 데이터:", res);
+        setCarWashing(res);
+      })
       .catch((err) => console.error("차량 정보 조회 실패", err));
   }, []);
 
   // 세차 작업 중인 차량만 따로 저장
   const washingCar = carWashing.find((item) => item.carState === "carWashIn");
+  console.log("carWashing 배열:", carWashing);
+  console.log("washingCar 결과:", washingCar);
 
   // 대기 중인 차량의 수
   const waitCarList = carWashing.filter((item) => item.carState === "COMING");
   const waitCarCount = waitCarList.length;
 
   // 작업을 완료한 차량의 수
-  const completeCarList = carWashing.filter((item) => item.carState === "COMPLETE");
+  const completeCarList = carWashing.filter((item) => item.carState === "out");
   const completeCount = completeCarList.length;
 
   console.log(washingCar);
@@ -97,7 +102,7 @@ const CarWashSection = () => {
       {/* CCTV와 이용 현황 */}
       <div className="wash-components">
         <div className="wash-cctv">
-          <img src={imageSrc} alt="camera" />
+          <img src={imageSrc || null} alt="camera" />
         </div>
         <div className="wash-car-list">
           <div className="list-title">

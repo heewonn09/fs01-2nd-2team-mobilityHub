@@ -1,70 +1,47 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getProfile, updateProfile } from "../api/userApi";
 
-export function ProfileEdit({ userId, onBack, isLogin }) {
+export function ProfileEdit({ isLogin }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [userId, setUserId] = useState("");
 
   const navigate = useNavigate();
   useEffect(() => {
     if (!isLogin()) {
       navigate("/login");
+    } else {
+      const id = localStorage.getItem("userId");
+      setUserId(id || "");
+      if (id) {
+        loadUserInfo(id);
+      }
     }
   }, [isLogin, navigate]);
   // 뒤로 가기 함수
   const handleBack = () => {
     navigate(-1); // 이전 페이지로 이동
   };
-  useEffect(() => {
-    loadUserInfo();
-  }, [userId]);
-
-  const loadUserInfo = () => {
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
-    const user = users[userId];
-    if (user) {
-      setName(user.name || "");
-      setPhone(user.phone || "");
+  const loadUserInfo = async (id) => {
+    try {
+      const profile = await getProfile(id);
+      setName(profile.userName || "");
+      setPhone(profile.tel || "");
+    } catch (e) {
+      console.error(e);
+      alert("프로필을 불러오지 못했습니다. 다시 로그인해주세요.");
     }
   };
 
-  const handleSave = () => {
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
-    const user = users[userId];
-
-    if (!user) {
-      alert("사용자 정보를 찾을 수 없습니다.");
-      return;
+  const handleSave = async () => {
+    try {
+      await updateProfile({ userId, userName: name, tel: phone });
+      alert("정보가 수정되었습니다.");
+    } catch (e) {
+      console.error(e);
+      alert("정보 수정에 실패했습니다. 다시 시도해주세요.");
     }
-
-    if (newPassword || confirmPassword) {
-      if (user.password !== password) {
-        alert("현재 비밀번호가 일치하지 않습니다.");
-        return;
-      }
-      if (newPassword !== confirmPassword) {
-        alert("새 비밀번호가 일치하지 않습니다.");
-        return;
-      }
-      if (newPassword.length < 4) {
-        alert("비밀번호는 4자 이상이어야 합니다.");
-        return;
-      }
-      user.password = newPassword;
-    }
-
-    user.name = name;
-    user.phone = phone;
-    users[userId] = user;
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert("정보가 수정되었습니다.");
-    setPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
   };
 
   return (
@@ -131,74 +108,6 @@ export function ProfileEdit({ userId, onBack, isLogin }) {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="전화번호를 입력하세요"
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #d1d5db",
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 비밀번호 변경 카드 */}
-        <div
-          style={{
-            backgroundColor: "#fff",
-            borderRadius: "8px",
-            marginBottom: "16px",
-            padding: "12px",
-          }}
-        >
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>비밀번호 변경</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <div>
-              <label htmlFor="currentPassword" style={{ display: "block", marginBottom: "4px" }}>
-                현재 비밀번호
-              </label>
-              <input
-                id="currentPassword"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="현재 비밀번호"
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #d1d5db",
-                }}
-              />
-            </div>
-            <div>
-              <label htmlFor="newPassword" style={{ display: "block", marginBottom: "4px" }}>
-                새 비밀번호
-              </label>
-              <input
-                id="newPassword"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="새 비밀번호"
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #d1d5db",
-                }}
-              />
-            </div>
-            <div>
-              <label htmlFor="confirmPassword" style={{ display: "block", marginBottom: "4px" }}>
-                새 비밀번호 확인
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="새 비밀번호 확인"
                 style={{
                   width: "100%",
                   padding: "8px",

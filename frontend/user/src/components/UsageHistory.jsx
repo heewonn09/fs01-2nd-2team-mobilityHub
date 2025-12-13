@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchServiceHistory } from "../api/serviceApi";
 
-export function UsageHistory({ userId, isLogin }) {
+export function UsageHistory({ isLogin }) {
   const navigate = useNavigate();
-  useEffect(() => {
-    if (!isLogin()) {
-      navigate("/login");
-    }
-  }, [isLogin, navigate]);
   const [history, setHistory] = useState([]);
   const [filteredHistory, setFilteredHistory] = useState([]);
   const [filterType, setFilterType] = useState("all"); // "all" | "date" | "vehicle"
@@ -15,55 +11,49 @@ export function UsageHistory({ userId, isLogin }) {
   const [selectedVehicle, setSelectedVehicle] = useState("");
   const [availableVehicles, setAvailableVehicles] = useState([]);
   const [availableDates, setAvailableDates] = useState([]);
+  const [userId, setUserId] = useState("");
 
   // 뒤로 가기 함수
   const handleBack = () => {
     navigate(-1); // 이전 페이지로 이동
   };
   useEffect(() => {
-    loadHistory();
-  }, [userId]);
+    if (!isLogin()) {
+      navigate("/login");
+      return;
+    }
+    const id = localStorage.getItem("userId");
+    setUserId(id || "");
+    if (id) {
+      loadHistory(id);
+    }
+  }, [isLogin, navigate]);
 
   useEffect(() => {
     applyFilter();
   }, [history, filterType, selectedDate, selectedVehicle]);
 
-  const loadHistory = () => {
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
-    const userHistory = users[userId]?.history || [];
-
-    if (userHistory.length === 0) {
-      const sampleHistory = [
-        {
-          id: "1",
-          plateNumber: "12가3456",
-          date: "2025-11-28",
-          services: ["주차", "세차"],
-          payment: 15000,
-        },
-        {
-          id: "2",
-          plateNumber: "78나9012",
-          date: "2025-11-25",
-          services: ["주차", "세차", "정비"],
-          payment: 85000,
-        },
-        { id: "3", plateNumber: "12가3456", date: "2025-11-20", services: ["주차"], payment: 5000 },
-      ];
-      users[userId] = { history: sampleHistory };
-      localStorage.setItem("users", JSON.stringify(users));
-      setHistory(sampleHistory);
-    } else {
-      setHistory(userHistory);
+  const loadHistory = async (id) => {
+    try {
+      const data = await fetchServiceHistory(id);
+      const mapped = data.map((item, idx) => ({
+        id: `${idx}`,
+        plateNumber: item.carNumber,
+        date: (item.createdAt || "").slice(0, 10),
+        services: item.services,
+        payment: 0,
+      }));
+      setHistory(mapped);
+      const vehicles = Array.from(new Set(mapped.map((item) => item.plateNumber)));
+      setAvailableVehicles(vehicles);
+      const dates = Array.from(new Set(mapped.map((item) => item.date))).sort(
+        (a, b) => new Date(b).getTime() - new Date(a).getTime()
+      );
+      setAvailableDates(dates);
+    } catch (e) {
+      console.error(e);
+      alert("이용 내역을 불러오지 못했습니다.");
     }
-
-    const vehicles = Array.from(new Set(userHistory.map((item) => item.plateNumber)));
-    setAvailableVehicles(vehicles);
-
-    const dates = Array.from(new Set(userHistory.map((item) => item.date))).sort(
-      (a, b) => new Date(b).getTime() - new Date(a).getTime()
-    );
-    setAvailableDates(dates);
   };
 
   const applyFilter = () => {

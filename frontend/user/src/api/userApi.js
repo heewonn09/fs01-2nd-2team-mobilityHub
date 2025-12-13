@@ -1,5 +1,6 @@
 import backendServer from "./backendServer";
 import requests from "./requests";
+import jwtAxios from "./jwtUtil";
 
 //user 관련 작업
 export const createUser = async (userData) => {
@@ -21,4 +22,14 @@ export const login = async (loginData) => {
     console.error("에러발생:", error);
     alert("로그인중오류가발생했습니다.");
   }
+};
+
+export const getProfile = async (userId) => {
+  const response = await jwtAxios.get(requests.profile, { params: { userId } });
+  return response.data;
+};
+
+export const updateProfile = async (profile) => {
+  const response = await jwtAxios.put(requests.profile, profile);
+  return response.data;
 };

@@ -1,10 +1,14 @@
 server:
   port: 9000
 
-
 spring:
   application:
     name: mobility-hub-backend
+
+  sql:
+    init:
+      encoding: UTF-8
+      mode: always
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -12,30 +16,29 @@ spring:
     username: sample
     password: 1234
   mqtt:
-    url: tcp://localhost:1883    # 브로커 주소
+    url: tcp://localhost:1883 # 브로커 주소
     #    username: myUser             # (선택) 계정
     #    password: myPassword         # (선택) 비밀번호
-    client-id: spring-boot-app   # 기본 클라이언트 ID
+    client-id: spring-boot-app # 기본 클라이언트 ID
 
     # 토픽 설정
     topic:
-      command: server/command   # 발행(Publish)할 토픽
-      sensor: heaves/home/web/sensor/dht11        # 구독(Subscribe)할 토픽
-
+      command: server/command # 발행(Publish)할 토픽
+      sensor: heaves/home/web/sensor/dht11 # 구독(Subscribe)할 토픽
 
   jpa:
     show-sql: true #JPA가 생성하는 sql문을 콘솔에 보여준다
     hibernate:
-      # ddl-auto: none
-      #      ddl-auto: create #서버가 시작되면 create문이 실행된다 - 데이터가 있어도 삭제하고 만든다
-      ddl-auto: update
+      ddl-auto: none
+    #  ddl-auto: create #서버가 시작되면 create문이 실행된다 - 데이터가 있어도 삭제하고 만든다
+    # ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         use_sql_comments: true
+    defer-datasource-initialization: true
 
 jwt:
   header: Authorization
   secret: c3ByaW5nc2VjdXJpdHktand0LXJlYWN0LXRlc3QtbXF0dC1yYXNwYmVycnlwaQ==
   token-valid-in-second: 3600000
-

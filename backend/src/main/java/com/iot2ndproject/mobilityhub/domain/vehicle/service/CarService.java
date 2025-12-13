@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class CarService {
@@ -36,5 +39,12 @@ public class CarService {
             .car(car)
             .build();
         userCarDAO.save(userCar);
+    }
+
+    public List<String> findCarNumbersByUser(String userId){
+        return userCarDAO.findByUserId(userId).stream()
+                .map(UserCarEntity::getCar)
+                .map(CarEntity::getCarNumber)
+                .collect(Collectors.toList());
     }
 }

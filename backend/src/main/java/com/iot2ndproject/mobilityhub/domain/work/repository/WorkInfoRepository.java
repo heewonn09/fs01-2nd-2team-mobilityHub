@@ -1,7 +1,10 @@
 package com.iot2ndproject.mobilityhub.domain.work.repository;
 
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface WorkInfoRepository extends CrudRepository<WorkInfoEntity, Long> {
+import java.util.List;
+
+public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> {
+    List<WorkInfoEntity> findByUserCar_User_UserIdOrderByRequestTimeDesc(String userId);
 }

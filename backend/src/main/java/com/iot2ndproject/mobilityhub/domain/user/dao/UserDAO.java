@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface UserDAO {
     void create(UserEntity user);
     UserEntity findById(String userId);
+    void save(UserEntity user);
 }

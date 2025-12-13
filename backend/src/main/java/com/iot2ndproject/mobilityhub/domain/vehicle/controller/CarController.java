@@ -19,4 +19,9 @@ public class CarController {
         carService.registerCar(userCarRequestDTO);
         return ResponseEntity.ok("ok");
     }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> listByUser(@RequestParam("userId") String userId){
+        return ResponseEntity.ok(carService.findCarNumbersByUser(userId));
+    }
 }
