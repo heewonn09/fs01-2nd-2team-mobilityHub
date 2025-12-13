@@ -11,7 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.iot2ndproject.mobilityhub.domain.image.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parkingmap.entity.ParkingMapNodeEntity;
-import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import java.time.LocalDateTime;
 
@@ -30,7 +29,7 @@ public class WorkInfoEntity {
     private UserCarEntity userCar; // 유저-차 ID
 
     @CreationTimestamp
-    private LocalDateTime requestTime; // 사용자 요청시간(컬럼생성시 자동생성)
+    private LocalDateTime requestTime; // 사용자 요청시간
 
     @ManyToOne
     @JoinColumn(name = "work_id")
@@ -42,7 +41,7 @@ public class WorkInfoEntity {
 
     // car_state 숫자(FK) -> parking_map_node.node_id
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "node_id")
+    @JoinColumn(name = "car_state", referencedColumnName = "node_id")
     private ParkingMapNodeEntity carState;
 
     @Column(columnDefinition = "TEXT")

@@ -17,6 +17,26 @@ export function ServiceProgress({ isLogin }) {
     parking: "주차",
   };
 
+  // 프론트엔드 서비스 타입을 백엔드 형식으로 변환
+  const toBackendServiceType = (frontendType) => {
+    const mapping = {
+      parking: "park",
+      maintenance: "repair",
+      carwash: "carwash",
+    };
+    return mapping[frontendType] || frontendType;
+  };
+
+  // 백엔드 서비스 타입을 프론트엔드 형식으로 변환
+  const toFrontendServiceType = (backendType) => {
+    const mapping = {
+      park: "parking",
+      repair: "maintenance",
+      carwash: "carwash",
+    };
+    return mapping[backendType] || backendType;
+  };
+
   // 뒤로 가기 함수
   const handleBack = () => {
     navigate(-1); // 이전 페이지로 이동
@@ -32,21 +52,28 @@ export function ServiceProgress({ isLogin }) {
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
-    const interval = setInterval(async () => {
-      try {
-        const latest = await fetchLatestServiceRequest(userId);
-        if (latest) {
-          setProgress({
-            status: latest.status,
-            carNumber: latest.carNumber,
-            services: latest.services,
-            createdAt: latest.createdAt,
-          });
-        }
-      } catch (e) {
-        // 무시
-      }
-    }, 4000);
+        const loadLatest = async () => {
+          try {
+            const latest = await fetchLatestServiceRequest(userId);
+            if (latest) {
+              // 백엔드 서비스 타입을 프론트엔드 형식으로 변환
+              const frontendServices = latest.services?.map(toFrontendServiceType) || [];
+              setProgress({
+                status: latest.status,
+                carNumber: latest.carNumber,
+                services: frontendServices,
+                createdAt: latest.createdAt,
+                parkingStatus: latest.parkingStatus,
+                carwashStatus: latest.carwashStatus,
+                repairStatus: latest.repairStatus,
+              });
+            }
+          } catch (e) {
+            // 무시
+          }
+        };
+    loadLatest();
+    const interval = setInterval(loadLatest, 4000);
     return () => clearInterval(interval);
   }, []);
 
@@ -178,20 +205,35 @@ export function ServiceProgress({ isLogin }) {
               onClick={async () => {
                 try {
                   const userId = localStorage.getItem("userId");
+                  if (!userId) {
+                    alert("로그인이 필요합니다.");
+                    navigate("/login");
+                    return;
+                  }
                   setIsSubmitting(true);
-                  await submitServiceRequest({
+                  // 프론트엔드 서비스 타입을 백엔드 형식으로 변환
+                  const backendServices = Array.from(selectedServices).map(toBackendServiceType);
+                  const result = await submitServiceRequest({
                     userId,
                     carNumber: selectedVehicle,
-                    services: Array.from(selectedServices),
-                    additionalRequest,
+                    services: backendServices,
+                    additionalRequest: hasAdditionalRequest && additionalRequest ? additionalRequest : null,
                   });
+                  // 백엔드 응답의 서비스 타입을 프론트엔드 형식으로 변환
+                  const frontendServices = result.services?.map(toFrontendServiceType) || Array.from(selectedServices);
                   setProgress({
-                    status: "REQUESTED",
-                    carNumber: selectedVehicle,
-                    services: Array.from(selectedServices),
-                    createdAt: new Date().toISOString(),
+                    status: result.status || "REQUESTED",
+                    carNumber: result.carNumber || selectedVehicle,
+                    services: frontendServices,
+                    createdAt: result.createdAt || new Date().toISOString(),
+                    parkingStatus: result.parkingStatus,
+                    carwashStatus: result.carwashStatus,
+                    repairStatus: result.repairStatus,
                   });
                   setShowConfirmDialog(false);
+                  setSelectedServices(new Set());
+                  setHasAdditionalRequest(false);
+                  setAdditionalRequest("");
                   alert("서비스 요청이 접수되었습니다.");
                 } catch (e) {
                   console.error(e);
@@ -200,9 +242,10 @@ export function ServiceProgress({ isLogin }) {
                   setIsSubmitting(false);
                 }
               }}
+              disabled={isSubmitting}
               style={{ marginRight: "8px" }}
             >
-              확인
+              {isSubmitting ? "전송 중..." : "확인"}
             </button>
             <button onClick={() => setShowConfirmDialog(false)}>취소</button>
           </div>
@@ -227,17 +270,13 @@ export function ServiceProgress({ isLogin }) {
               서비스: {progress.services?.map((s) => SERVICE_NAMES[s] || s).join(", ")}
             </div>
             <div style={{ marginBottom: "4px" }}>
-              주차 상태:{" "}
-              {progress.parkingStatus || (progress.services?.includes("parking") ? "대기" : "-")}
+              주차 상태: {progress.parkingStatus || "-"}
             </div>
             <div style={{ marginBottom: "4px" }}>
-              세차 상태:{" "}
-              {progress.carwashStatus || (progress.services?.includes("carwash") ? "대기" : "-")}
+              세차 상태: {progress.carwashStatus || "-"}
             </div>
             <div style={{ marginBottom: "4px" }}>
-              정비 상태:{" "}
-              {progress.maintenanceStatus ||
-                (progress.services?.includes("maintenance") ? "대기" : "-")}
+              정비 상태: {progress.repairStatus || "-"}
             </div>
             <div style={{ fontSize: "12px", color: "#6b7280" }}>
               요청 시각: {(progress.createdAt || "").replace("T", " ").slice(0, 19)}

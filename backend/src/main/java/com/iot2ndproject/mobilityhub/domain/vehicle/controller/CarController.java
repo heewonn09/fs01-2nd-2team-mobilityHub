@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/car")
 @RequiredArgsConstructor
@@ -15,9 +17,19 @@ public class CarController {
 
     @PostMapping("/save")
     public ResponseEntity<?> saveCar(@RequestBody UserCarRequestDTO userCarRequestDTO){
-        System.out.println(userCarRequestDTO);
-        carService.registerCar(userCarRequestDTO);
-        return ResponseEntity.ok("ok");
+        try {
+            carService.registerCar(userCarRequestDTO);
+            return ResponseEntity.ok("ok");
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", e.getMessage(),
+                    "class", e.getClass().getSimpleName()
+            ));
+        }
     }
 
     @GetMapping("/list")

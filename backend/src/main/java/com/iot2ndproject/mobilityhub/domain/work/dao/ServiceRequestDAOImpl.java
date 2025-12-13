@@ -31,6 +31,9 @@ public class ServiceRequestDAOImpl implements ServiceRequestDAO {
 
     @Override
     public List<WorkInfoEntity> findByUserIdOrderByRequestTimeDesc(String userId) {
-        return workInfoRepository.findByUserCar_User_UserIdOrderByRequestTimeDesc(userId);
+        // 서비스 요청 이력만 조회(work_id가 NULL인 입/출차 로그 제외)
+        return java.util.Objects.requireNonNull(
+                workInfoRepository.findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(userId)
+        );
     }
 }

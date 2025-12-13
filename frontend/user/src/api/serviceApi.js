@@ -13,12 +13,19 @@ export const fetchServiceHistory = async (userId) => {
 };
 
 export const fetchLatestServiceRequest = async (userId) => {
-  const response = await jwtAxios.get(requests.serviceRequestLatest, { params: { userId } });
-  return response.data;
+  try {
+    const response = await jwtAxios.get(requests.serviceRequestLatest, { params: { userId } });
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 204) {
+      return null; // No content
+    }
+    throw error;
+  }
 };
 
 export const updateServiceStatus = async ({ id, status, service }) => {
-  const response = await jwtAxios.patch(`${requests.serviceRequest}/${id}/status`, null, {
+  const response = await jwtAxios.post(`${requests.serviceRequest}/${id}/status`, null, {
     params: { status, service },
   });
   return response.data;

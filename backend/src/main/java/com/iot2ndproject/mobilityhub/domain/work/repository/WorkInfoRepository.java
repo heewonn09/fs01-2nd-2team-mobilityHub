@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> {
     List<WorkInfoEntity> findByUserCar_User_UserIdOrderByRequestTimeDesc(String userId);
+    List<WorkInfoEntity> findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(String userId);
 
 }

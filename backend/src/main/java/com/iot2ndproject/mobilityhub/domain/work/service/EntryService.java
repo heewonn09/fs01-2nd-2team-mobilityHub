@@ -4,12 +4,8 @@ import com.iot2ndproject.mobilityhub.domain.image.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.image.repository.ImageRepository;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.repository.ParkingRepository;
-import com.iot2ndproject.mobilityhub.domain.parkingmap.entity.ParkingMapNodeEntity;
-import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapEdgeRepository;
 import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapNodeRepository;
-import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
-import com.iot2ndproject.mobilityhub.domain.vehicle.repository.CarRepository;
 import com.iot2ndproject.mobilityhub.domain.vehicle.repository.UserCarRepository;
 import com.iot2ndproject.mobilityhub.domain.work.dto.OcrEntryRequest;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
@@ -17,7 +13,6 @@ import com.iot2ndproject.mobilityhub.domain.work.repository.WorkInfoRepository;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -54,7 +49,6 @@ public class EntryService {
         // 입차 시점 기본 위치는 '입구'(node_id=1)로 설정
         work.setCarState(mapNodeRepository.findById(1).get());
         work.setEntryTime(LocalDateTime.now());
-        work.setRequestTime(LocalDateTime.now());
 
         // 5) 저장
         workInfoRepository.save(work);
