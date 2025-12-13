@@ -58,22 +58,14 @@ export function ServiceProgress({ isLogin }) {
             if (latest) {
               // 백엔드 서비스 타입을 프론트엔드 형식으로 변환
               const frontendServices = latest.services?.map(toFrontendServiceType) || [];
-              const {
-                status,
-                carNumber,
-                createdAt,
-                parkingStatus,
-                carwashStatus,
-                repairStatus,
-              } = latest;
               setProgress({
-                status,
-                carNumber,
+                status: latest.status,
+                carNumber: latest.carNumber,
                 services: frontendServices,
-                createdAt,
-                parkingStatus,
-                carwashStatus,
-                repairStatus,
+                createdAt: latest.createdAt,
+                parkingStatus: latest.parkingStatus,
+                carwashStatus: latest.carwashStatus,
+                repairStatus: latest.repairStatus,
               });
             }
           } catch (e) {
