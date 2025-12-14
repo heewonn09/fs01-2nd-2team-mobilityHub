@@ -2,18 +2,21 @@ package com.iot2ndproject.mobilityhub.domain.repair.controller;
 
 import com.iot2ndproject.mobilityhub.domain.repair.dto.*;
 import com.iot2ndproject.mobilityhub.domain.repair.service.RepairService;
+import com.iot2ndproject.mobilityhub.domain.work.service.ServiceRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/repair")
 @RequiredArgsConstructor
 public class RepairController {
     private final RepairService repairService;
+    private final ServiceRequestService serviceRequestService;
 
     @GetMapping("/a")
     public List<RepairResponseDTO> repairList(){
@@ -113,6 +116,24 @@ public class RepairController {
     public ResponseEntity<?> deleteReport(@RequestParam(name = "reportId") String reportId){
         repairService.deleteReport(reportId);
         return ResponseEntity.ok(reportId+"아이디를 가진 보고서가 삭제되었습니다.");
+    }
+
+    /**
+     * 정비 작업 완료 처리
+     * @param workInfoId 작업 정보 ID
+     * @return 성공 여부
+     */
+    @PostMapping("/complete")
+    public ResponseEntity<?> completeRepair(@RequestParam Long workInfoId) {
+        try {
+            serviceRequestService.completeService(workInfoId, "repair");
+            return ResponseEntity.ok(Map.of("message", "정비 완료"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
     }
 
 }

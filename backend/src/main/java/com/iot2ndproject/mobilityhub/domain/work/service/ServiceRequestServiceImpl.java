@@ -1,5 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.work.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iot2ndproject.mobilityhub.domain.mqtt.MyPublisher;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.service.ParkingService;
 import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapNodeRepository;
@@ -14,6 +16,9 @@ import com.iot2ndproject.mobilityhub.domain.work.repository.WorkRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -30,6 +35,8 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     private final UserCarRepository userCarRepository;
     private final WorkRepository workRepository;
     private final ParkingService parkingService;
+    private final MyPublisher mqttPublisher;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -292,5 +299,49 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
             return 2;
         }
         return 999;
+    }
+
+    @Override
+    @Transactional
+    public void completeService(Long workInfoId, String stage) {
+        if (workInfoId == null) {
+            throw new IllegalArgumentException("workInfoId는 필수입니다.");
+        }
+        if (stage == null || stage.isBlank()) {
+            throw new IllegalArgumentException("stage는 필수입니다.");
+        }
+
+        // WorkInfoEntity 조회
+        Optional<WorkInfoEntity> optionalWorkInfo = serviceRequestDAO.findById(workInfoId);
+        if (optionalWorkInfo.isEmpty()) {
+            throw new IllegalArgumentException("작업 정보를 찾을 수 없습니다: workInfoId=" + workInfoId);
+        }
+
+        WorkInfoEntity workInfo = optionalWorkInfo.get();
+
+        // 차량 번호 추출
+        String carNumber = null;
+        if (workInfo.getUserCar() != null && workInfo.getUserCar().getCar() != null) {
+            carNumber = workInfo.getUserCar().getCar().getCarNumber();
+        }
+
+        if (carNumber == null) {
+            throw new IllegalStateException("차량 번호를 찾을 수 없습니다.");
+        }
+
+        // RC카에 서비스 완료 신호 발행
+        String carId = carNumber.replaceAll("\\s+", "");
+        String topic = "rccar/" + carId + "/service";
+        Map<String, String> payload = new HashMap<>();
+        payload.put("stage", stage.toLowerCase());
+        payload.put("status", "done");
+
+        try {
+            String jsonPayload = objectMapper.writeValueAsString(payload);
+            mqttPublisher.sendToMqtt(jsonPayload, topic);
+            System.out.println(">>> 서비스 완료 신호 발행: " + topic + " | " + jsonPayload);
+        } catch (Exception e) {
+            throw new RuntimeException("MQTT 신호 발행 실패: " + e.getMessage(), e);
+        }
     }
 }

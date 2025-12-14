@@ -70,9 +70,9 @@ public class ServiceRequestController {
         }
     }
 
-    @PostMapping("/{id}/status")
+    @PostMapping("/status")
     public ResponseEntity<?> updateServiceStatus(
-            @PathVariable Long id,
+            @RequestParam Long id,
             @RequestParam("status") String status,
             @RequestParam(value = "service", required = false) String service) {
         try {
