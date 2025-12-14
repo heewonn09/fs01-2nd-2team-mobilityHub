@@ -1,7 +1,73 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../style/MaintenanceSection.css";
+import useMqtt from "../hook/useMqtt";
+import { getRepair } from "../../api/repair";
+import { Check } from "lucide-react";
+import axios from "axios";
+import MaintenanceReportModal from "../modal/MaintenanceReportModal";
+import MaintenanceHistoryModal from "../modal/MaintenanceHistoryModal";
+
+//const BROKER_URL = import.meta.env.VITE_BROKER_URL;
+// MQTT 브로커 주소 --> cctv 연결할 때
+//const BROKER_URL = "ws://192.168.45.84";
+
+// 차량 상태 상수
+const CAR_STATE = {
+  REPAIRING: 13,
+  WAIT_1: 1,
+  WAIT_2: 2,
+};
+
+// 상태별 정보 매핑
+const CAR_STATE_INFO = {
+  [CAR_STATE.WASHING]: { label: "진행중", color: "ing" },
+  [CAR_STATE.WAIT_1]: { label: "대기중", color: "wait" },
+  [CAR_STATE.WAIT_2]: { label: "대기중", color: "wait" },
+};
 
 const MaintenanceSection = () => {
+  const [repairing, setRepairing] = useState([]);
+  const [selectedPart, setSelectedPart] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+
+  // API 호출
+  useEffect(() => {
+    getRepair()
+      .then((res) => {
+        setRepairing(res);
+      })
+      .catch((err) => console.error("차량 정보 조회 실패"));
+  }, []);
+
+  console.log(repairing);
+
+  const handleCompleteWork = () => {
+    if (!repairing) return alert("현재 작업중인 차량이 없습니다.");
+    setShowReportModal(true);
+  };
+
+  const handleViewDetails = () => {
+    setShowHistoryModal(true); // 버튼 클릭 시 모달 열림
+  };
+
+  const handleReportSubmit = async (reportData) => {
+    console.log("DB에 저장될 데이터: ", reportData);
+
+    try {
+      const response = await axios.post("http://127.0.0.1:9000/report/write", reportData);
+
+      if (response.status === 200) {
+        console.log("서버응당: ", response.data);
+        alert("보고서작성이 등록됐습니다.");
+      }
+    } catch (error) {
+      console.error("에러발생: ", error);
+      alert("보고서 등록 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <div className="main-page">
       {/* ---- 통계 카드 ---- */}
@@ -49,29 +115,78 @@ const MaintenanceSection = () => {
       {/* ---- CCTV 영역 + 이용 현황 ---- */}
       <div className="usage-status-container">
         {/* CCTV부분 */}
-        <div className="insert">cctv추가</div>
-
+        <div className="repair-cctv">
+          <div className="insert">cctv추가</div>
+        </div>
         {/* 이용 현황 패널 */}
         <div className="use-status-box">
           <div className="h3-tag">
             <h3>이용 현황</h3>
           </div>
-          <div className="status-box insert">{/* 이용 차량 .map 이용해서 추가 */}</div>
+          <div className="status-box">
+            {repairing.map((list) => (
+              <div key={list.id} className="list-data">
+                <div>
+                  <div className="car-number">{list.carNumber}</div>
+                  <span className="state"></span>
+                </div>
+                <span className="job-state">
+                  <p className={CAR_STATE_INFO[list.carStateNodeId]?.color || ""}>
+                    {CAR_STATE_INFO[list.carStateNodeId]?.label || ""}
+                  </p>
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* ---- 체크리스트 + 재고 현황 ---- */}
-      <div className="checklist-stock-container">
-        {/* 체크리스트 */}
-        <div className="checklist-conatiner insert">
-          <div className="checklist-box">
-            <h3 className="checklist-header">정비 체크리스트</h3>
-            {/* 체크리스트 넣기 */}
+      <div className="checklist">
+        {/* 체크리스트 카드 */}
+        <div className="checklist-stock">
+          {/* 카드 상단: 헤더 */}
+          <div className="checklist-container">
+            <h3 className="checklist-header">
+              정비 체크리스트
+              <button onClick={handleCompleteWork} className="check-btn">
+                <Check className="check" /> 완료
+              </button>
+            </h3>
+          </div>
+
+          {/* 카드 본문: 현재 작업 차량 추가 요청사항 */}
+          {repairing.filter((rep) => rep.carStateNodeId === CAR_STATE.REPAIRING).length > 0 ? (
+            repairing
+              .filter((rep) => rep.carStateNodeId === CAR_STATE.REPAIRING)
+              .map((rep) => (
+                <div key={rep.id} className="repair-list">
+                  <p className="add-repair">추가 요청사항</p>
+                  {rep.additionalRequests && rep.additionalRequests.length > 0 ? (
+                    rep.additionalRequests.map((req, index) => (
+                      <div key={index} className="repair-request">
+                        {req}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="no-request">요청사항 없음</p>
+                  )}
+                </div>
+              ))
+          ) : (
+            <p className="no-request">현재 추가 요청사항이 없습니다.</p>
+          )}
+
+          {/* 카드 하단: 정비 내역 보기 버튼 */}
+          <div className="checklist-footer">
+            <button className="view-details-btn" onClick={() => setShowHistoryModal(true)}>
+              정비 내역 보기
+            </button>
           </div>
         </div>
 
         {/* 재고 현황 */}
-        <div className="stockStatus-container insert">
+        <div className="stockStatus-container">
           {/* 재고현황 헤더 */}
           <div className="stockStatus-box">
             <div className="stockStatus-header">
@@ -102,6 +217,19 @@ const MaintenanceSection = () => {
           </div>
         </div>
       </div>
+      {showReportModal && (
+        <MaintenanceReportModal
+          onClose={() => setShowReportModal(false)}
+          onSubmit={handleReportSubmit}
+          data={repairing}
+        />
+      )}
+      {showHistoryModal && (
+        <MaintenanceHistoryModal
+          onClose={() => setShowHistoryModal(false)} // 모달 닫기
+          data={repairing.filter((rep) => rep.carStateNodeId === CAR_STATE.REPAIRING)} // 현재 작업 차량 데이터 전달
+        />
+      )}
     </div>
   );
 };

@@ -19,10 +19,12 @@ const MainSection = () => {
   useEffect(() => {
     getWeatherInfo()
       .then((todayWeather) => {
-        setWeather(todayWeather);
+        // "비"가 아닌 경우 모두 "맑음"으로 처리
+        const processedWeather = todayWeather === "비" ? "비" : "맑음";
+        setWeather(processedWeather);
       })
       .catch((err) => console.error("API 오류:", err));
-  });
+  }, []);
 
   return (
     <div className="main-page">

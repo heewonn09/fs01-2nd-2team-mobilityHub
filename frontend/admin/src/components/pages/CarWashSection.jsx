@@ -5,22 +5,31 @@ import { Clock, Droplets, CheckCircle } from "lucide-react";
 import CarWashBarChart from "../chart/CarWashBarChart";
 import useMqtt from "../hook/useMqtt";
 
-//const BROKER_URL = "ws://192.168.14.38:9001";
-const BROKER_URL = import.meta.env.VITE_BROKER_URL;
+// MQTT 브로커 주소
+const BROKER_URL = "ws://192.168.45.84";
+//const BROKER_URL = import.meta.env.VITE_BROKER_URL;
 
-console.log("브로커: ", BROKER_URL);
+// 차량 상태 상수
+const CAR_STATE = {
+  WASHING: 10,
+  WAIT_1: 1,
+  WAIT_2: 2,
+};
+
+// 상태별 정보 매핑
+const CAR_STATE_INFO = {
+  [CAR_STATE.WASHING]: { label: "진행중", color: "ing" },
+  [CAR_STATE.WAIT_1]: { label: "대기중", color: "wait" },
+  [CAR_STATE.WAIT_2]: { label: "대기중", color: "wait" },
+};
 
 const CarWashSection = () => {
-  // 세차장 데이터 목록
   const [carWashing, setCarWashing] = useState([]);
-
-  // NEW: MQTT메시지 로그 상태
   const [mqttLogs, setMqttLogs] = useState([]);
 
-  // 사용자정의 훅으로 정의된 함수를 호출해서 결과를 받기
   const { connectStatus, imageSrc, publish } = useMqtt(BROKER_URL);
 
-  // 페이지가 로딩되면 라즈베리파이로 start를 전송 - 페이지가 로딩되면 카메라스트리밍을 할 수 있도록 작업
+  // 페이지 로딩 시 카메라 스트리밍 시작
   useEffect(() => {
     if (connectStatus === "connected") {
       publish("parking/web/carwash/cam", "start");
@@ -33,33 +42,35 @@ const CarWashSection = () => {
     day: "numeric",
   });
 
+  // API 호출
   useEffect(() => {
     getCarWashing()
       .then((res) => {
-        console.log("API 응답 데이터:", res);
         setCarWashing(res);
       })
       .catch((err) => console.error("차량 정보 조회 실패", err));
   }, []);
 
-  // 세차 작업 중인 차량만 따로 저장
-  const washingCar = carWashing.find((item) => item.carState === "carWashIn");
-  console.log("carWashing 배열:", carWashing);
-  console.log("washingCar 결과:", washingCar);
+  console.log(carWashing);
 
-  // 대기 중인 차량의 수
-  const waitCarList = carWashing.filter((item) => item.carState === "COMING");
+  // 진행중 차량
+  const washingCar = carWashing.find((item) => item.carStateNodeId === CAR_STATE.WASHING);
+
+  // 대기 중 차량
+  const waitCarList = carWashing.filter((item) =>
+    [CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(item.carStateNodeId)
+  );
   const waitCarCount = waitCarList.length;
 
-  // 작업을 완료한 차량의 수
-  const completeCarList = carWashing.filter((item) => item.carState === "out");
+  // 완료 차량
+  const completeCarList = carWashing.filter((item) => item.exitTime !== null);
   const completeCount = completeCarList.length;
 
-  console.log(washingCar);
   return (
     <div className="wash-page">
+      {/* 통계 카드 */}
       <div className="statistics-card">
-        {/* 카드 한 블록 */}
+        {/* 진행중 */}
         <div className="statistics-component">
           <div className="card-item">
             <div>
@@ -72,12 +83,12 @@ const CarWashSection = () => {
           </div>
         </div>
 
-        {/* 카드 한 블록 */}
+        {/* 대기중 */}
         <div className="statistics-component">
           <div className="card-item">
             <div>
               <p className="text">대기중</p>
-              <p className="count">{waitCarCount ? waitCarCount : 0} 대</p>
+              <p className="count">{waitCarCount} 대</p>
             </div>
             <div className="card-icon" style={{ backgroundColor: "#fef9c2" }}>
               <Clock className="icon" style={{ color: "orange" }} />
@@ -85,12 +96,12 @@ const CarWashSection = () => {
           </div>
         </div>
 
-        {/* 카드 한 블록 */}
+        {/* 완료 건수 */}
         <div className="statistics-component">
           <div className="card-item">
             <div>
               <p className="text">완료 건수</p>
-              <p className="count">{completeCount ? completeCount : 0} 대</p>
+              <p className="count">{completeCount} 대</p>
             </div>
             <div className="card-icon" style={{ backgroundColor: "#dbfce7" }}>
               <CheckCircle className="icon" style={{ color: "green" }} />
@@ -110,25 +121,20 @@ const CarWashSection = () => {
           </div>
           <div className="list-content">
             {carWashing
-              .filter((item) => item.carState === "COMING" || item.carState === "carWashIn")
+              .filter((item) =>
+                [CAR_STATE.WASHING, CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(
+                  item.carStateNodeId
+                )
+              )
               .map((list) => (
                 <div key={list.id} className="list-data">
                   <div>
-                    {/* <div className="car-number">{carWashing[0].carNumber}</div> */}
                     <div className="car-number">{list.carNumber}</div>
                     <span className="state"></span>
                   </div>
                   <span className="job-state">
-                    <p
-                      className={`${
-                        list.carState === "carWashIn"
-                          ? "ing"
-                          : list.carState === "COMING"
-                          ? "wait"
-                          : ""
-                      }`}
-                    >
-                      {list.carState === "carWashIn" ? "진행중" : "대기중"}
+                    <p className={CAR_STATE_INFO[list.carStateNodeId]?.color || ""}>
+                      {CAR_STATE_INFO[list.carStateNodeId]?.label || ""}
                     </p>
                   </span>
                 </div>
@@ -142,7 +148,6 @@ const CarWashSection = () => {
         <div className="graph-title">
           <h3 className="title">하루 이용량 통계 ({currentDate} 기준)</h3>
         </div>
-
         <CarWashBarChart className="graph" carWashValues={carWashing} />
       </div>
     </div>

@@ -14,13 +14,7 @@ class MqttWorker:
         self.client = client.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        #self.led_pins = [13, 23]
-        # self.led = LED(13)
-        
-        # self.rgb_pins = [20, 21, 16]
-        # self.rgb_pins = [RGB(pin) for pin in self.rgb_pins]
-       # self.leds = [LED(pin) for pin in self.led_pins]
-        # self.dht11 = DHTSensor(self.client)
+
         
         # self.dht11.start()   # 스레드 실행
         self.camera = MyCamera() 
@@ -72,15 +66,9 @@ class MqttWorker:
     def mymqtt_connect(self):
         try:
             print("브로커 연결 시작하기")
-            self.client.connect("192.168.14.38", 1883, 60)
+            self.client.connect("192.168.45.38", 1883, 60)
             
-            # 내부적으로 paho-mqtt는 이벤트기반
-            # mqtt통신을 유지하기 위해서 지속적으로 broker와 연결을 테스트(ping교환), 수신메시지를 읽기,
-            # 연결이 끊어지면 재연결...................
-            # 이 모든 작업이 처리되면 별도의 실행흐름로 쓰레드에서 이런 일들이 지속되도록 loop_forever를 
-            # 쓰레드로 작업할 수 있도록 지정
-            # loop_forever가 계속 통신을 유지해야 메시지가 도착하면 콜백으로 등록한 on_message가 호출
-            # 지속적으로 통신을 유지하는 처리를 해야 하므로 쓰레드로 작업
+
             mymqtt_obj = Thread(target=self.client.loop_forever)
             mymqtt_obj.start()
         except KeyboardInterrupt:

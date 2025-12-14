@@ -48,7 +48,8 @@ public class CarWashServiceImpl implements CarWashService {
 
         return list.stream()
                 .filter(entity -> entity.getWork().getWorkId() == 3 || entity.getWork().getWorkId() == 4)
-                .filter(entity -> entity.getRequestTime().toLocalDate().isEqual(LocalDate.now()) && entity.getExitTime() == null)
+                //.filter(entity -> entity.getRequestTime().toLocalDate().isEqual(LocalDate.now()) && entity.getExitTime() == null)
+                .filter(entity -> entity.getRequestTime().toLocalDate().isEqual(LocalDate.now()))
 //                .filter(w -> w.getWork() != null
 //                && w.getWork().getWorkType() != null
 //                && w.getWork().getWorkType().equalsIgnoreCase("carwash"))

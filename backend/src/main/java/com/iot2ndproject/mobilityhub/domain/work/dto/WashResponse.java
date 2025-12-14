@@ -1,6 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.work.dto;
 
 
+import com.iot2ndproject.mobilityhub.domain.parkingmap.entity.ParkingMapNodeEntity;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,10 @@ import java.util.Date;
 @Builder
 public class WashResponse {
     private Long id;   // work_info PK
-    private String carState;  // 세차장에 도착했을 떼 car_state: washIn
+    private Long carStateNodeId;  // nodeId만
+    private String carStateName;  // 세차장에 도착했을 떼 car_state: washIn
+    private LocalDateTime entryTime;
+    private LocalDateTime exitTime;
     private Long carId;  // 세차장 차량번호
     private LocalDateTime requestTime;  // 서비스 요청시간
     private int workId;    // 작업 장소 아이디
