@@ -30,3 +30,8 @@ export const updateServiceStatus = async ({ id, status, service }) => {
   });
   return response.data;
 };
+
+export const callVehicle = async (workInfoId) => {
+  const response = await jwtAxios.post(`${requests.serviceRequest}/${workInfoId}/call`);
+  return response.data;
+};

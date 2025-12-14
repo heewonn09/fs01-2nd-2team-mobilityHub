@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { submitServiceRequest, fetchLatestServiceRequest } from "../api/serviceApi";
+import { submitServiceRequest, fetchLatestServiceRequest, callVehicle } from "../api/serviceApi";
 
 export function ServiceProgress({ isLogin }) {
   const navigate = useNavigate();
@@ -48,6 +48,7 @@ export function ServiceProgress({ isLogin }) {
   const [additionalRequest, setAdditionalRequest] = useState("");
   const [progress, setProgress] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCalling, setIsCalling] = useState(false);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -59,6 +60,7 @@ export function ServiceProgress({ isLogin }) {
               // 백엔드 서비스 타입을 프론트엔드 형식으로 변환
               const frontendServices = latest.services?.map(toFrontendServiceType) || [];
               setProgress({
+                id: latest.id,
                 status: latest.status,
                 carNumber: latest.carNumber,
                 services: frontendServices,
@@ -66,6 +68,7 @@ export function ServiceProgress({ isLogin }) {
                 parkingStatus: latest.parkingStatus,
                 carwashStatus: latest.carwashStatus,
                 repairStatus: latest.repairStatus,
+                carState: latest.carState,
               });
             }
           } catch (e) {
@@ -222,6 +225,7 @@ export function ServiceProgress({ isLogin }) {
                   // 백엔드 응답의 서비스 타입을 프론트엔드 형식으로 변환
                   const frontendServices = result.services?.map(toFrontendServiceType) || Array.from(selectedServices);
                   setProgress({
+                    id: result.id,
                     status: result.status || "REQUESTED",
                     carNumber: result.carNumber || selectedVehicle,
                     services: frontendServices,
@@ -229,6 +233,7 @@ export function ServiceProgress({ isLogin }) {
                     parkingStatus: result.parkingStatus,
                     carwashStatus: result.carwashStatus,
                     repairStatus: result.repairStatus,
+                    carState: result.carState,
                   });
                   setShowConfirmDialog(false);
                   setSelectedServices(new Set());
@@ -278,9 +283,52 @@ export function ServiceProgress({ isLogin }) {
             <div style={{ marginBottom: "4px" }}>
               정비 상태: {progress.repairStatus || "-"}
             </div>
-            <div style={{ fontSize: "12px", color: "#6b7280" }}>
+            <div style={{ marginBottom: "4px" }}>
+              현재 위치: {progress.carState || "-"}
+            </div>
+            <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "12px" }}>
               요청 시각: {(progress.createdAt || "").replace("T", " ").slice(0, 19)}
             </div>
+            
+            {/* 차량 호출 버튼 (주차 중일 때만 표시) */}
+            {progress.services?.includes("parking") && 
+             progress.parkingStatus === "occupied" && (
+              <button
+                onClick={async () => {
+                  if (!progress.id) {
+                    alert("작업 정보를 찾을 수 없습니다.");
+                    return;
+                  }
+                  if (isCalling) return;
+                  
+                  try {
+                    setIsCalling(true);
+                    await callVehicle(progress.id);
+                    alert("차량 호출 신호가 발행되었습니다. 차량이 출구로 이동합니다.");
+                  } catch (error) {
+                    console.error(error);
+                    const errorMessage = error.response?.data?.error || "차량 호출 중 오류가 발생했습니다.";
+                    alert(errorMessage);
+                  } finally {
+                    setIsCalling(false);
+                  }
+                }}
+                disabled={isCalling}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  backgroundColor: isCalling ? "#9ca3af" : "#10b981",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: isCalling ? "not-allowed" : "pointer",
+                  fontWeight: "600",
+                  fontSize: "16px",
+                }}
+              >
+                {isCalling ? "호출 중..." : "🚗 차량 호출"}
+              </button>
+            )}
           </div>
         ) : (
           <div style={{ color: "#6b7280" }}>
