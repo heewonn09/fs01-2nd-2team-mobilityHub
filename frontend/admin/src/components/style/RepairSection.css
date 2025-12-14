@@ -1,5 +1,4 @@
 .main-page {
-  height: 100%;
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
@@ -51,9 +50,14 @@
   height: 1.5rem;
 }
 
+.repair-cctv {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
 .usage-status-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
 }
 
@@ -71,35 +75,132 @@
 
 .status-box {
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
   max-height: 300px;
   overflow-y: auto;
 }
 
-.checklist-stock-container {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: 1fr 1fr 1fr;
+.list-data {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0.5rem;
+  padding: 0.35rem;
+  background-color: #f9fafb;
+  height: 100px;
 }
 
-.checklist-container {
+.list-data p {
+  font-weight: 700;
+}
+
+.car-number {
+  color: black;
+}
+
+.checklist {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.checklist-stock {
   background-color: #ffffff;
   border-radius: 0.5rem;
   border: 1px solid #e5e7eb;
+  padding: 1rem;
 }
 
-.checklist-box {
-  padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+.checklist-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
 }
 
 .checklist-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
+  width: 100%;
+  color: #111827;
+}
+
+.check-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.check-btn:hover {
+  background-color: #2563eb;
+}
+
+.check {
+  width: 16px;
+  height: 16px;
+}
+
+.repair-list {
+  margin-top: 0.5rem;
+}
+
+.add-repair {
+  margin-bottom: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.repair-request {
+  padding: 0.5rem;
+  background-color: #224d77;
+  color: #ffffff;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  margin-bottom: 0.25rem;
+}
+
+.no-request {
+  margin-top: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.checklist-stock {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
 }
 
-h3.checklist-header {
-  color: #111827;
+.checklist-footer {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.view-details-btn {
+  padding: 0.5rem 1rem;
+  background-color: #10b981;
+  color: #ffffff;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.view-details-btn:hover {
+  background-color: #059669;
 }
 
 .stockStatus-container {
@@ -161,5 +262,7 @@ th.stock-category {
 
 .insert {
   background-color: green;
+  position: relative;
+  aspect-ratio: 16 / 9;
   color: white;
 }

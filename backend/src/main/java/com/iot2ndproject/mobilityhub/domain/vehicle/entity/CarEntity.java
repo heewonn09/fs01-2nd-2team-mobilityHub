@@ -35,6 +35,7 @@ public class CarEntity {
     private String carModel;
     
     @CreationTimestamp
+    @Column(columnDefinition = "DATETIME")
     private LocalDateTime insertDate; // 차 등록날짜
 
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)

@@ -1,6 +1,5 @@
 package com.iot2ndproject.mobilityhub.domain.repair.dto;
 
-import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,15 +16,24 @@ public class StockStatusResponse {
     private String inventoryId;
     private String productName;
     private String stockCategory;
+    private String stockUnits;
     private int stockQuantity;
+    private int minStockQuantity;
     private LocalDateTime updateTime;
-    private ParkingEntity sectorId;
+    private String sectorId;
 
-    public StockStatusResponse(StockStatusEntity stockStatusEntity) {
-        this.inventoryId = stockStatusEntity.getInventoryId();
-        this.productName = stockStatusEntity.getProductName();
-        this.stockCategory = stockStatusEntity.getStockCategory();
-        this.stockQuantity = stockStatusEntity.getStockQuantity();
-        this.updateTime = stockStatusEntity.getUpdateTime();
+    public StockStatusResponse(StockStatusEntity entity) {
+        this.inventoryId = entity.getInventoryId();
+        this.productName = entity.getProductName();
+        this.stockCategory = entity.getStockCategory();
+        this.stockUnits = entity.getStockUnits();
+        this.stockQuantity = entity.getStockQuantity();
+        this.minStockQuantity = entity.getMinStockQuantity();
+        this.updateTime = entity.getUpdateTime();
+
+        // 연관 엔티티 → 값만 추출
+        if (entity.getSectorId() != null) {
+            this.sectorId = entity.getSectorId().getSectorId();
+        }
     }
 }

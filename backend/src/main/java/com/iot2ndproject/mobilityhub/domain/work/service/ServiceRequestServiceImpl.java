@@ -1,23 +1,26 @@
 package com.iot2ndproject.mobilityhub.domain.work.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iot2ndproject.mobilityhub.domain.mqtt.MyPublisher;
+import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
+import com.iot2ndproject.mobilityhub.domain.parking.service.ParkingService;
 import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapNodeRepository;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
-import com.iot2ndproject.mobilityhub.domain.vehicle.repository.UserCarRepository;
 import com.iot2ndproject.mobilityhub.domain.work.dao.ServiceRequestDAO;
 import com.iot2ndproject.mobilityhub.domain.work.dto.ServiceRequestDTO;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkEntity;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
-import com.iot2ndproject.mobilityhub.domain.work.repository.WorkRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import java.time.LocalDateTime;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -27,8 +30,9 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
 
     private final ServiceRequestDAO serviceRequestDAO;
     private final ParkingMapNodeRepository mapNodeRepository;
-    private final UserCarRepository userCarRepository;
-    private final WorkRepository workRepository;
+    private final ParkingService parkingService;
+    private final MyPublisher mqttPublisher;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -42,44 +46,133 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         if (dto.getServices() == null || dto.getServices().isEmpty()) {
             throw new IllegalArgumentException("services is required");
         }
-
-        UserCarEntity userCar = userCarRepository
-                .findByUser_UserIdAndCar_CarNumber(dto.getUserId(), dto.getCarNumber())
+        UserCarEntity userCar = serviceRequestDAO.findByUser_UserIdAndCar_CarNumber(dto.getUserId(), dto.getCarNumber())
                 .orElseThrow(() -> new IllegalArgumentException("UserCar not found for userId/carNumber"));
 
-        List<WorkInfoEntity> entities = dto.getServices().stream()
+        // work.work_type은 아래 5개 타입 중 하나만 사용한다 (data.sql 기준)
+        // 1) park
+        // 2) repair
+        // 3) carwash
+        // 4) park,carwash
+        // 5) park,repair
+        List<String> services = dto.getServices().stream()
+                .filter(s -> s != null && !s.isBlank())
+                .flatMap(s -> java.util.Arrays.stream(s.split(",")))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .map(String::toLowerCase)
                 .distinct()
-                .map(serviceType -> {
-                    WorkEntity work = workRepository.findByWorkType(serviceType)
-                            .orElseGet(() -> workRepository.save(new WorkEntity(serviceType)));
-
-                    WorkInfoEntity workInfo = new WorkInfoEntity();
-                    workInfo.setUserCar(userCar);
-                    workInfo.setWork(work);
-                    // car_state는 parking_map_node.node_id (숫자)
-                    // 서비스 요청 생성 시 기본 위치는 '입구'(node_id=1)로 설정
-                    workInfo.setCarState(mapNodeRepository.findById(1).get());
-
-                    if ("maintenance".equalsIgnoreCase(serviceType) && dto.getAdditionalRequest() != null) {
-                        workInfo.setAdditionalRequest(dto.getAdditionalRequest());
-                    }
-                    return workInfo;
-                })
                 .collect(Collectors.toList());
 
-        List<WorkInfoEntity> saved = serviceRequestDAO.saveAll(entities);
+        if (services.isEmpty()) {
+            throw new IllegalArgumentException("services is required");
+        }
+
+        // 허용되지 않은 서비스 타입 방지
+        boolean hasUnknown = services.stream().anyMatch(s -> !s.equals("park") && !s.equals("repair") && !s.equals("carwash"));
+        if (hasUnknown) {
+            throw new IllegalArgumentException("invalid services: " + services);
+        }
+
+        boolean hasPark = services.contains("park");
+        boolean hasCarwash = services.contains("carwash");
+        boolean hasRepair = services.contains("repair");
+
+        // 비즈니스 규칙: 세차와 정비는 동시 선택 불가 (XOR)
+        if (hasCarwash && hasRepair) {
+            throw new IllegalArgumentException("세차와 정비는 동시에 선택할 수 없습니다.");
+        }
+
+        // 선택 조합을 work_id/work_type으로 매핑 (work 테이블 seed 1~5에 맞춤)
+        final int workId;
+        final String workType;
+        if (hasPark && hasCarwash) {
+            workId = 4;
+            workType = "park,carwash";
+        } else if (hasPark && hasRepair) {
+            workId = 5;
+            workType = "park,repair";
+        } else if (hasCarwash) {
+            workId = 3;
+            workType = "carwash";
+        } else if (hasRepair) {
+            workId = 2;
+            workType = "repair";
+        } else if (hasPark) {
+            workId = 1;
+            workType = "park";
+        } else {
+            throw new IllegalArgumentException("services is required");
+        }
+
+        // work 엔티티는 DB seed(data.sql)에 존재하는 row를 work_id로 사용한다. (임의 생성 금지)
+        WorkEntity work = serviceRequestDAO.findWorkById(workId)
+                .orElseThrow(() -> new IllegalStateException("work_id not found in DB: " + workId + " (" + workType + ")"));
+        if (work.getWorkType() == null || !work.getWorkType().equalsIgnoreCase(workType)) {
+            throw new IllegalStateException("work table mismatch: id=" + workId + ", expected=" + workType + ", actual=" + work.getWorkType());
+        }
+
+        WorkInfoEntity workInfo = new WorkInfoEntity();
+        workInfo.setUserCar(userCar);
+        workInfo.setWork(work);
+
+        // car_state는 parking_map_node.node_id (숫자)
+        // 서비스 요청 생성 시 기본 위치는 '입구'(node_id=1)로 설정
+        mapNodeRepository.findById(1)
+                .ifPresentOrElse(
+                        workInfo::setCarState,
+                        () -> {
+                            throw new IllegalStateException("입구 노드를 찾을 수 없습니다.");
+                        }
+                );
+
+        // 정비(수리) 요청만 추가요청 저장
+        if (hasRepair
+                && dto.getAdditionalRequest() != null
+                && !dto.getAdditionalRequest().isBlank()) {
+            workInfo.setAdditionalRequest(dto.getAdditionalRequest());
+        }
+
+        // WorkInfoEntity 저장 (주차 옵션 유무와 관계없이 저장 필요)
+        WorkInfoEntity saved;
+        
+        // 주차 옵션이 있으면 빈자리 확인 및 할당
+        if (hasPark) {
+            if (!parkingService.hasAvailableSpace()) {
+                throw new IllegalStateException("사용 가능한 주차 공간이 없습니다. 잠시 후 다시 시도해주세요.");
+            }
+            // 주차 공간 자동 할당 (첫 번째 빈 공간)
+            // WorkInfoEntity가 저장된 후에 할당해야 하므로 임시로 저장 후 업데이트
+            WorkInfoEntity tempSaved = serviceRequestDAO.save(workInfo);
+            try {
+                ParkingEntity allocatedParking = parkingService.allocateFirstAvailableSpace(tempSaved.getId());
+                tempSaved.setSectorId(allocatedParking);
+                saved = serviceRequestDAO.save(tempSaved);
+            } catch (Exception e) {
+                // 할당 실패 시 예외 전파
+                throw new IllegalStateException("주차 공간 할당에 실패했습니다: " + e.getMessage());
+            }
+        } else {
+            // 주차 옵션이 없는 경우 단순 저장
+            saved = serviceRequestDAO.save(workInfo);
+        }
+
         return convertToDTO(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ServiceRequestDTO> getHistory(String userId) {
-        List<WorkInfoEntity> all = serviceRequestDAO.findByUserIdOrderByRequestTimeDesc(userId);
+        String nonNullUserId = java.util.Objects.requireNonNull(userId, "userId");
+        List<WorkInfoEntity> all = serviceRequestDAO.findByUserIdOrderByRequestTimeDesc(nonNullUserId);
 
+        if (all == null || all.isEmpty()) {
+            return List.of();
+        }
+
+        // work_info 1건 = 서비스 요청 1건
         return all.stream()
-                .map(List::of)
                 .map(this::convertToDTO)
-                .sorted(Comparator.comparing(ServiceRequestDTO::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .collect(Collectors.toList());
     }
 
@@ -92,43 +185,40 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     @Override
     @Transactional
     public boolean updateStatus(Long id, String status, String service) {
-        Optional<WorkInfoEntity> optionalEntity = serviceRequestDAO.findById(id);
+        Long nonNullId = java.util.Objects.requireNonNull(id, "id");
+        Optional<WorkInfoEntity> optionalEntity = serviceRequestDAO.findById(nonNullId);
         if (optionalEntity.isEmpty()) {
             return false;
         }
 
-        WorkInfoEntity representative = optionalEntity.get();
+        WorkInfoEntity workInfo = java.util.Objects.requireNonNull(optionalEntity.get());
 
-        if (service != null
-                && representative.getWork() != null
-                && representative.getWork().getWorkType() != null
-                && !representative.getWork().getWorkType().equalsIgnoreCase(service)) {
-            return false;
+        // service 파라미터가 있으면, 해당 요청(work_type)에 포함된 서비스인지 확인
+        if (service != null) {
+            String workType = (workInfo.getWork() != null) ? workInfo.getWork().getWorkType() : null;
+            if (workType == null || !containsWorkType(workType, service)) {
+                return false;
+            }
         }
 
-        // status 컬럼 제거: entry_time / exit_time 기반으로 상태를 기록
+        // status 컬럼 제거: entry_time / exit_time 기반으로 상태를 기록 (건물 출입구 기준)
         if (status != null) {
             if (status.equalsIgnoreCase("IN_PROGRESS")) {
-                if (representative.getEntryTime() == null) {
-                    representative.setEntryTime(LocalDateTime.now());
+                if (workInfo.getEntryTime() == null) {
+                    workInfo.setEntryTime(LocalDateTime.now());
                 }
             } else if (status.equalsIgnoreCase("DONE")) {
-                if (representative.getExitTime() == null) {
-                    representative.setExitTime(LocalDateTime.now());
+                if (workInfo.getExitTime() == null) {
+                    workInfo.setExitTime(LocalDateTime.now());
                 }
             }
         }
 
-        serviceRequestDAO.save(representative);
+        serviceRequestDAO.save(workInfo);
         return true;
     }
 
-    private ServiceRequestDTO convertToDTO(List<WorkInfoEntity> group) {
-        WorkInfoEntity representative = group.stream()
-                .filter(w -> w.getRequestTime() != null)
-                .min(Comparator.comparing(WorkInfoEntity::getRequestTime))
-                .orElse(group.get(0));
-
+    private ServiceRequestDTO convertToDTO(WorkInfoEntity representative) {
         ServiceRequestDTO dto = new ServiceRequestDTO();
         dto.setId(representative.getId());
 
@@ -141,33 +231,20 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
 
         dto.setCreatedAt(representative.getRequestTime());
 
-        List<String> services = group.stream()
-                .map(w -> w.getWork() != null ? w.getWork().getWorkType() : null)
-                .filter(s -> s != null && !s.isBlank())
-                .distinct()
-                .toList();
+        List<String> services = parseWorkTypes(representative);
         dto.setServices(services);
 
-        String additionalRequest = group.stream()
-                .map(WorkInfoEntity::getAdditionalRequest)
-                .filter(s -> s != null && !s.isBlank())
-                .findFirst()
-                .orElse(null);
+        String additionalRequest = (representative.getAdditionalRequest() != null && !representative.getAdditionalRequest().isBlank())
+                ? representative.getAdditionalRequest()
+                : null;
         dto.setAdditionalRequest(additionalRequest);
 
-        Map<String, String> serviceStatus = new HashMap<>();
-        for (WorkInfoEntity w : group) {
-            if (w.getWork() == null || w.getWork().getWorkType() == null) {
-                continue;
-            }
-            serviceStatus.put(w.getWork().getWorkType().toLowerCase(), deriveStatus(w));
-        }
+        String status = deriveStatus(representative);
+        dto.setStatus(status);
 
-        dto.setParkingStatus(serviceStatus.get("parking"));
-        dto.setCarwashStatus(serviceStatus.get("carwash"));
-        dto.setMaintenanceStatus(serviceStatus.get("maintenance"));
-
-        dto.setStatus(calculateOverallStatus(group));
+        dto.setParkingStatus(services.contains("park") ? status : null);
+        dto.setCarwashStatus(services.contains("carwash") ? status : null);
+        dto.setRepairStatus(services.contains("repair") ? status : null);
         return dto;
     }
 
@@ -181,25 +258,91 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         return "REQUESTED";
     }
 
-    private String calculateOverallStatus(List<WorkInfoEntity> group) {
-        List<String> statuses = group.stream()
-                .map(this::deriveStatus)
-                .filter(s -> s != null && !s.isBlank())
-                .toList();
-
-        if (statuses.isEmpty()) {
-            return null;
+    private List<String> parseWorkTypes(WorkInfoEntity workInfo) {
+        if (workInfo == null || workInfo.getWork() == null || workInfo.getWork().getWorkType() == null) {
+            return List.of();
         }
 
-        boolean allDone = statuses.stream().allMatch(s -> s.equalsIgnoreCase("DONE"));
-        boolean anyInProgress = statuses.stream().anyMatch(s -> s.equalsIgnoreCase("IN_PROGRESS"));
+        return java.util.Arrays.stream(workInfo.getWork().getWorkType().split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .map(String::toLowerCase)
+                .distinct()
+                .sorted(Comparator.comparingInt(this::servicePriority).thenComparing(s -> s))
+                .collect(Collectors.toList());
+    }
 
-        if (allDone) {
-            return "DONE";
+    private boolean containsWorkType(String workType, String service) {
+        if (workType == null || service == null) {
+            return false;
         }
-        if (anyInProgress) {
-            return "IN_PROGRESS";
+        String target = service.trim().toLowerCase();
+        return java.util.Arrays.stream(workType.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .map(String::toLowerCase)
+                .anyMatch(s -> s.equals(target));
+    }
+
+    // work_type 정렬을 위한 우선순위: park -> carwash -> repair
+    private int servicePriority(String service) {
+        if (service == null) {
+            return 999;
         }
-        return "REQUESTED";
+        String s = service.trim().toLowerCase();
+        if ("park".equals(s)) {
+            return 0;
+        }
+        if ("carwash".equals(s)) {
+            return 1;
+        }
+        if ("repair".equals(s)) {
+            return 2;
+        }
+        return 999;
+    }
+
+    @Override
+    @Transactional
+    public void completeService(Long workInfoId, String stage) {
+        if (workInfoId == null) {
+            throw new IllegalArgumentException("workInfoId는 필수입니다.");
+        }
+        if (stage == null || stage.isBlank()) {
+            throw new IllegalArgumentException("stage는 필수입니다.");
+        }
+
+        // WorkInfoEntity 조회
+        Optional<WorkInfoEntity> optionalWorkInfo = serviceRequestDAO.findById(workInfoId);
+        if (optionalWorkInfo.isEmpty()) {
+            throw new IllegalArgumentException("작업 정보를 찾을 수 없습니다: workInfoId=" + workInfoId);
+        }
+
+        WorkInfoEntity workInfo = optionalWorkInfo.get();
+
+        // 차량 번호 추출
+        String carNumber = null;
+        if (workInfo.getUserCar() != null && workInfo.getUserCar().getCar() != null) {
+            carNumber = workInfo.getUserCar().getCar().getCarNumber();
+        }
+
+        if (carNumber == null) {
+            throw new IllegalStateException("차량 번호를 찾을 수 없습니다.");
+        }
+
+        // RC카에 서비스 완료 신호 발행
+        String carId = carNumber.replaceAll("\\s+", "");
+        String topic = "rccar/" + carId + "/service";
+        Map<String, String> payload = new HashMap<>();
+        payload.put("stage", stage.toLowerCase());
+        payload.put("status", "done");
+
+        try {
+            String jsonPayload = objectMapper.writeValueAsString(payload);
+            mqttPublisher.sendToMqtt(jsonPayload, topic);
+            System.out.println(">>> 서비스 완료 신호 발행: " + topic + " | " + jsonPayload);
+        } catch (Exception e) {
+            throw new RuntimeException("MQTT 신호 발행 실패: " + e.getMessage(), e);
+        }
     }
 }

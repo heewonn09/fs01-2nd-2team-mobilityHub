@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class WorkInfoResponseDTO {
     private Long id;              // work_info id
     private String carNumber;     // 차량 번호
-    private String carState;      // 상태
+
     private LocalDateTime entryTime;
     private LocalDateTime exitTime;
 

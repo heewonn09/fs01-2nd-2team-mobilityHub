@@ -11,7 +11,7 @@ const Header = () => {
     "/entrance": "입출구",
     "/parking": "주차장 관리",
     "/admin": "관리자",
-    "/maintenance": "정비소",
+    "/repair": "정비소",
     "/statistics": "통계",
   };
 

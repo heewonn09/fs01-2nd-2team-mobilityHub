@@ -1,31 +1,43 @@
 package com.iot2ndproject.mobilityhub.domain.repair.dao;
 
-import com.iot2ndproject.mobilityhub.domain.repair.dto.StockUpdateRequest;
+import com.iot2ndproject.mobilityhub.domain.repair.entity.ReportEntity;
 import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
 public interface RepairDAO {
 
+    // 전체 재고목록 조회
+    List<StockStatusEntity> findStockAll();
+
+    // 현재 정비요청한 차량 리스트 조회
+    List<WorkInfoEntity> findRequestAll();
+
     // 재고 추가
-    StockStatusEntity createStock(StockStatusEntity stock);
+    void createStock(StockStatusEntity stock);
 
     // 재고 삭제
     void deleteStock(String inventoryId);
 
-    // 재고 수량 변경
-    StockStatusEntity updateStockQuantity(String inventoryId, int  quantity);
+    // 재고 변경
+    void updateStock(StockStatusEntity stockStatusEntity);
 
-    // 재고 이름,유형,수량,가격 변경
-    StockStatusEntity updateStock(String inventoryId, StockUpdateRequest stockUpdateRequest);
+    // 재고ID별 상세조회
+    StockStatusEntity findByInventoryId(String inventoryId);
 
-    // 전체 재고목록 조회
-    List<StockStatusEntity> findStockAll();
+    // 보고서 리스트 조회
+    List<ReportEntity> reportList();
 
-    // 전체
-    List<WorkInfoEntity> findRequestAll();
+    // 보고서 조회
+    ReportEntity findByReportId(String reportId);
 
-    StockStatusEntity findByInventoryId(@RequestParam("inventoryId") String inventoryId);
+    // 보고서 작성
+    void writeReport(ReportEntity entity);
+
+    // 보고서 수정
+    void updateReport(ReportEntity entity);
+
+    // 보고서 삭제
+    void deleteReport(String reportId);
 }

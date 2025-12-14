@@ -40,6 +40,7 @@ public class UserEntity {
     private String tel; // 휴대폰번호
 
     @CreationTimestamp
+    @Column(columnDefinition = "DATETIME")
     private LocalDateTime createDate; // 가입날짜
 
     @Column

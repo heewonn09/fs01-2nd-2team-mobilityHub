@@ -1,7 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.work.service;
 
 import com.iot2ndproject.mobilityhub.domain.work.dto.WashResponse;
-import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
+
 
 import java.util.List;
 

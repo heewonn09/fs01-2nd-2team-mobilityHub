@@ -1,6 +1,5 @@
 package com.iot2ndproject.mobilityhub.domain.repair.dto;
 
-import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -56,17 +56,27 @@
 }
 
 .wash-cctv {
-  background-color: green;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   border-radius: 0.5rem;
   overflow: hidden;
 }
 
 .cctv-view {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  color: white;
-}
+  max-width: 480px;
+  max-height: 270px;
 
+  width: auto;
+  height: auto;
+
+  object-fit: contain;
+}
 .wash-car-list {
   background-color: white;
   border-radius: 0.5rem;

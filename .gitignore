@@ -114,3 +114,4 @@ secrets/
 *~
 .gitignore~
 frontend/admin/env
+frontend/admin/package-lock.json

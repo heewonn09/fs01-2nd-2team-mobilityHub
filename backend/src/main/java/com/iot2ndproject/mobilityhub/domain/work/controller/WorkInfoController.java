@@ -1,8 +1,10 @@
 package com.iot2ndproject.mobilityhub.domain.work.controller;
 
+import com.iot2ndproject.mobilityhub.domain.work.dto.PlateUpdateRequest;
 import com.iot2ndproject.mobilityhub.domain.work.dto.WorkInfoResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.work.service.WorkInfoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,5 +26,15 @@ public class WorkInfoController {
     @GetMapping("/today/exit")
     public List<WorkInfoResponseDTO> getTodayExit() {
         return workInfoService.getTodayExitDTO();
+    }
+
+    // ✔ 번호판 수정
+    @PutMapping("/{id}/plate")
+    public ResponseEntity<?> updatePlate(
+            @PathVariable Long id,
+            @RequestBody PlateUpdateRequest request
+    ) {
+        workInfoService.updatePlateNumber(id, request.getCarNumber());
+        return ResponseEntity.ok().build();
     }
 }

@@ -1,184 +1,133 @@
-/* 전체 컨테이너 */
-.section-container {
-  padding: 1.5rem;
+.entrance-page {
+  padding: 24px;
+  background: #f5f6f8;
+}
+
+/* 헤더 */
+.page-header {
+  margin-bottom: 24px;
+}
+.page-header h2 {
+  margin: 0;
+}
+.page-header p {
+  margin: 4px 0 0;
+  color: #666;
+}
+
+/* 카드 공통 */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 상단 */
+.top-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* CCTV */
+.cctv-box {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  background: black;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.cctv-stream {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.cctv-placeholder {
+  position: absolute;
+  inset: 0;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* 최근 인식 */
+.recent-card {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  justify-content: space-between;
+}
+.empty-text {
+  color: #999;
+  font-size: 14px;
 }
 
-/* ---------------- 카메라 영역 ---------------- */
-.camera-grid {
+/* 버튼 */
+.btn-edit {
+  align-self: flex-end;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #ddd;
+  cursor: not-allowed;
+}
+
+/* 하단 */
+.bottom-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  gap: 20px;
 }
-/* ---------------- KPI 요약 박스 ---------------- */
 
+/* 테이블 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+th {
+  text-align: left;
+  font-size: 13px;
+  color: #666;
+}
+td {
+  padding: 8px 0;
+  font-size: 14px;
+}
+tr:hover {
+  background: #f2f2f2;
+  cursor: pointer;
+}
+.empty-row {
+  text-align: center;
+  color: #999;
+  padding: 16px 0;
+}
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 1rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
 }
 
 .summary-card {
   background: white;
-  padding: 1.25rem 1.5rem;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .summary-title {
-  color: #6b7280;
   font-size: 14px;
+  color: #666;
 }
 
 .summary-value {
-  font-size: 18px;
-  font-weight: 700;
-  margin-top: 4px;
-  background-color: green;
-}
-
-.summary-icon {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 22px;
-}
-
-.green-icon {
-  background: #d9f7df;
-  color: #16a34a;
-}
-.blue-icon {
-  background: #dceaff;
-  color: #2563eb;
-}
-.purple-icon {
-  background: #f1e0ff;
-  color: #9333ea;
-}
-
-.camera-card {
-  background: white;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
-}
-
-.camera-top {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-}
-
-.badge-live {
-  color: red;
-  font-weight: 700;
-}
-
-.badge-rec {
-  color: red;
-  font-weight: 700;
-}
-
-.camera-view img {
-  width: 100%;
-  height: 260px;
-  object-fit: cover;
-  background-color: green;
-}
-
-.camera-info {
-  padding: 1rem;
-  color: white;
-  background: #f8f8f8;
-}
-
-.cam-title {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.cam-id {
-  font-size: 14px;
-  color: white;
-  background-color: green;
-}
-
-.cam-time {
-  font-size: 14px;
-  color: white;
-  background-color: green;
-}
-
-/* ---------------- 테이블 영역 ---------------- */
-.table-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /*각 테이블 비율 */
-  gap: 1.5rem; /*입차 출차 테이블 사이 간격*/
-}
-.cell-green {
-  background-color: #00a82d; /* 원하는 초록색으로 변경 */
-  color: white;
-  font-weight: 600;
-}
-
-/* 데이터 표시 구역(녹색 배경) */
-.bg-green-section {
-  background-color: white;
-  border: black 1px;
-}
-/* 입차 출차 기록 전체 테이블   */
-.table-card {
-  border-radius: 3px;
-  padding: 1.5rem;
-}
-/*  */
-.table-title {
-  /*  */
-  margin-bottom: 1rem;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.record-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.record-table th,
-.record-table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid #dddddd;
-}
-
-.badge-complete {
-  color: white;
-  font-weight: 700;
-}
-
-.badge-wait {
-  color: orange;
-  font-weight: 700;
-}
-
-.btn-view {
-  background: #1e90ff;
-  border: none;
-  color: white;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.btn-view:hover {
-  opacity: 0.85;
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 8px;
 }

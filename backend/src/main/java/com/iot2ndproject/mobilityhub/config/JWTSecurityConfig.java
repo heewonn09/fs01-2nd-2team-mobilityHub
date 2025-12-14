@@ -48,7 +48,6 @@ public class JWTSecurityConfig {
 //                        .requestMatchers("product/**").hasAnyRole("USER","ADMIN")
                         //.anyRequest().authenticated())
                 .anyRequest().permitAll())
-
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .cors(cors->cors.configurationSource(corsConfigurationSource()));

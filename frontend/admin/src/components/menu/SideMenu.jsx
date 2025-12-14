@@ -38,7 +38,7 @@ const SideMenu = () => {
           <Link to="/carwash" className={getClassName("/carwash")}>
             세차장
           </Link>
-          <Link to="/maintenance" className={getClassName("/maintenance")}>
+          <Link to="/repair" className={getClassName("/repair")}>
             정비소
           </Link>
           <Link to="/statistics" className={getClassName("/statistics")}>
