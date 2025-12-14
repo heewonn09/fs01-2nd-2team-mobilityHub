@@ -1,8 +1,8 @@
 package com.iot2ndproject.mobilityhub.domain.image.dao;
 
+import com.iot2ndproject.mobilityhub.domain.work.dto.EntranceEntryView;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
 import com.iot2ndproject.mobilityhub.domain.work.repository.WorkInfoRepository;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -19,7 +19,8 @@ public class WorkInfoDAOImpl implements WorkInfoDAO {
 
     @Override
     public WorkInfoEntity findLatest() {
-        return workInfoRepository.findTopByImageIsNotNullOrderByRequestTimeDesc()
+        return (WorkInfoEntity) workInfoRepository
+                .findTopByImageIsNotNullOrderByRequestTimeDesc()
                 .orElseThrow(() -> new IllegalArgumentException("최근 입차 기록 없음"));
     }
 
@@ -29,10 +30,11 @@ public class WorkInfoDAOImpl implements WorkInfoDAO {
                 .orElseThrow(() -> new IllegalArgumentException("입차 기록 없음"));
     }
 
+    // 🔥 OCR / 최근 인식 번호판 전용
     @Override
-    public WorkInfoEntity findLatestWithImage() {
+    public EntranceEntryView findLatestWithImage() {
         return workInfoRepository
                 .findTopByImageIsNotNullOrderByRequestTimeDesc()
-                .orElseThrow(() -> new IllegalStateException("최근 OCR 입차 기록 없음"));
+                .orElse(null); // ❗ throw 금지 (프론트에서 처리)
     }
 }

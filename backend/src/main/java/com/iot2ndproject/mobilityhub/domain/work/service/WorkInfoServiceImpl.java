@@ -77,7 +77,12 @@ public class WorkInfoServiceImpl implements WorkInfoService {
         dto.setExitTime(v.getExitTime());
         dto.setCarNumber(v.getUserCar_Car_CarNumber());
         dto.setImagePath(v.getImage_ImagePath());
-        dto.setCameraId(v.getImage_CameraId());
+
+        dto.setCameraId(
+                v.getImage_CameraId() != null
+                        ? v.getImage_CameraId().toString()
+                        : null
+        );
 
         return dto;
     }
