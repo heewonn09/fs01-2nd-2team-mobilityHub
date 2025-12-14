@@ -28,6 +28,11 @@ public class ImageEntity {
     @CreationTimestamp
     private LocalDateTime regDate; // 등록일시
 
+    // 🔥 OCR 결과
+    private String ocrNumber;
+
+    // 🔥 관리자 수정 결과
+    private String correctedOcrNumber;
     // 카메라에 번호판 촬영되었을 시 사용되는 생성자
     public ImageEntity(String cameraId, String imagePath) {
         this.cameraId = cameraId;

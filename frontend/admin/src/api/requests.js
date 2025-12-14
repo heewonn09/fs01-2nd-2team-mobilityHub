@@ -6,6 +6,9 @@ const request = {
   // 입출구 API 추가
   todayEntry: "/entrance/today/entry",
   todayExit: "/entrance/today/exit",
+
+  // 번호판 수정 (workInfoId 필요)
+  updatePlate: (id) => `/entrance/${id}/plate`,
 };
 
 export default request;

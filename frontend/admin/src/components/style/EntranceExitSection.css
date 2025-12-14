@@ -3,7 +3,8 @@
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.75rem;
+  background-color: #f9fafb; /* 연한 회색 배경 */
 }
 
 /* ---------------- 카메라 영역 ---------------- */
@@ -15,17 +16,32 @@
 
 .camera-stream-box {
   background: #000;
-  border-radius: 10px;
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
-
 .cctv-stream {
   width: 100%;
-  height: 100%;
+  height: 300px;
   object-fit: cover;
 }
 /* ---------------- KPI 요약 박스 ---------------- */
+.latest-plate-box {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.latest-plate-box p {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+}
 
 .summary-grid {
   display: grid;
@@ -33,29 +49,35 @@
   gap: 1.5rem;
   margin-bottom: 1rem;
 }
-
 .summary-card {
-  background: white;
-  padding: 1.25rem 1.5rem;
-  border-radius: 12px;
+  background: #ffffff;
+  padding: 1.5rem 1.75rem;
+  border-radius: 16px;
   border: 1px solid #e5e7eb;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
 }
-
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
 .summary-title {
-  color: #6b7280;
-  font-size: 14px;
+  font-size: 13px;
+  letter-spacing: -0.2px;
 }
 
 .summary-value {
-  font-size: 18px;
-  font-weight: 700;
-  margin-top: 4px;
-  background-color: green;
+  font-size: 24px;
+  font-weight: 800;
 }
-
+.camera-section {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr; /* 메인 카메라 강조 */
+  gap: 1.75rem;
+  height: 520px;
+}
 .summary-icon {
   width: 45px;
   height: 45px;
@@ -88,13 +110,12 @@
 }
 
 .plate-image {
-  width: 200px;
-  height: 120px;
+  width: 100%;
+  height: 220px;
   object-fit: cover;
-  border-radius: 8px;
-  background-color: #eee;
+  border-radius: 12px;
+  background-color: #f3f4f6;
 }
-
 .green-icon {
   background: #d9f7df;
   color: #16a34a;
@@ -118,6 +139,7 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
+  height: 500px;
 }
 
 .camera-top {
@@ -175,9 +197,9 @@
 }
 
 .cell-green {
-  background-color: #00a82d; /* 원하는 초록색으로 변경 */
-  color: black;
-  font-weight: 600;
+  background-color: transparent; /* 초록 제거 */
+  color: #111827; /* 다크 그레이 */
+  font-weight: 500;
 }
 
 /* 데이터 표시 구역(녹색 배경) */
@@ -187,16 +209,17 @@
 }
 /* 입차 출차 기록 전체 테이블   */
 .table-card {
-  border-radius: 3px;
-  padding: 1.5rem;
-  grid: 1fr 1fr;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.75rem;
+  border: 1px solid #e5e7eb;
 }
+
 /*  */
 .table-title {
-  /*  */
-  margin-bottom: 1rem;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
 }
 
 .record-table {
@@ -204,31 +227,83 @@
   border-collapse: collapse;
 }
 
-.record-table th,
+.record-table th {
+  background-color: #f9fafb;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
 .record-table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid #dddddd;
+  font-size: 14px;
+  color: #111827;
+}
+.record-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+.record-table tbody tr:hover {
+  background-color: #eef2ff; /* 아주 연한 블루 */
 }
 
 .badge-complete {
-  color: white;
+  color: #16a34a;
   font-weight: 700;
 }
-
+.record-table tbody tr:hover {
+  background-color: #f3f4f6;
+}
 .badge-wait {
-  color: orange;
+  color: #d97706;
   font-weight: 700;
 }
-
 .btn-view {
-  background: #1e90ff;
+  background: #2563eb;
   border: none;
   color: white;
-  padding: 6px 14px;
-  border-radius: 6px;
+  padding: 7px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .btn-view:hover {
-  opacity: 0.85;
+  background: #1e40af;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+}
+/* 입차 / 출차 테이블을 감싸는 영역 */
+.table-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* ✅ 1:1 비율 */
+  gap: 24px;
+  margin-top: 24px;
+}
+
+/* 각 카드 */
+.table-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  min-height: 240px;
+}
+
+/* 테이블 */
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.record-table th,
+.record-table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+/* 데이터 없을 때 */
+.empty-row {
+  padding: 24px;
+  text-align: center;
+  color: #999;
 }

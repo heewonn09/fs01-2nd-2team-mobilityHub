@@ -5,8 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 
 import java.util.List;
+import java.util.Optional;
 
 public interface WorkInfoRepository extends JpaRepository<WorkInfoEntity, Long> {
     List<WorkInfoEntity> findByUserCar_User_UserIdOrderByRequestTimeDesc(String userId);
 
+
+    Optional<WorkInfoEntity> findTopByImageIsNotNullOrderByRequestTimeDesc();
 }
