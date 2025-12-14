@@ -61,9 +61,9 @@ public class RepairServiceImpl implements RepairService {
         List<RepairResponseDTO> repairList =
                 repairDAO.findRequestAll().stream()
                         .filter(entity -> entity.getWork().getWorkId() == 2 || entity.getWork().getWorkId() == 5)
-                        .filter(entity -> entity.getRequestTime().toLocalDate().isEqual(LocalDate.now()) && entity.getExitTime() == null)
+                        .filter(entity -> entity.getRequestTime().toLocalDate().isEqual(LocalDate.now()))
                         .map(RepairResponseDTO::new)
-                        .sorted(Comparator.comparing(RepairResponseDTO::getRequestTime))
+                        .sorted(Comparator.comparing(RepairResponseDTO::getId))
                         .collect(Collectors.toList());
 
         return new ResponseDTO(stockStatusList, repairList);

@@ -19,10 +19,14 @@ public class RepairResponseDTO {
     private String additionalRequest;
     private int carState;
     private LocalDateTime requestTime;
+    private LocalDateTime entryTime;
+    private LocalDateTime exitTime;
 
     public RepairResponseDTO(WorkInfoEntity entity) {
         this.id = entity.getId();
         this.requestTime = entity.getRequestTime();
+        this.entryTime = entity.getEntryTime();
+        this.exitTime = entity.getExitTime();
 
         if (entity.getWork() != null) {
             this.workId = entity.getWork().getWorkId();
