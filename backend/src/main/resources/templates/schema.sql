@@ -127,6 +127,7 @@ CREATE TABLE `stock_status` (
   `sector_id` char(3) DEFAULT NULL,
   `stock_category` varchar(255) NOT NULL,
   `stock_units` varchar(255) NOT NULL,
+  `min_stock_quantity` int NOT NULL,
   PRIMARY KEY (`inventory_id`),
   KEY `FKej08ugjeniettp0qbmtiyylud` (`sector_id`),
   CONSTRAINT `FKej08ugjeniettp0qbmtiyylud` FOREIGN KEY (`sector_id`) REFERENCES `parking` (`sector_id`)
