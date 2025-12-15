@@ -7,6 +7,9 @@ const request = {
   todayEntry: "/entrance/today/entry",
   todayExit: "/entrance/today/exit",
 
+  // 작업 전체 목록
+  workList: "/entrance/work/list",
+
   // 정비소 api
   // 1) 정비 서비스 차량 모든 조회
   repairAll: "/repair/list",

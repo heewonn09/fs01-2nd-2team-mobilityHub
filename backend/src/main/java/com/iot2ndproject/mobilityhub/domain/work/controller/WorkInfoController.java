@@ -16,6 +16,14 @@ public class WorkInfoController {
 
     private final WorkInfoService workInfoService;
 
+    //작업 전체 목록
+    @GetMapping("/work/list")
+    public List<WorkInfoResponseDTO> workInfolist(){
+        List<WorkInfoResponseDTO> list = workInfoService.findAll();
+
+        return list;
+    }
+
     // ✔ 금일 입차
     @GetMapping("/today/entry")
     public List<WorkInfoResponseDTO> getTodayEntry() {

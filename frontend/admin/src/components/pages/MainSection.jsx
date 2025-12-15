@@ -2,10 +2,20 @@ import React, { useEffect, useState } from "react";
 import "../style/MainSection.css";
 import { getWeatherInfo } from "../../api/weather";
 import { useLocation } from "react-router-dom";
+import { getTodayEntry, getTodayExit } from "../../api/EntranceAPI";
+import InOutLineChart from "../chart/InOutLineChart";
+import { getWorkInfoList } from "../../api/workInfoAPI";
+import UseByArea from "../chart/UseByArea";
 
 const MainSection = () => {
   //날씨
   const [weather, setWeather] = useState("");
+
+  // 금일 입출차 그래프
+  const [inOutData, setInOutData] = useState([["시간", "입차", "출차"]]);
+
+  // 작업 목록 가져오기
+  const [workList, setWorkList] = useState([]);
 
   // 현재 날짜 가져오기
   const currentDate = new Date().toLocaleDateString("ko-KR", {
@@ -26,6 +36,53 @@ const MainSection = () => {
       .catch((err) => console.error("API 오류:", err));
   }, []);
 
+  // 입출차 차트
+  useEffect(() => {
+    inOutChartData();
+  }, []);
+
+  const inOutChartData = async () => {
+    const entryList = await getTodayEntry();
+    const exitList = await getTodayExit();
+
+    const entryCount = {};
+    const exitCount = {};
+
+    entryList.forEach((item) => {
+      if (!item.entryTime) return;
+      const hour = new Date(item.entryTime).getHours();
+      entryCount[hour] = (entryCount[hour] || 0) + 1;
+    });
+
+    exitList.forEach((item) => {
+      if (!item.exitTime) return;
+      const hour = new Date(item.exitTime).getHours();
+      exitCount[hour] = (exitCount[hour] || 0) + 1;
+
+      const data = [["시간", "입차", "출차"]];
+      for (let hour = 0; hour < 24; hour++) {
+        const entry = Number(entryCount[hour] || 0);
+        const exit = Number(exitCount[hour] || 0);
+        data.push([hour, entry, exit]);
+      }
+
+      setInOutData(data);
+    });
+  };
+
+  console.log(workList);
+
+  // 구역별 이용 차트 데이터
+  useEffect(() => {
+    getWorkInfoList()
+      .then((res) => {
+        setWorkList(res);
+      })
+      .catch((err) => console.log("작업 목록 가져오기 실패: ", err));
+  }, []);
+
+  // workId별 이용수 집계
+
   return (
     <div className="main-page">
       {/* 통계 차트 영역 */}
@@ -34,17 +91,13 @@ const MainSection = () => {
           <div className="chart-title">
             <h3>금일 집계 (시간대별 입출차)</h3>
           </div>
-          <div className="chart-content">(시간대별 입출차 데이터를 선 그래프로 해주세요)</div>
+          <InOutLineChart className="chart-content" data={inOutData} />
         </div>
         <div className="chart-box">
           <div className="chart-title">
             <h3>금일 이용회원 (구역별)</h3>
           </div>
-<<<<<<< HEAD
           <UseByArea className="chart-content" workList={workList} />
-=======
-          <div className="chart-content">(구역별 이용회원 데이터를 막대 그래프로 해주세요)</div>
->>>>>>> afe7eb765ed0953df1f84a2b5c6af5c18a330334
         </div>
       </div>
 
