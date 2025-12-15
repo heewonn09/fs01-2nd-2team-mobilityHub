@@ -68,6 +68,16 @@ class MqttWorker:
             elif myval == "down":
                 print(message.topic, myval)
                 self.pca.lift_down(channel=0, speed=0.05)
+                
+                
+            if message.topic == "parking/web/entrance/cam":
+                if myval == "start":
+                    if not self.is_streaming:
+                        self.is_streaming = True
+                        Thread(target=self.send_entrance_camera, daemon=True).start()
+                elif myval == "stop":
+                    self.is_streaming = False
+
             
             
             
@@ -77,7 +87,7 @@ class MqttWorker:
             try:
                 frame = self.camera.getStreaming()
                 ##publisher.single("parking/web/carwash/cam", frame, hostname="192.168.14.38")
-                publisher.single("parking/web/carwash/cam", frame, hostname="192.168.137.1")
+                #publisher.single("parking/web/carwash/cam", frame, hostname="192.168.137.1")
                 publisher.single("parking/web/repair/cam", frame, hostname="192.168.14.39") # 작업하는 사람의 브로커 주소 넣기
                 
                 
@@ -96,6 +106,26 @@ class MqttWorker:
         
         print("세차 완료!")
         self.client.publish("parking/web/carwash", "end")
+        
+    #입구 전용 스트리밍 publish 함수    
+    def send_entrance_camera(self):
+            while self.is_streaming:
+                try:
+                    frame = self.camera.getStreaming()
+                    if frame is None:
+                        continue
+
+                    publisher.single(
+                        "parking/web/entrance/cam",
+                        frame,
+                        hostname="192.168.137.1"
+                    )
+                    time.sleep(0.05)  # 약 20fps
+                except Exception as e:
+                    print("📡 entrance cam error:", e)
+                    self.is_streaming = False
+                    break
+
             
     # mqtt서버연결을 하는 메소드 - 사용자정의
     def mymqtt_connect(self):

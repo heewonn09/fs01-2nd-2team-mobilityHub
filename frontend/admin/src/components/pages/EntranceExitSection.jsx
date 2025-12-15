@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import LicenseModal from "./LicenseModal";
+import useMqtt from "../hook/useMqtt.js";
 import "../style/EntranceExitSection.css";
 
 const API_BASE = "http://localhost:9000";
+const MQTT_BROKER = "ws://localhost:9001";
 const PAGE_SIZE = 6;
 
 export default function EntranceExitSection() {
+  /* ================= 상태 ================= */
   const [latest, setLatest] = useState(null);
+  const [latestImage, setLatestImage] = useState(null);
+
   const [todayEntry, setTodayEntry] = useState([]);
   const [todayExit, setTodayExit] = useState([]);
 
@@ -16,72 +21,112 @@ export default function EntranceExitSection() {
 
   const [modalData, setModalData] = useState(null);
 
+  /* ================= MQTT ================= */
+  const { imageSrc, capturedImage, publish } = useMqtt(MQTT_BROKER);
+
+  /* ================= 초기 로딩 ================= */
   useEffect(() => {
     loadAll();
   }, []);
 
-  const loadAll = async () => {
-    const [latestRes, entryRes, exitRes] = await Promise.all([
-      axios.get(`${API_BASE}/entrance/latest`),
-      axios.get(`${API_BASE}/entrance/today/entry`),
-      axios.get(`${API_BASE}/entrance/today/exit`),
-    ]);
+  /* ================= CCTV 시작 / 종료 ================= */
+  useEffect(() => {
+    // ✅ 페이지 진입 → CCTV 스트리밍 시작
+    publish("parking/web/entrance/cam", "start");
 
-    setLatest(latestRes.data);
-    setTodayEntry(entryRes.data);
-    setTodayExit(exitRes.data);
+    return () => {
+      // ✅ 페이지 나갈 때 → CCTV 스트리밍 중지
+      publish("parking/web/entrance/cam", "stop");
+    };
+  }, [publish]);
+
+  const loadAll = async () => {
+    try {
+      const [latestRes, entryRes, exitRes, imageRes] = await Promise.all([
+        axios.get(`${API_BASE}/entrance/latest`),
+        axios.get(`${API_BASE}/entrance/today/entry`),
+        axios.get(`${API_BASE}/entrance/today/exit`),
+        axios.get(`${API_BASE}/entrance/latest_image`),
+      ]);
+
+      setLatest(latestRes.data);
+      setTodayEntry(entryRes.data);
+      setTodayExit(exitRes.data);
+      setLatestImage(imageRes.data);
+    } catch (e) {
+      console.error("입출구 데이터 로딩 실패", e);
+    }
   };
 
+  /* ================= 페이지네이션 ================= */
   const paginate = (list, page) => {
     const start = (page - 1) * PAGE_SIZE;
     return list.slice(start, start + PAGE_SIZE);
   };
 
-  const approve = async (workId) => {
-    await axios.post(`${API_BASE}/entrance/${workId}/approve`);
-    loadAll();
-  };
-
   return (
     <div className="entrance-page">
-      {/* ===== 상단 CCTV + 최근 인식 ===== */}
-      <div className="top-grid">
-        <div className="card cctv-box">
-          <div className="cctv-placeholder">📷 CCTV 스트림 대기중</div>
+      {/* ================= 요약 ================= */}
+      <div className="summary-grid">
+        <div className="summary-card entry">
+          <p className="summary-title">금일 입차</p>
+          <p className="summary-count">{todayEntry.length}대</p>
         </div>
 
+        <div className="summary-card exit">
+          <p className="summary-title">금일 출차</p>
+          <p className="summary-count">{todayExit.length}대</p>
+        </div>
+      </div>
+
+      {/* ================= CCTV / 캡처 ================= */}
+      <div className="top-grid">
+        {/* 실시간 CCTV */}
+        <div className="card cctv-box">
+          {imageSrc ? (
+            <img src={imageSrc} alt="cctv" className="cctv-image" />
+          ) : (
+            <div className="cctv-placeholder">📺 CCTV 대기중</div>
+          )}
+        </div>
+
+        {/* 캡처 이미지 */}
+        <div className="card cctv-box">
+          {capturedImage ? (
+            <img src={capturedImage} alt="capture" className="cctv-image" />
+          ) : (
+            <div className="cctv-placeholder">📸 캡처 이미지 없음</div>
+          )}
+
+          {/* 캡처 트리거 */}
+          <button className="btn-capture" onClick={() => publish("parking/web/entrance", "comeIn")}>
+            캡처
+          </button>
+        </div>
+
+        {/* 최근 인식 정보 */}
         <div className="card recent-card">
           <h3>최근 인식 번호판</h3>
 
-          {!latest ? (
+          {!latestImage ? (
             <p className="empty-text">대기중</p>
           ) : (
             <>
               <p>
                 번호판 :{" "}
-                <span
-                  className={latest.match ? "plate-ok" : "plate-error"}
-                  onClick={() => setModalData(latest)}
-                >
-                  {latest.carNumber || latest.ocrNumber || "미확인"}
+                <span className="plate-error">
+                  {latestImage.correctedOcrNumber || latestImage.ocrNumber || "미인식"}
                 </span>
               </p>
-              <p>카메라 : {latest.cameraId}</p>
-              <p>{new Date(latest.time).toLocaleString()}</p>
-
-              {!latest.match && latest.workId && (
-                <button className="btn-approve" onClick={() => approve(latest.workId)}>
-                  입차 승인
-                </button>
-              )}
+              <p>카메라 : {latestImage.cameraId}</p>
+              <p>{new Date(latestImage.regDate).toLocaleString()}</p>
             </>
           )}
         </div>
       </div>
 
-      {/* ===== 입차 / 출차 기록 ===== */}
+      {/* ================= 입차 / 출차 ================= */}
       <div className="record-grid">
-        {/* 입차 */}
         <RecordTable
           title="입차 차량 기록"
           data={paginate(todayEntry, entryPage)}
@@ -92,7 +137,6 @@ export default function EntranceExitSection() {
           type="entry"
         />
 
-        {/* 출차 */}
         <RecordTable
           title="출차 차량 기록"
           data={paginate(todayExit, exitPage)}
@@ -151,7 +195,6 @@ function RecordTable({ title, data, page, total, onPageChange, onClickPlate, typ
         </tbody>
       </table>
 
-      {/* 페이지네이션 */}
       {totalPage > 1 && (
         <div className="pagination">
           <button disabled={page === 1} onClick={() => onPageChange(page - 1)}>
