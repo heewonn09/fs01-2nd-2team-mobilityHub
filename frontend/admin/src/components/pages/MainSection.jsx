@@ -4,7 +4,7 @@ import { getWeatherInfo } from "../../api/weather";
 import { useLocation } from "react-router-dom";
 import { getTodayEntry, getTodayExit } from "../../api/EntranceAPI";
 import InOutLineChart from "../chart/InOutLineChart";
-import { getTodayWorkList, getWorkInfoList } from "../../api/workInfoAPI";
+import { getTodayWorkList, workInfoTotalList } from "../../api/workInfoAPI";
 import UseByArea from "../chart/UseByArea";
 
 const MainSection = () => {
@@ -16,6 +16,8 @@ const MainSection = () => {
 
   // 작업 목록 가져오기
   const [workList, setWorkList] = useState([]);
+
+  const [workTotalList, setWorkTotalList] = useState([]);
 
   // 현재 날짜 가져오기
   const currentDate = new Date().toLocaleDateString("ko-KR", {
@@ -36,11 +38,7 @@ const MainSection = () => {
       .catch((err) => console.error("API 오류:", err));
   }, []);
 
-  // 입출차 차트
-  useEffect(() => {
-    inOutChartData();
-  }, []);
-
+  // 금일 시간대별 입출차 집계
   const inOutChartData = async () => {
     const entryList = await getTodayEntry();
     const exitList = await getTodayExit();
@@ -72,8 +70,17 @@ const MainSection = () => {
 
   console.log(workList);
 
-  // 구역별 이용 차트 데이터
   useEffect(() => {
+    // 입출차 차트
+    inOutChartData();
+
+    workInfoTotalList()
+      .then((res) => {
+        setWorkTotalList(res);
+      })
+      .catch((err) => console.error("조회실패: ", err));
+
+    // 구역별 이용 차트 데이터
     getTodayWorkList()
       .then((res) => {
         setWorkList(res);
@@ -81,7 +88,7 @@ const MainSection = () => {
       .catch((err) => console.log("작업 목록 가져오기 실패: ", err));
   }, []);
 
-  // workId별 이용수 집계
+  console.log(workTotalList);
 
   return (
     <div className="main-page">
@@ -141,7 +148,10 @@ const MainSection = () => {
             <p id="today">오늘 날짜</p>
             <p id="day">{currentDate}</p>
             <div className="weather-box">
-              <span className="weather-icon" style={{ backgroundColor: "green" }}>
+              <span
+                className="weather-icon"
+                style={{ backgroundColor: "green" }}
+              >
                 날씨 아이콘
               </span>
               <span className="weather-text">{weather}</span>

@@ -17,22 +17,6 @@ import StockCreateModal from "../modal/StockCreateModal";
 const BROKER_URL = "ws://192.168.14.39:9001";
 //const BROKER_URL = "ws://192.168.45.84";
 
-// 차량 상태 상수
-const CAR_STATE = {
-  REPAIRING: 13,
-  WAIT_1: 1,
-  WAIT_2: 2,
-  WAIT_3: 0,
-};
-
-// 상태별 정보 매핑
-const CAR_STATE_INFO = {
-  [CAR_STATE.WASHING]: { label: "진행중", color: "ing" },
-  [CAR_STATE.WAIT_1]: { label: "대기중", color: "wait" },
-  [CAR_STATE.WAIT_2]: { label: "대기중", color: "wait" },
-  [CAR_STATE.WAIT_3]: { label: "완료", color: "finish" },
-};
-
 const RepairSection = () => {
   const [repairList, getRepairList] = useState([]);
   const [stockList, getStockList] = useState([]);
@@ -75,7 +59,7 @@ const RepairSection = () => {
       .then((res) => {
         setReportList(res);
       })
-      .catch((err) => console.error("보고서 조회 시래"));
+      .catch((err) => console.error("보고서 조회 실패"));
   }, [connectStatus, publish]);
 
   console.log(repairList);
@@ -88,8 +72,8 @@ const RepairSection = () => {
   // 대기 중인 차량
   const waitForWark = repairList.find(
     (repair) =>
-      repair.carState !== CAR_STATE.REPAIRING &&
-      repair.entryTime == null &&
+      repair.carState !== 13 &&
+      repair.entryTime !== null &&
       repair.exitTime == null
   );
 
@@ -105,17 +89,17 @@ const RepairSection = () => {
     publish("parking/web/repair/lift", "status"); // 초기 상태 요청용(선택)
   }, [connectStatus, publish]);
 
-  useEffect(() => {
-    if (!message) return;
+  // useEffect(() => {
+  //   if (!message) return;
 
-    if (message.topic === "parking/web/repair/lift") {
-      if (message.payload === "up") {
-        setLiftStatus("상승중");
-      } else if (message.payload === "down") {
-        setLiftStatus("하강중");
-      }
-    }
-  }, [message]);
+  //   if (message.topic === "parking/web/repair/lift") {
+  //     if (message.payload === "up") {
+  //       setLiftStatus("상승중");
+  //     } else if (message.payload === "down") {
+  //       setLiftStatus("하강중");
+  //     }
+  //   }
+  // }, [message]);
 
   const handleReportSubmit = async (reportData) => {
     console.log("DB에 저장될 데이터: ", reportData);
@@ -286,17 +270,14 @@ const RepairSection = () => {
           </div>
 
           {/* 카드 본문: 현재 작업 차량 추가 요청사항 */}
-          {repairList.filter(
-            (rep) => rep.carStateNodeId === CAR_STATE.REPAIRING
-          ).length > 0 ? (
+          {repairList.filter((rep) => rep.carState === 13).length > 0 ? (
             repairList
-              .filter((rep) => rep.carStateNodeId === CAR_STATE.REPAIRING)
+              .filter((rep) => rep.carState === 13)
               .map((rep) => (
                 <div key={rep.id} className="repair-list">
                   <p className="add-repair">추가 요청사항</p>
-                  {rep.additionalRequests &&
-                  rep.additionalRequests.length > 0 ? (
-                    rep.additionalRequests.map((req, index) => (
+                  {rep.additionalRequest && rep.additionalRequest.length > 0 ? (
+                    rep.additionalRequest.map((req, index) => (
                       <div key={index} className="repair-request">
                         {req}
                       </div>

@@ -2,6 +2,7 @@ package com.iot2ndproject.mobilityhub.domain.work.controller;
 
 import com.iot2ndproject.mobilityhub.domain.work.dto.PlateUpdateRequest;
 import com.iot2ndproject.mobilityhub.domain.work.dto.WorkInfoResponseDTO;
+import com.iot2ndproject.mobilityhub.domain.work.dto.WorkInfoTotalListResponse;
 import com.iot2ndproject.mobilityhub.domain.work.service.WorkInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,11 @@ public class WorkInfoController {
     public List<WorkInfoResponseDTO> workInfoToday(){
         List<WorkInfoResponseDTO> todaywork = workInfoService.findAllToday();
         return todaywork;
+    }
+
+    @GetMapping("/work/totalList")
+    public List<WorkInfoTotalListResponse> workInfoTotalList(){
+        return workInfoService.workInfoTotalList();
     }
 
     // ✔ 금일 입차

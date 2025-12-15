@@ -25,3 +25,14 @@ export const getTodayWorkList = async () => {
     return [];
   }
 };
+
+export const workInfoTotalList = async () => {
+  try {
+    const response = await backendServer.get(request.workInfoTotalList);
+
+    return response.data;
+  } catch (error) {
+    console.error("에러발생: ", error);
+    return [];
+  }
+};

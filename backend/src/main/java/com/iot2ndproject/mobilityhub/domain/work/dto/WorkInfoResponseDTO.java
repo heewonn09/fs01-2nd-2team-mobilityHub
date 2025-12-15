@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class WorkInfoResponseDTO {
-    private Long id;              // work_info id
+    private String id;              // work_info id
     private String carNumber;     // 차량 번호
 
     private int workId;

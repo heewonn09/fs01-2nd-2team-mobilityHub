@@ -29,7 +29,7 @@ CREATE TABLE `admin` (
 
 CREATE TABLE `car` (
   `car_id` bigint NOT NULL AUTO_INCREMENT,
-  `insert_date` datetime(6) DEFAULT NULL,
+  `insert_date` datetime DEFAULT NULL,
   `car_model` varchar(255) DEFAULT NULL,
   `car_number` varchar(255) NOT NULL,
   PRIMARY KEY (`car_id`)
@@ -37,7 +37,7 @@ CREATE TABLE `car` (
 
 CREATE TABLE `image` (
   `image_id` int NOT NULL AUTO_INCREMENT,
-  `reg_date` datetime(6) DEFAULT NULL,
+  `reg_date` datetime DEFAULT NULL,
   `camera_id` varchar(255) NOT NULL,
   `image_path` varchar(255) DEFAULT NULL,
   `ocr_number` varchar(255) DEFAULT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE `parking` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `user` (
-  `create_date` datetime(6) DEFAULT NULL,
+  `create_date` datetime DEFAULT NULL,
   `phone_number` varchar(255) NOT NULL,
   `role` varchar(255) DEFAULT NULL,
   `user_id` varchar(255) NOT NULL,
@@ -85,10 +85,10 @@ CREATE TABLE `work` (
 CREATE TABLE `work_info` (
   `image_id` int DEFAULT NULL,
   `work_id` int DEFAULT NULL,
-  `entry_time` datetime(6) DEFAULT NULL,
-  `exit_time` datetime(6) DEFAULT NULL,
+  `entry_time` datetime DEFAULT NULL,
+  `exit_time` datetime DEFAULT NULL,
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `request_time` datetime(6) DEFAULT NULL,
+  `request_time` datetime DEFAULT NULL,
   `user_car_id` bigint DEFAULT NULL,
   `car_state` int DEFAULT NULL,
   `additional_request` text,
@@ -121,7 +121,7 @@ CREATE TABLE `repair_report` (
 CREATE TABLE `stock_status` (
   `stock_price` int NOT NULL,
   `stock_quantity` int NOT NULL,
-  `update_time` datetime(6) DEFAULT NULL,
+  `update_time` datetime DEFAULT NULL,
   `inventory_id` char(3) NOT NULL,
   `product_name` varchar(255) NOT NULL,
   `sector_id` char(3) DEFAULT NULL,
