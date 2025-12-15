@@ -324,13 +324,6 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     @Override
     @Transactional
     public void completeService(Long workInfoId, String stage) {
-        if (workInfoId == null) {
-            throw new IllegalArgumentException("workInfoId는 필수입니다.");
-        }
-        if (stage == null || stage.isBlank()) {
-            throw new IllegalArgumentException("stage는 필수입니다.");
-        }
-
         // WorkInfoEntity 조회
         Optional<WorkInfoEntity> optionalWorkInfo = serviceRequestDAO.findById(workInfoId);
         if (optionalWorkInfo.isEmpty()) {
@@ -350,7 +343,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         }
 
         // RC카에 서비스 완료 신호 발행
-        String carId = carNumber.replaceAll("\\s+", "");
+        String carId = carNumber;
         String topic = "rccar/" + carId + "/service";
         Map<String, String> payload = new HashMap<>();
         payload.put("stage", stage.toLowerCase());
