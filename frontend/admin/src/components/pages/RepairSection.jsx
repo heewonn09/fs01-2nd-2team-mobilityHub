@@ -67,15 +67,16 @@ const RepairSection = () => {
   console.log(reportList);
 
   // 현재 작업 중인 차량
-  const workingCar = repairList.find((repair) => repair.carState === 13);
+  const workingCar = repairList.filter((repair) => repair.carState === 13);
 
   // 대기 중인 차량
-  const waitForWark = repairList.find(
+  const waitForWark = repairList.filter(
     (repair) =>
       repair.carState !== 13 &&
-      repair.entryTime !== null &&
-      repair.exitTime == null
-  );
+      repair.exit_time == null &&
+      (repair.entry_time == null || repair.carState == null) &&
+      (repair.entry_time !== null || repair.carState == 1 || repair.carState == 2 || repair.carState == 12)
+  ).length;
 
   const handleCompleteWork = () => {
     if (!repairList) return alert("현재 작업중인 차량이 없습니다.");
@@ -142,13 +143,14 @@ const RepairSection = () => {
       let carStateText = "";
       if (list.carState === 13) {
         carStateText = "작업중";
+        
       } else if (
-        (list.carState === null ||
-          list.carState === 0 ||
+        ((list.carState === null && list.entry_time == null) ||
+          (list.carState === 0 ||
           list.carState === 1 ||
           list.carState === 2 ||
           list.carState === 12) &&
-        list.entry_time
+        list.entry_time !== null)
       ) {
         carStateText = "대기중";
       } else {
@@ -173,7 +175,7 @@ const RepairSection = () => {
             <div>
               <p className="working-info">현재 작업차량</p>
               <p className="info-details insert">
-                {workingCar ? workingCar.car_number : "작업중인 차량 없음"}
+                {workingCar.length > 0 ? workingCar[0].car_number : "작업중인 차량 없음"}
               </p>
             </div>
             <div className="icon-box" style={{ backgroundColor: "#dbeafe" }}>
@@ -191,7 +193,7 @@ const RepairSection = () => {
               </p>
             </div>
             <div className="icon-box" style={{ backgroundColor: "#fef9c3" }}>
-              {/* icon 들어갈 자리, class=icon color:#ca8a04 */}
+              icon 들어갈 자리, class=icon color:#ca8a04
             </div>
           </div>
         </div>
@@ -277,11 +279,9 @@ const RepairSection = () => {
                 <div key={rep.id} className="repair-list">
                   <p className="add-repair">추가 요청사항</p>
                   {rep.additionalRequest && rep.additionalRequest.length > 0 ? (
-                    rep.additionalRequest.map((req, index) => (
-                      <div key={index} className="repair-request">
-                        {req}
+                      <div key={rep.id} className="repair-request">
+                        {rep.additionalRequest}
                       </div>
-                    ))
                   ) : (
                     <p className="no-request">요청사항 없음</p>
                   )}
