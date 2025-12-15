@@ -1,0 +1,48 @@
+/* 전체 wrapper */
+.parking-section {
+  padding: 20px;
+}
+
+/* ======  placeholder 초록색 박스 ====== */
+.placeholder-box {
+  background-color: green;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.placeholder-text {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* ====== 그리드 레이아웃 ====== */
+.parking-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.parking-stat-card {
+  height: 120px;
+}
+
+/* ====== 카메라 + 리스트 영역 ====== */
+.parking-content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+/* 카메라 */
+.parking-camera-container {
+  height: 400px;
+}
+
+/* 오른쪽 리스트 */
+.parking-list {
+  height: 400px;
+}
