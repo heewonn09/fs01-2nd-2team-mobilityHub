@@ -6,6 +6,8 @@ import { getTodayEntry, getTodayExit } from "../../api/EntranceAPI";
 import InOutLineChart from "../chart/InOutLineChart";
 import { getTodayWorkList, workInfoTotalList } from "../../api/workInfoAPI";
 import UseByArea from "../chart/UseByArea";
+import MiniCalendar from "../calendar/MiniCalendar";
+import { AlignCenter } from "lucide-react";
 
 const MainSection = () => {
   //날씨
@@ -147,30 +149,11 @@ const MainSection = () => {
           <div>
             <p id="today">오늘 날짜</p>
             <p id="day">{currentDate}</p>
-            <div className="weather-box">
-              <span
-                className="weather-icon"
-                style={{ backgroundColor: "green" }}
-              >
-                날씨 아이콘
-              </span>
-              <span className="weather-text">{weather}</span>
-            </div>
           </div>
 
           {/* 물 수위 센서 */}
-          <div className="water">
-            <p className="water-title">물 수위 센서 시스템</p>
-            <div className="system-box">
-              <div className="system-content">
-                <div className="switch"></div>
-                <span className="state">on/off 표시</span>
-              </div>
-              <div className="system-icon">아이콘 표시</div>
-            </div>
-            <p className="systtem-info">
-              (날씨에 따른 변화 필요) 비가 내리고 있어 센서가 활성화되었습니다.
-            </p>
+          <div className="calendar">
+            <MiniCalendar style={{ textAlign: "center", margin: "0 auto" }} />
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.user.service;
 
 import com.iot2ndproject.mobilityhub.domain.user.dao.UserDAO;
+import com.iot2ndproject.mobilityhub.domain.user.dto.UserListDTO;
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserProfileDTO;
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserRequestDTO;
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserResponseDTO;
@@ -9,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,5 +44,21 @@ public class UserServiceImpl implements UserService {
         user.setUserName(profileDTO.getUserName());
         user.setTel(profileDTO.getTel());
         userDAO.save(user);
+    }
+
+    // 유저 전체 목록 불러오기
+    @Override
+    public List<UserListDTO> getUserList() {
+        return userDAO.findAll()
+                .stream()
+                .map(e -> {
+                    UserListDTO dto = new UserListDTO();
+                    dto.setUserId(e.getUserId());
+                    dto.setCreateDate(e.getCreateDate());
+                    dto.setUserName(e.getUserName());
+                    dto.setTel(e.getTel());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }

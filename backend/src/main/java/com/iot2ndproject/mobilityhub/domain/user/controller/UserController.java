@@ -1,9 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.user.controller;
 
-import com.iot2ndproject.mobilityhub.domain.user.dto.LoginRequestDTO;
-import com.iot2ndproject.mobilityhub.domain.user.dto.UserProfileDTO;
-import com.iot2ndproject.mobilityhub.domain.user.dto.UserRequestDTO;
-import com.iot2ndproject.mobilityhub.domain.user.dto.UserResponseDTO;
+import com.iot2ndproject.mobilityhub.domain.user.dto.*;
+import com.iot2ndproject.mobilityhub.domain.user.entity.UserEntity;
 import com.iot2ndproject.mobilityhub.domain.user.jwt.TokenProvider;
 import com.iot2ndproject.mobilityhub.domain.user.service.UserService;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.CarEntity;
@@ -18,6 +16,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -49,6 +48,12 @@ public class UserController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+
+    // 유저 전체 목록 불러오기
+    @GetMapping("/userlist")
+    public List<UserListDTO> userlist(){
+        return userService.getUserList();
+    }
 
     //@@@@@ 아이디 비밀번호 찾기 / 수정 구현 예정
     // @PutMapping("/password-change")

@@ -2,7 +2,16 @@ import React from "react";
 
 import "./SideMenu.css";
 import { Link, useLocation } from "react-router-dom";
-import { User } from "lucide-react";
+import {
+  BarChart3,
+  DoorOpen,
+  Droplets,
+  LayoutDashboard,
+  ParkingCircle,
+  User,
+  Users,
+  Wrench,
+} from "lucide-react";
 
 const SideMenu = () => {
   const location = useLocation();
@@ -22,29 +31,36 @@ const SideMenu = () => {
       <aside className="side-menu">
         <div className="side-title">
           <Link to="/" className={getClassName("/")}>
-            스마트 주차장
+            <h2>스마트 주차장</h2>
           </Link>
         </div>
         <nav className="side-page">
           <Link to="/main" className={getClassName("/main")}>
+            <LayoutDashboard />
             메인
           </Link>
           <Link to="/entrance" className={getClassName("/entrance")}>
+            <DoorOpen />
             입출구
           </Link>
           <Link to="/parking" className={getClassName("/parking")}>
+            <ParkingCircle />
             주차장
           </Link>
           <Link to="/carwash" className={getClassName("/carwash")}>
+            <Droplets />
             세차장
           </Link>
           <Link to="/repair" className={getClassName("/repair")}>
+            <Wrench />
             정비소
           </Link>
           <Link to="/statistics" className={getClassName("/statistics")}>
+            <BarChart3 />
             통계
           </Link>
           <Link to="/admin" className={getClassName("/admin")}>
+            <Users />
             관리자 조회
           </Link>
         </nav>
@@ -59,9 +75,7 @@ const SideMenu = () => {
               <p id="admin-email">관리자 이메일</p>
             </div>
           </div>
-          <div className="today">
-            <span>{currentDate}</span>
-          </div>
+          <div className="today">{currentDate}</div>
         </div>
       </aside>
     </div>

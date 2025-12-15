@@ -27,6 +27,9 @@ const CarWashSection = () => {
   const [carWashing, setCarWashing] = useState([]);
   const [mqttLogs, setMqttLogs] = useState([]);
 
+  const [popupMessage, setPopupMessage] = useState(null);
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+
   const { connectStatus, imageSrc, publish } = useMqtt(BROKER_URL);
 
   // 페이지 로딩 시 카메라 스트리밍 시작
@@ -57,7 +60,9 @@ const CarWashSection = () => {
   const washingCar = carWashing.find((item) => item.carStateNodeId === CAR_STATE.WASHING);
 
   // 대기 중 차량
-  const waitCarList = carWashing.filter((item) => [CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(item.carStateNodeId));
+  const waitCarList = carWashing.filter((item) =>
+    [CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(item.carStateNodeId)
+  );
   const waitCarCount = waitCarList.length;
 
   // 완료 차량
@@ -119,7 +124,11 @@ const CarWashSection = () => {
           </div>
           <div className="list-content">
             {carWashing
-              .filter((item) => [CAR_STATE.WASHING, CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(item.carStateNodeId))
+              .filter((item) =>
+                [CAR_STATE.WASHING, CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(
+                  item.carStateNodeId
+                )
+              )
               .map((list) => (
                 <div key={list.id} className="list-data">
                   <div>

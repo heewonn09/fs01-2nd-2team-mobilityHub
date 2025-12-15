@@ -5,6 +5,8 @@ import com.iot2ndproject.mobilityhub.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class UserDAOImpl implements UserDAO{
@@ -25,5 +27,11 @@ public class UserDAOImpl implements UserDAO{
     @Override
     public void save(UserEntity user) {
         userRepository.save(user);
+    }
+
+    // 유저 전체 목록 불러오기
+    @Override
+    public List<UserEntity> findAll() {
+        return userRepository.findAll();
     }
 }

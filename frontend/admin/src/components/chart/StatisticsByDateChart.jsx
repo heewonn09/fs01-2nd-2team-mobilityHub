@@ -9,11 +9,11 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const StatisticsByDateChart = ({ data, xKey }) => {
+const StatisticsByDateChart = ({ data, xKey, periodType }) => {
   const formatXAxisLabel = (value) => {
-    if (xKey === "daily") return `${value}일`;
-    if (xKey === "monthly") return `${value}월`;
-    if (xKey === "yearly") return `${value}별`;
+    if (periodType === "daily") return `${value}일`;
+    if (periodType === "monthly") return `${value}`;
+    if (periodType === "yearly") return `${value}별`;
     return value;
   };
   return (

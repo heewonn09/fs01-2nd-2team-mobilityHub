@@ -140,9 +140,8 @@ tbody > tr:hover {
   /* color: purple; */
 }
 
-.water {
+.calendar {
   border-top: solid 1px rgb(172, 172, 172);
-  padding-top: 1.5rem;
 }
 
 .water-title {
@@ -191,4 +190,5 @@ tbody > tr:hover {
   /* color: blue; */
   color: white;
   background-color: green;
+  display: flex;
 }

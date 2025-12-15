@@ -18,7 +18,7 @@ const request = {
 
   // 세차장
   carWashing: "/carwash/select",
-  sendWashComplete : "/carwash/complete",
+  sendWashComplete: "/carwash/complete",
   //정비소
   repairAll: "/repair/list",
   reportList: "/repair/report/list",
@@ -29,6 +29,7 @@ const request = {
   sendRepairComplete: "/repair/complete",
   // 통계
   repairAmount: "/repair/report/amount",
+  newMembership: "/user/userlist",
 
   // 관리자 조회
   adminList: "/admin/list",
