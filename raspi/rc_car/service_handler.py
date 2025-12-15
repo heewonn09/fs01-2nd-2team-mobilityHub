@@ -5,23 +5,20 @@ RC카 서비스 요청 MQTT 핸들러
 키보드 제어로 차량 이동 + 라인트레이싱으로 노드 감지
 """
 
-import paho.mqtt.client as mqtt
 import json
 import time
 import threading
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO  # type: ignore[import-not-found]
+except Exception:  # pragma: no cover
+    GPIO = None
 from time import sleep
-import sys
-import tty
-import termios
-import select
 
-# 키보드 제어 모듈에서 모터 제어 함수 import
-# tracertest.py에서 노드 감지 함수 import
-    # keyboard_control 모듈 import (같은 디렉토리에 있으면 자동으로 찾음)
-import keyboard_control as kc
-    
-    # 필요한 함수/상수들
+import mqtt_gateway
+
+# service_handler에서 필요한 최소 로직만 모듈로 분리한 버전 사용
+import motor as kc
+
 forward = kc.forward
 stop = kc.stop
 turn_left = kc.turn_left
@@ -43,11 +40,9 @@ IN2 = kc.IN2
 IN3 = kc.IN3
 IN4 = kc.IN4
 
-from tracertest import (
-    setup_line_tracer, read_line_sensors, is_node_pattern,
-    LS_LEFT, LS_CENTER, LS_RIGHT
-)
+from line_sensor import setup_line_tracer, read_line_sensors, is_node_pattern
 
+MQTT_CONFIG = mqtt_gateway.DEFAULT_CONFIG
 # ==========================================
 # MQTT 설정
 # ==========================================
@@ -103,26 +98,6 @@ mqtt_client = None
 
 # GPIO 초기화는 keyboard_control.py와 tracertest.py에서 각각 처리됨
 # 여기서는 추가 초기화 불필요
-
-
-def on_connect(client, userdata, flags, rc):
-    """브로커 연결 성공 시 구독 신청"""
-    if rc == 0:
-        print(f"✅ MQTT 브로커 연결 성공: {BROKER_ADDRESS}")
-        client.subscribe(SUBSCRIBE_TOPIC_COMMAND)
-        client.subscribe(SUBSCRIBE_TOPIC_SERVICE)
-        client.subscribe(SUBSCRIBE_TOPIC_CALL)
-        print(f"📡 구독 토픽:")
-        print(f"   - {SUBSCRIBE_TOPIC_COMMAND}")
-        print(f"   - {SUBSCRIBE_TOPIC_SERVICE}")
-        print(f"   - {SUBSCRIBE_TOPIC_CALL}")
-    else:
-        print(f"❌ 연결 실패, return code: {rc}")
-
-
-def on_disconnect(client, userdata, rc):
-    """브로커 연결 끊김"""
-    print("🔌 MQTT 브로커 연결 종료")
 
 
 def on_message(client, userdata, message):
@@ -312,6 +287,8 @@ def follow_route_with_node_detection():
     awaiting_outside = False  # 출구 통과 후 건물 밖 노드 감지 대기
     
     try:
+        if GPIO is None:
+            raise RuntimeError("RPi.GPIO is required to run this on Raspberry Pi")
         # GPIO 초기화 (한 번만)
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
@@ -533,27 +510,11 @@ if __name__ == "__main__":
     print("   키보드 제어 + 라인트레이싱 노드 감지")
     print("=" * 60)
 
-    # MQTT 클라이언트 생성
-    client = mqtt.Client(CLIENT_ID)
-    client.on_connect = on_connect
-    client.on_disconnect = on_disconnect
-    client.on_message = on_message
+    # MQTT 클라이언트 생성/연결 (설정/구독은 mqtt_gateway가 담당)
+    client = mqtt_gateway.create_client(MQTT_CONFIG, on_message)
 
     try:
-        # 브로커 연결
-        print(f"🔌 브로커 연결 시도: {BROKER_ADDRESS}:{PORT}")
-        print("   (연결이 안 되면 네트워크 설정과 브로커 주소를 확인하세요)")
-        try:
-            client.connect(BROKER_ADDRESS, PORT, keepalive=60)
-        except Exception as connect_error:
-            print(f"❌ MQTT 브로커 연결 실패: {connect_error}")
-            print(f"   브로커 주소: {BROKER_ADDRESS}:{PORT}")
-            print("   네트워크 연결과 브로커 상태를 확인하세요.")
-            raise
-        
-        # 메시지 루프 시작 (블로킹)
-        print("📡 메시지 수신 대기 중... (Ctrl+C로 종료)\n")
-        client.loop_forever()
+        mqtt_gateway.connect_and_loop_forever(client, MQTT_CONFIG)
 
     except KeyboardInterrupt:
         print("\n⏹️  사용자 중단")
@@ -577,7 +538,8 @@ if __name__ == "__main__":
         except:
             pass
         try:
-            GPIO.cleanup()
+            if GPIO is not None:
+                GPIO.cleanup()
         except:
             pass
         print("👋 종료 완료")

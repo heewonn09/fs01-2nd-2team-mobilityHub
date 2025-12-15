@@ -8,7 +8,7 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
     stockCategory: "",
     stockQuantity: "",
     minStockQuantity: "",
-    stockPrice: "EA",
+    stockPrice: "",
     stockUnits: "",
   });
 
@@ -22,13 +22,6 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-
-    const isEmptyField = Object.values(formData).some((value) => value === "" || value === null || value == undefined);
-
-    if (isEmptyField) {
-      alert("모든 항목을 입력해주세요.");
-      return;
-    }
 
     const requestBody = {
       inventoryId: formData.inventoryId,
@@ -54,23 +47,22 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
       alert("재고 추가 실패");
     }
   };
-
   return (
-    <div className="modal-overlay">
-      <div className="stock-modal-content">
+    <div className="stock-create-modal">
+      <div className="stock-create-modal-content">
         {/* 헤더 */}
-        <div className="stock-modal-header">
-          <h2 className="stock-header-h2">부품추가</h2>
-          <button className="stock-close-button" onClick={onClose}>
+        <div className="stock-create-modal-header">
+          <h2 className="stock-create-header-h2">부품추가</h2>
+          <button className="stock-create-close-button" onClick={onClose}>
             X
           </button>
         </div>
 
         {/* 내용 */}
-        <div className="stock-modal-body">
+        <div className="stock-create-modal-body">
           {/* 아이디 */}
           <div>
-            <label className="stock-label">재고 ID</label>
+            <label className="create-inventory-label">재고 ID</label>
             <input
               type="text"
               name="inventoryId"
@@ -83,7 +75,7 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
 
           {/* 부품명 */}
           <div>
-            <label className="stock-label">부품명</label>
+            <label className="create-inventory-label">부품명</label>
             <input
               name="productName"
               value={formData.productName}
@@ -94,7 +86,7 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
 
           {/* 카테고리 */}
           <div>
-            <label className="stock-label">카테고리</label>
+            <label className="create-inventory-label">카테고리</label>
             <input
               name="stockCategory"
               value={formData.stockCategory}
@@ -105,7 +97,7 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
 
           {/* 가격 */}
           <div>
-            <label className="stock-label">개당 가격</label>
+            <label className="create-inventory-label">개당 가격</label>
             <input
               type="number"
               name="stockPrice"
@@ -117,13 +109,14 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
 
           <div className="stock-input-box">
             {/* 단위 */}
-            <div className="div-inventory-units">
+            <div>
               <label className="create-inventory-quantity">단위</label>
               <select
                 name="stockUnits"
                 value={formData.stockUnits}
                 onChange={handleChange}
-                className="input-inventory-quantity">
+                className="input-inventory-quantity"
+              >
                 <option value="EA">EA (개)</option>
                 <option value="L">L (리터)</option>
               </select>
@@ -161,10 +154,10 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
 
         {/* 하단 버튼 */}
         <div className="modal-actions">
-          <button onClick={onClose} className="cancle-modal-btn">
+          <button onClick={onClose} className="create-cancle-btn">
             취소
           </button>
-          <button onClick={handleCreate} className="save-modal-btn">
+          <button onClick={handleCreate} className="create-stock-btn">
             저장
           </button>
         </div>

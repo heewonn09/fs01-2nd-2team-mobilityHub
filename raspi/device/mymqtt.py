@@ -41,17 +41,15 @@ class MqttWorker:
     def on_message(self, client, userdata, message):
         myval = message.payload.decode("utf-8")
 
-        # 세차장과 정비소 카메라 작동
-        if message.topic == "parking/web/carwash/cam" or message.topic == "parking/web/repair/cam":
-            if myval == "start":
-                print(message.topic, myval)
-                if not self.is_streaming:
-                    self.is_streaming = True
-                    Thread(target=self.send_camera_frame, daemon=True).start()
-                    
-            elif myval == "stop":
-                print(message.topic, myval)
-                self.is_streaming = False
+        if message.topic == "parking/web/carwash/cam" and myval == "start":
+            print(message.topic, myval)
+            if not self.is_streaming:
+                self.is_streaming = True
+                Thread(target=self.send_camera_frame, daemon=True).start()
+
+        elif message.topic == "parking/web/carwash/cam" and myval == "stop":
+            print(message.topic, myval)
+            self.is_streaming = False
             
         elif message.topic == "parking/web/carwash":
             
