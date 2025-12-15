@@ -12,63 +12,6 @@ export default function RepairHistoryModal({ onClose }) {
       .catch((err) => console.error("보고서 조회 실패"));
   });
 
-  // const [histories] = useState([
-  //   {
-  //     id: "1",
-  //     date: "2025-12-13",
-  //     plateNumber: "90라1234",
-  //     serviceType: "정기 점검",
-  //     technician: "김정비",
-  //     completedTime: "13:30",
-  //     status: "완료",
-  //   },
-  //   {
-  //     id: "2",
-  //     date: "2025-12-12",
-  //     plateNumber: "56마7890",
-  //     serviceType: "엔진오일 교환",
-  //     technician: "이정비",
-  //     completedTime: "16:45",
-  //     status: "완료",
-  //   },
-  //   {
-  //     id: "3",
-  //     date: "2025-12-12",
-  //     plateNumber: "23바4567",
-  //     serviceType: "브레이크 패드 교체",
-  //     technician: "박정비",
-  //     completedTime: "11:20",
-  //     status: "완료",
-  //   },
-  //   {
-  //     id: "4",
-  //     date: "2025-12-11",
-  //     plateNumber: "45사6789",
-  //     serviceType: "타이어 교체",
-  //     technician: "김정비",
-  //     completedTime: "14:15",
-  //     status: "완료",
-  //   },
-  //   {
-  //     id: "5",
-  //     date: "2025-12-11",
-  //     plateNumber: "67아8901",
-  //     serviceType: "배터리 교체",
-  //     technician: "이정비",
-  //     completedTime: "10:30",
-  //     status: "완료",
-  //   },
-  //   {
-  //     id: "6",
-  //     date: "2025-12-10",
-  //     plateNumber: "89자0123",
-  //     serviceType: "정기 점검",
-  //     technician: "박정비",
-  //     completedTime: "15:50",
-  //     status: "완료",
-  //   },
-  // ]);
-
   return (
     <div
       style={{

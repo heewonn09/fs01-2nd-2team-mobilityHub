@@ -2,29 +2,24 @@ import { useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import "../style/RepairReportModal.css";
 
-export default function RepairReportModal({
-  plateNumber,
-  checklist = [],
-  additionalRequests = [],
-  parts = [],
-  repairAllowed = true,
-  onClose,
-  onSubmit,
-}) {
+export default function RepairReportModal({ onClose, onSubmit, data }) {
   const [comment, setComment] = useState("");
   const [repairDescription, setRepairDescription] = useState("");
   const [usedParts, setUsedParts] = useState([]);
   const [selectedPartId, setSelectedPartId] = useState("");
+  const [reportData, setReportDate] = useState({ ...data });
 
   const BASE_PRICE = 50000;
   const ADDITIONAL_PRICE = 10000;
 
   const addUsedPart = () => {
     if (!selectedPartId) return;
-    const part = parts.find((p) => p.id === selectedPartId);
+    // const part = parts.find((p) => p.id === selectedPartId);
     if (!part) return;
 
-    const existingIndex = usedParts.findIndex((up) => up.part.id === selectedPartId);
+    const existingIndex = usedParts.findIndex(
+      (up) => up.part.id === selectedPartId
+    );
 
     if (existingIndex !== -1) {
       const newUsedParts = [...usedParts];
@@ -72,7 +67,7 @@ export default function RepairReportModal({
         <div className="modal-header">
           <div>
             <h2>정비 완료 보고서</h2>
-            <p>차량번호: {plateNumber}</p>
+            {/* <p>차량번호: {plateNumber}</p> */}
           </div>
           <button className="modal-close-btn" onClick={onClose}>
             <X className="icon" />
@@ -82,7 +77,7 @@ export default function RepairReportModal({
         {/* 바디 */}
         <div className="modal-body">
           {/* 추가 요청사항 */}
-          {additionalRequests.length > 0 && (
+          {/* {additionalRequests.length > 0 && (
             <div className="section">
               <h3>추가 요청사항</h3>
               <div className="section-content">
@@ -93,7 +88,7 @@ export default function RepairReportModal({
                 ))}
               </div>
             </div>
-          )}
+          )} */}
 
           {/* 수리 내용 */}
           <div className="section">
@@ -108,8 +103,11 @@ export default function RepairReportModal({
           {/* 사용한 부품 */}
           <div className="section">
             <h3>사용한 부품</h3>
-            <div className="flex-row">
-              <select value={selectedPartId} onChange={(e) => setSelectedPartId(e.target.value)}>
+            {/* <div className="flex-row">
+              <select
+                value={selectedPartId}
+                onChange={(e) => setSelectedPartId(e.target.value)}
+              >
                 <option value="">부품을 선택하세요</option>
                 {parts.map((part) => (
                   <option key={part.id} value={part.id}>
@@ -117,10 +115,14 @@ export default function RepairReportModal({
                   </option>
                 ))}
               </select>
-              <button className="btn-add" onClick={addUsedPart} disabled={!selectedPartId}>
+              <button
+                className="btn-add"
+                onClick={addUsedPart}
+                disabled={!selectedPartId}
+              >
                 <Plus className="icon" />
               </button>
-            </div>
+            </div> */}
 
             {usedParts.length > 0 && (
               <div className="used-parts-list">
@@ -132,7 +134,9 @@ export default function RepairReportModal({
                         type="number"
                         min="1"
                         value={up.quantity}
-                        onChange={(e) => updateQuantity(index, parseInt(e.target.value) || 1)}
+                        onChange={(e) =>
+                          updateQuantity(index, parseInt(e.target.value) || 1)
+                        }
                       />
                       <span>{up.part.unit}</span>
                       <span>{up.part.price * up.quantity}원</span>

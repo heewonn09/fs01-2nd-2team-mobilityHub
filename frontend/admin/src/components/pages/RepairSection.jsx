@@ -75,7 +75,10 @@ const RepairSection = () => {
       repair.carState !== 13 &&
       repair.exit_time == null &&
       (repair.entry_time == null || repair.carState == null) &&
-      (repair.entry_time !== null || repair.carState == 1 || repair.carState == 2 || repair.carState == 12)
+      (repair.entry_time !== null ||
+        repair.carState == 1 ||
+        repair.carState == 2 ||
+        repair.carState == 12)
   ).length;
 
   const handleCompleteWork = () => {
@@ -143,14 +146,13 @@ const RepairSection = () => {
       let carStateText = "";
       if (list.carState === 13) {
         carStateText = "작업중";
-        
       } else if (
-        ((list.carState === null && list.entry_time == null) ||
-          (list.carState === 0 ||
+        (list.carState === null && list.entry_time == null) ||
+        ((list.carState === 0 ||
           list.carState === 1 ||
           list.carState === 2 ||
           list.carState === 12) &&
-        list.entry_time !== null)
+          list.entry_time !== null)
       ) {
         carStateText = "대기중";
       } else {
@@ -175,7 +177,9 @@ const RepairSection = () => {
             <div>
               <p className="working-info">현재 작업차량</p>
               <p className="info-details insert">
-                {workingCar.length > 0 ? workingCar[0].car_number : "작업중인 차량 없음"}
+                {workingCar.length > 0
+                  ? workingCar[0].car_number
+                  : "작업중인 차량 없음"}
               </p>
             </div>
             <div className="icon-box" style={{ backgroundColor: "#dbeafe" }}>
@@ -279,9 +283,9 @@ const RepairSection = () => {
                 <div key={rep.id} className="repair-list">
                   <p className="add-repair">추가 요청사항</p>
                   {rep.additionalRequest && rep.additionalRequest.length > 0 ? (
-                      <div key={rep.id} className="repair-request">
-                        {rep.additionalRequest}
-                      </div>
+                    <div key={rep.id} className="repair-request">
+                      {rep.additionalRequest}
+                    </div>
                   ) : (
                     <p className="no-request">요청사항 없음</p>
                   )}
@@ -393,21 +397,18 @@ const RepairSection = () => {
           </div>
         </div>
       </div>
-      {/* 정비완료 모달 */}
+      {/* 정비중 차량 완료 버튼 모달 -> 보고서 표시 */}
       {showReportModal && (
         <RepairReportModal
           onClose={() => setShowReportModal(false)}
           onSubmit={handleReportSubmit}
-          data={repairList}
+          data={repairList.filter((req) => req.carState === 13)}
         />
       )}
-      {/* 정비내역 보기 모달 */}
+      {/* 정비 보고서 전체보기 모달 */}
       {showHistoryModal && (
         <RepairHistoryModal
           onClose={() => setShowHistoryModal(false)} // 모달 닫기
-          data={repairList.filter(
-            (rep) => rep.carStateNodeId === CAR_STATE.REPAIRING
-          )} // 현재 작업 차량 데이터 전달
         />
       )}
       {/* 재고id별 상세보기 모달 */}
