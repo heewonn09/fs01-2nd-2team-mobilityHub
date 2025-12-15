@@ -35,14 +35,8 @@ public class CarWashController {
      */
     @PostMapping("/complete")
     public ResponseEntity<?> completeCarWash(@RequestParam Long workInfoId) {
-        try {
             serviceRequestService.completeService(workInfoId, "carwash");
             return ResponseEntity.ok(Map.of("message", "세차 끝"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
-        }
+
     }
 }

@@ -5,6 +5,7 @@ import {
   repairPageAllList,
   reportAllList,
   writeReport,
+  sendComplete,
 } from "../../api/repairAPI";
 import { Check } from "lucide-react";
 import RepairReportModal from "../modal/RepairReportModal";
@@ -113,6 +114,14 @@ const RepairSection = () => {
 
       if (response.status === 200) {
         alert("보고서작성이 등록됐습니다.");
+        
+        // 보고서 작성 성공 후 작업 완료 신호 전송
+        if (reportData.workInfoId) {
+          const completeResponse = await sendComplete({ workInfoId: reportData.workInfoId });
+          if (completeResponse?.status === 200) {
+            console.log("작업 완료 신호 전송 성공");
+          }
+        }
       }
       return response;
     } catch (error) {
