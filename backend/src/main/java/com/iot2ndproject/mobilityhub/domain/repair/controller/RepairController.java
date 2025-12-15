@@ -118,15 +118,8 @@ public class RepairController {
      */
     @PostMapping("/complete")
     public ResponseEntity<?> completeRepair(@RequestParam Long workInfoId) {
-        try {
             serviceRequestService.completeService(workInfoId, "repair");
-            return ResponseEntity.ok(Map.of("message", "정비 완료"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
-        }
+            return ResponseEntity.ok(Map.of("message", "정비 완료 신호 rc카에 전송"));
     }
 
 }

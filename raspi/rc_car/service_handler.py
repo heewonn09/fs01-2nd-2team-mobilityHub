@@ -354,7 +354,7 @@ def follow_route_with_node_detection():
                             expected_node = current_route[current_route_index]
                             node_name = NODE_NAMES.get(expected_node, f"노드_{expected_node}")
                             
-                            print(f"\n📍 첫 번째 노드 감지: {expected_node} ({node_name})")
+                            print(f"\n📍 첫 번째 노드 감지: {expected_node} ({node_name})", flush=True)
                             
                             # 잠시 정지
                             stop()
@@ -388,7 +388,7 @@ def follow_route_with_node_detection():
                         expected_node = current_route[current_route_index]
                         node_name = NODE_NAMES.get(expected_node, f"노드_{expected_node}")
                         
-                        print(f"\n📍 노드 감지: {expected_node} ({node_name})")
+                        print(f"\n\n📍 노드 감지: {expected_node} ({node_name})", flush=True)
                         
                         # 잠시 정지
                         stop()
@@ -400,12 +400,12 @@ def follow_route_with_node_detection():
                         # 목적지 확인
                         if current_route_index == len(current_route) - 1:
                             # 마지막 노드 도착
-                            print(f"🎯 목적지 도착: {node_name}")
+                            print(f"\n🎯 목적지 도착: {node_name}", flush=True)
                             
                             # 작업 타입에 따라 대기
                             if "park" in current_work_type and node_name.startswith("주차_"):
                                 # 주차장 도착 - 호출 대기
-                                print("⏳ 차량 호출 대기 중...")
+                                print("\n⏳ 차량 호출 대기 중...", flush=True)
                                 is_waiting_call = True
                                 auto_forward_mode = False  # 자동 전진 모드 해제
                                 is_running = False
@@ -413,7 +413,7 @@ def follow_route_with_node_detection():
                                 break
                             elif node_name.startswith("세차_") or node_name.startswith("정비_"):
                                 # 세차/정비 구역 도착 - 서비스 완료 대기
-                                print("⏳ 서비스 완료 대기 중...")
+                                print("\n⏳ 서비스 완료 대기 중...", flush=True)
                                 is_waiting_service = True
                                 auto_forward_mode = False  # 자동 전진 모드 해제
                                 is_running = False
@@ -421,7 +421,7 @@ def follow_route_with_node_detection():
                                 break
                             elif node_name == "출구":
                                 # 출구 도착: 출구 이후 실제 건물 밖 노드까지 진행 후 종료
-                                print("🚪 출구 도착 - 건물 밖으로 이동 중...")
+                                print("\n🚪 출구 도착 - 건물 밖으로 이동 중...", flush=True)
                                 awaiting_outside = True
                                 auto_forward_mode = True  # 출구 이후는 자동 전진 유지
                                 # 다음 감지되는 노드를 건물 밖으로 간주
@@ -435,7 +435,7 @@ def follow_route_with_node_detection():
                             current_route_index += 1
                             if current_route_index < len(current_route):
                                 target_node_id = current_route[current_route_index]
-                                print(f"   다음 목표: {target_node_id} ({NODE_NAMES.get(target_node_id, '알 수 없음')})")
+                                print(f"\n   다음 목표: {target_node_id} ({NODE_NAMES.get(target_node_id, '알 수 없음')})", flush=True)
                             else:
                                 # 경로 끝에 도달 (이론적으로는 발생하지 않아야 함)
                                 print("⚠️  경로 인덱스 오류: 경로 끝에 도달")
@@ -460,7 +460,7 @@ def follow_route_with_node_detection():
                 sleep(0.3)
                 # DB에는 nodeId를 NULL로 저장해야 하므로 None 전달
                 publish_position(mqtt_client, current_car_id, None, NODE_NAMES[OUTSIDE_NODE_ID])
-                print("🏁 건물 밖 노드 감지 - 종료")
+                print("\n🏁 건물 밖 노드 감지 - 종료", flush=True)
                 awaiting_outside = False
                 auto_forward_mode = False
                 is_running = False
@@ -498,7 +498,7 @@ def publish_position(client, car_id, node_id, node_name):
     }
     json_payload = json.dumps(payload, ensure_ascii=False)
     client.publish(topic, json_payload)
-    print(f"📤 [위치 발행] {topic} | {json_payload}")
+    print(f"\n📤 [위치 발행] {topic} | {json_payload}", flush=True)
 
 
 # ==========================================

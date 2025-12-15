@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.messaging.Message;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -89,8 +90,14 @@ public class MqttService {
             
             // carState 업데이트
             workInfo.setCarState(node);
+            // 노드가 입구/출구일 경우 entrytime/exittime도 업데이트
+            if(node.getNodeId()==1){
+                workInfo.setEntryTime(LocalDateTime.now());
+            }else if(node.getNodeId() == 20){
+                workInfo.setExitTime(LocalDateTime.now());
+            }
             workInfoRepository.save(workInfo);
-            
+
             System.out.println(">>> WorkInfoEnrity.carState 업데이트 완료:id=" + workInfo.getId() + ", nodeId=" + nodeId);
             
             // 구역별 라즈베리파이에 신호 발행
