@@ -43,6 +43,15 @@ IN4 = kc.IN4
 from line_sensor import setup_line_tracer, read_line_sensors, is_node_pattern
 
 MQTT_CONFIG = mqtt_gateway.DEFAULT_CONFIG
+# ==========================================
+# MQTT 설정
+# ==========================================
+BROKER_ADDRESS = "192.168.14.69"  # application.yaml의 MQTT 브로커 주소
+PORT = 1883
+SUBSCRIBE_TOPIC_COMMAND = "rccar/+/command"  # 경로 명령 구독
+SUBSCRIBE_TOPIC_SERVICE = "rccar/+/service"   # 서비스 완료 신호 구독
+SUBSCRIBE_TOPIC_CALL = "rccar/+/call"         # 차량 호출 신호 구독
+CLIENT_ID = "rc_car_service_handler"
 
 # ==========================================
 # 노드 ID와 이름 매핑 (data.sql 기준)
