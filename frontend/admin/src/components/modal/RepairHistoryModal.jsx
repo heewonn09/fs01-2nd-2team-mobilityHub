@@ -4,12 +4,21 @@ import { reportAllList } from "../../api/repairAPI";
 export default function RepairHistoryModal({ onClose }) {
   const [reportList, setReportList] = useState([]);
 
+  const refreshReportList = async () => {
+    try {
+      const res = await reportAllList();
+      setReportList(res);
+    } catch (e) {
+      console.error("보고서 갱신 실패");
+    }
+  };
+
   useEffect(() => {
     reportAllList()
       .then((res) => {
         setReportList(res);
       })
-      .catch((err) => console.error("보고서 조회 실패"));
+      .catch((err) => console.error("보고서 조회 실패: ", err));
   });
 
   return (

@@ -114,10 +114,12 @@ const RepairSection = () => {
 
       if (response.status === 200) {
         alert("보고서작성이 등록됐습니다.");
-        
+
         // 보고서 작성 성공 후 작업 완료 신호 전송
         if (reportData.workInfoId) {
-          const completeResponse = await sendComplete({ workInfoId: reportData.workInfoId });
+          const completeResponse = await sendComplete({
+            workInfoId: reportData.workInfoId,
+          });
           if (completeResponse?.status === 200) {
             console.log("작업 완료 신호 전송 성공");
           }
@@ -185,7 +187,7 @@ const RepairSection = () => {
           <div className="between-position">
             <div>
               <p className="working-info">현재 작업차량</p>
-              <p className="info-details insert">
+              <p className="info-details">
                 {workingCar.length > 0
                   ? workingCar[0].car_number
                   : "작업중인 차량 없음"}
@@ -201,12 +203,12 @@ const RepairSection = () => {
           <div className="between-position">
             <div>
               <p className="working-info">대기중</p>
-              <p className="info-details insert">
+              <p className="info-details">
                 {waitForWark ? waitForWark + "건" : "대기 중인 차량 없음"}
               </p>
             </div>
             <div className="icon-box" style={{ backgroundColor: "#fef9c3" }}>
-              icon 들어갈 자리, class=icon color:#ca8a04
+              {/* icon 들어갈 자리, class=icon color:#ca8a04 */}
             </div>
           </div>
         </div>
@@ -215,7 +217,7 @@ const RepairSection = () => {
           <div className="between-position">
             <div>
               <p className="working-info">리프트 상태</p>
-              <p className="info-details insert">{liftStatus}</p>
+              <p className="info-details">{liftStatus}</p>
             </div>
             <div className="icon-box" style={{ backgroundColor: "#fee2e2" }}>
               {/* icon 들어갈 자리, class=icon color:#dc2626 */}
@@ -255,7 +257,7 @@ const RepairSection = () => {
                 <div key={list.id} className="list-data">
                   <div>
                     <div className="car-number">
-                      <span className="state">{list.car_number}</span>
+                      <span className="car-number-text">{list.car_number}</span>
                     </div>
                   </div>
                   <span className="job-state">

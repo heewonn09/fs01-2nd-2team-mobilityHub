@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import "../style/RepairReportModal.css";
 
@@ -7,15 +7,22 @@ export default function RepairReportModal({ onClose, onSubmit, data }) {
   const [repairDescription, setRepairDescription] = useState("");
   const [usedParts, setUsedParts] = useState([]);
   const [selectedPartId, setSelectedPartId] = useState("");
-  const [reportData, setReportDate] = useState({ ...data });
+  const [reportData, setReportData] = useState(null);
 
   const BASE_PRICE = 50000;
   const ADDITIONAL_PRICE = 10000;
 
+  useEffect(() => {
+    if (Array.isArray(data) && data.length > 0) {
+      setReportData(data[0]);
+    }
+  }, [data]);
+
+  console.log(reportData);
+
   const addUsedPart = () => {
     if (!selectedPartId) return;
     // const part = parts.find((p) => p.id === selectedPartId);
-    if (!part) return;
 
     const existingIndex = usedParts.findIndex(
       (up) => up.part.id === selectedPartId
@@ -25,8 +32,6 @@ export default function RepairReportModal({ onClose, onSubmit, data }) {
       const newUsedParts = [...usedParts];
       newUsedParts[existingIndex].quantity += 1;
       setUsedParts(newUsedParts);
-    } else {
-      setUsedParts([...usedParts, { part, quantity: 1 }]);
     }
     setSelectedPartId("");
   };
@@ -67,7 +72,7 @@ export default function RepairReportModal({ onClose, onSubmit, data }) {
         <div className="modal-header">
           <div>
             <h2>정비 완료 보고서</h2>
-            {/* <p>차량번호: {plateNumber}</p> */}
+            {reportData && <p>차량번호: {reportData.car_number}</p>}
           </div>
           <button className="modal-close-btn" onClick={onClose}>
             <X className="icon" />
