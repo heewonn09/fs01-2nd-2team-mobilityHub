@@ -17,6 +17,7 @@ const request = {
   createStock: "/repair/create",
   updateStock: "/repair/detail/update",
   deleteStock: "/repair/detail/delete",
+  writeReport: "/report/write",
 };
 
 export default request;

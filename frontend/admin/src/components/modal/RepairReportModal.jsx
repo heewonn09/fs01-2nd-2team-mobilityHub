@@ -24,9 +24,7 @@ export default function RepairReportModal({
     const part = parts.find((p) => p.id === selectedPartId);
     if (!part) return;
 
-    const existingIndex = usedParts.findIndex(
-      (up) => up.part.id === selectedPartId
-    );
+    const existingIndex = usedParts.findIndex((up) => up.part.id === selectedPartId);
     if (existingIndex !== -1) {
       const newUsedParts = [...usedParts];
       newUsedParts[existingIndex].quantity += 1;
@@ -110,10 +108,7 @@ export default function RepairReportModal({
           <div className="section">
             <h3>사용한 부품</h3>
             <div className="flex-row">
-              <select
-                value={selectedPartId}
-                onChange={(e) => setSelectedPartId(e.target.value)}
-              >
+              <select value={selectedPartId} onChange={(e) => setSelectedPartId(e.target.value)}>
                 <option value="">부품을 선택하세요</option>
                 {parts.map((part) => (
                   <option key={part.id} value={part.id}>
@@ -121,11 +116,7 @@ export default function RepairReportModal({
                   </option>
                 ))}
               </select>
-              <button
-                className="btn-add"
-                onClick={addUsedPart}
-                disabled={!selectedPartId}
-              >
+              <button className="btn-add" onClick={addUsedPart} disabled={!selectedPartId}>
                 <Plus className="icon" />
               </button>
             </div>
@@ -140,9 +131,7 @@ export default function RepairReportModal({
                         type="number"
                         min="1"
                         value={up.quantity}
-                        onChange={(e) =>
-                          updateQuantity(index, parseInt(e.target.value) || 1)
-                        }
+                        onChange={(e) => updateQuantity(index, parseInt(e.target.value) || 1)}
                       />
                       <span>{up.part.unit}</span>
                       <span>{up.part.price * up.quantity}원</span>

@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 public class ReportEntity {
     @Id
+    @Column(length = 14)
     private String reportId;  // 보고서ID
 
     @ManyToOne

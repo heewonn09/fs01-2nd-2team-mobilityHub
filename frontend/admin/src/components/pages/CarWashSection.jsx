@@ -6,7 +6,11 @@ import CarWashBarChart from "../chart/CarWashBarChart";
 import useMqtt from "../hook/useMqtt";
 
 // MQTT 브로커 주소
+<<<<<<< HEAD
+const BROKER_URL = "ws://192.168.14.39:9001";
+=======
 const BROKER_URL = "ws://192.168.137.1:9001";
+>>>>>>> a5682efbb5cdd0b0e9eba35c9bc20571abdc508f
 //const BROKER_URL = import.meta.env.VITE_BROKER_URL;
 
 // 차량 상태 상수
@@ -57,9 +61,7 @@ const CarWashSection = () => {
   const washingCar = carWashing.find((item) => item.carStateNodeId === CAR_STATE.WASHING);
 
   // 대기 중 차량
-  const waitCarList = carWashing.filter((item) =>
-    [CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(item.carStateNodeId)
-  );
+  const waitCarList = carWashing.filter((item) => [CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(item.carStateNodeId));
   const waitCarCount = waitCarList.length;
 
   // 완료 차량
@@ -121,11 +123,7 @@ const CarWashSection = () => {
           </div>
           <div className="list-content">
             {carWashing
-              .filter((item) =>
-                [CAR_STATE.WASHING, CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(
-                  item.carStateNodeId
-                )
-              )
+              .filter((item) => [CAR_STATE.WASHING, CAR_STATE.WAIT_1, CAR_STATE.WAIT_2].includes(item.carStateNodeId))
               .map((list) => (
                 <div key={list.id} className="list-data">
                   <div>

@@ -38,7 +38,7 @@ const useMqtt = (brokerUrl) => {
 
     // 메시지가 subscribe되면 실행될 콜백함수를 등록
     mqttClient.on("message", (topic, message) => {
-      if (topic == "parking/web/carwash/cam") {
+      if (topic == "parking/web/carwash/cam" || topic == "parking/web/repair/cam") {
         const base64Image = message.toString();
         setImageState(`data:image/jpeg;base64,${base64Image}`);
         const payload = message.toString();
@@ -51,14 +51,6 @@ const useMqtt = (brokerUrl) => {
           // JSON 문자열을 자바스크립트 객체로 변환
           const data = JSON.parse(payload);
           console.log("받은 온도습도 데이터: ", data);
-
-          // 온도습도데이터로 구글 게이지 차트를 생성 - 온도습도데이터를 state로 만들어서
-          // 온도습도를 subscribe할때마다 state가 변경되도록 작업
-          // setSensorData({ temp: data.temp, humi: data.humi });
-          //   setsensorValues({
-          //     temp: Number(data.temp),
-          //     humi: Number(data.humi),
-          //   });
         } catch (e) {
           console.error("JSON파싱오류(데이터의 형식이 JSON이 아님:::::", e);
         }
@@ -75,6 +67,7 @@ const useMqtt = (brokerUrl) => {
     return () => {
       if (mqttClient) {
         mqttClient.publish("parking/web/carwash/cam", "stop");
+        mqttClient.publish("parking/web/repair/cam", "stop");
         mqttClient.end();
         setConnectStatus("connecting");
         console.log("MQTT연결종료");

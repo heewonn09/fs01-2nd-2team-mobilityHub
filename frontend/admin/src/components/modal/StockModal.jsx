@@ -61,50 +61,77 @@ export default function StockModal({ onClose, data, refreshStockList }) {
   };
 
   return (
-    <div className="modal">
-      <div className="modal-content">
-        <button className="close-button" onClick={onClose}>
-          X
-        </button>
-        <h2 name="inventoryId" value={modalData.inventoryId}>
-          부품 상세 정보
-        </h2>
+    <div className="modal-overlay">
+      <div className="stock-modal-content">
+        {/* 헤더 */}
+        <div className="stock-modal-header">
+          <h2 name="inventoryId" value={modalData.inventoryId} className="stock-header-h2">
+            부품 상세 정보
+          </h2>
+          <button className="stock-close-button" onClick={onClose}>
+            X
+          </button>
+        </div>
 
-        <label>부품명</label>
-        <input
-          name="productName"
-          value={modalData.productName}
-          onChange={handleChange}
-        />
+        {/* 내용 */}
+        <div className="stock-modal-body">
+          {/* 부품명 */}
+          <div>
+            <label className="stock-label">부품명</label>
+            <input
+              name="productName"
+              value={modalData.productName}
+              onChange={handleChange}
+              className="input-inventory-value"
+            />
+          </div>
 
-        <label>카테고리</label>
-        <input
-          name="stockCategory"
-          value={modalData.stockCategory}
-          onChange={handleChange}
-        />
+          {/* 카테고리 */}
+          <div>
+            <label className="stock-label">카테고리</label>
+            <input
+              name="stockCategory"
+              value={modalData.stockCategory}
+              onChange={handleChange}
+              className="input-inventory-value"
+            />
+          </div>
 
-        <label>현재 재고</label>
-        <input
-          name="stockQuantity"
-          type="number"
-          value={modalData.stockQuantity}
-          onChange={handleChange}
-        />
-        <label>가격</label>
-        <input
-          name="stockPrice"
-          type="number"
-          value={modalData.stockPrice}
-          onChange={handleChange}
-        />
+          {/* 현재 재고 */}
+          <div>
+            <label className="stock-label">현재 재고</label>
+            <input
+              name="stockQuantity"
+              type="number"
+              value={modalData.stockQuantity}
+              onChange={handleChange}
+              className="input-inventory-value"
+            />
+          </div>
+
+          {/* 가격 */}
+          <div>
+            <label className="stock-label">가격</label>
+            <input
+              name="stockPrice"
+              type="number"
+              value={modalData.stockPrice}
+              onChange={handleChange}
+              className="input-inventory-value"
+            />
+          </div>
+        </div>
 
         <div className="modal-actions">
-          <button onClick={handleDelete} style={{ color: "red" }}>
+          <button onClick={handleDelete} className="delete-modal-btn">
             삭제
           </button>
-          <button onClick={onClose}>취소</button>
-          <button onClick={handleUpdate}>저장</button>
+          <button onClick={onClose} className="cancle-modal-btn">
+            취소
+          </button>
+          <button onClick={handleUpdate} className="save-modal-btn">
+            저장
+          </button>
         </div>
       </div>
     </div>

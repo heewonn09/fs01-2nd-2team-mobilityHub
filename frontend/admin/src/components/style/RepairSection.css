@@ -61,6 +61,26 @@
   gap: 1.5rem;
 }
 
+.repair-cctv {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.cctv-view {
+  width: auto;
+  height: 380px;
+
+  object-fit: contain;
+}
+
 .use-status-box {
   background-color: #ffffff;
   border-radius: 0.5rem;
@@ -98,6 +118,18 @@
 
 .car-number {
   color: black;
+}
+
+.job-state {
+  display: inline-flex; /* inline-flex */
+  padding-left: 0.5rem; /* px-2 */
+  padding-right: 0.5rem;
+  padding-top: 0.25rem; /* py-1 */
+  padding-bottom: 0.25rem;
+  border-radius: 9999px; /* rounded-full */
+  font-size: 0.75rem; /* text-xs */
+  align-items: center; /* flex 중앙 정렬 */
+  justify-content: center; /* 선택사항: 중앙 정렬 */
 }
 
 .checklist {
@@ -253,8 +285,7 @@
 
   border-radius: 0.5rem; /* rounded-lg (8px) */
 
-  transition-property: color, background-color, border-color,
-    text-decoration-color, fill, stroke;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-duration: 150ms; /* transition-colors */
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -367,8 +398,7 @@ th.stock-category {
 
   font-size: 0.875rem; /* text-sm (14px) */
 
-  transition-property: color, background-color, border-color,
-    text-decoration-color, fill, stroke;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-duration: 150ms; /* transition-colors */
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -385,7 +415,6 @@ th.stock-category {
   left: 0; /* inset-0 */
 
   background-color: #000000; /* bg-black */
-  opacity: 0.5; /* bg-opacity-50 */
 
   display: flex;
   align-items: center;
@@ -394,7 +423,7 @@ th.stock-category {
   z-index: 50;
 }
 
-.stock-create-modal-content {
+.stock-modal-content {
   background-color: #ffffff; /* bg-white */
 
   border-radius: 0.5rem; /* rounded-lg (8px) */
@@ -406,7 +435,7 @@ th.stock-category {
   margin-right: 1rem;
 }
 
-.stock-create-modal-header {
+.stock-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -417,7 +446,7 @@ th.stock-category {
   border-bottom-color: #e5e7eb; /* border-gray-200 */
 }
 
-.stock-create-modal-header {
+.stock-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -427,25 +456,28 @@ th.stock-category {
   border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
 }
 
-.stock-create-header-h2 {
+.stock-header-h2 {
+  font-weight: bolder;
+  font-size: 1.5rem;
   color: #111827;
 }
 
-.stock-create-close-button {
-  color: #9ca3af;
+.stock-close-button {
+  font-weight: bolder;
+  font-size: 1.3rem;
 }
-.stock-create-close-button:hover {
+.stock-close-button:hover {
   color: #4b5563;
 }
 
-.stock-create-modal-body > :not([hidden]) ~ :not([hidden]) {
-  padding: 1.5rem; /* p-6 */
-  margin-top: 1rem; /* space-y-4 (16px) */
+.stock-modal-body > :not([hidden]) {
+  padding: 1.2rem 1.5rem;
 }
 
-.create-inventory-label {
+.stock-label {
   display: block; /* block */
-  font-size: 0.875rem; /* text-sm (14px) */
+  font-size: 1.2rem;
+  font-weight: bold;
   color: #374151; /* text-gray-700 */
   margin-bottom: 0.5rem; /* mb-2 (8px) */
 }
@@ -486,6 +518,32 @@ th.stock-category {
   display: flex;
   align-items: center;
   gap: 0.5rem; /* gap-2 (8px) */
+
+  border-width: 1px; /* border */
+  border-color: #d1d5db; /* border-gray-300 */
+  border-radius: 0.3rem; /* rounded-lg (8px) */
+
+  outline: none; /* focus:outline-none */
+}
+
+.input-inventory-quantity:focus {
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+/* 부모 div에 flex 적용 */
+.div-inventory-units {
+  display: flex;
+  align-items: center; /* 세로 가운데 정렬 */
+  justify-content: space-around;
+  gap: 0.5rem; /* label과 select 사이 간격 */
+}
+
+/* 기존 스타일은 그대로 둬도 됨 */
+.create-inventory-quantity {
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 0; /* 위아래 margin 제거 */
+  margin-top: 5px;
 }
 
 .modal-actions {
@@ -499,7 +557,7 @@ th.stock-category {
   border-top: 1px solid #e5e7eb; /* border-t border-gray-200 */
 }
 
-.create-cancle-btn {
+.cancle-modal-btn {
   padding-left: 1.5rem; /* px-6 */
   padding-right: 1.5rem;
   padding-top: 0.5rem; /* py-2 */
@@ -511,17 +569,16 @@ th.stock-category {
   color: #374151; /* text-gray-700 */
   border-radius: 0.5rem; /* rounded-lg (8px) */
 
-  transition-property: color, background-color, border-color,
-    text-decoration-color, fill, stroke;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-duration: 150ms; /* transition-colors */
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.create-cancle-btn:hover {
+.cancle-modal-btn:hover {
   background-color: #f9fafb;
 }
 
-.create-stock-btn {
+.save-modal-btn {
   padding-left: 1.5rem; /* px-6 */
   padding-right: 1.5rem;
   padding-top: 0.5rem; /* py-2 */
@@ -532,12 +589,52 @@ th.stock-category {
 
   border-radius: 0.5rem; /* rounded-lg (8px) */
 
-  transition-property: color, background-color, border-color,
-    text-decoration-color, fill, stroke;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-duration: 150ms; /* transition-colors */
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.create-stock-btn:hover {
+.save-modal-btn:hover {
   background-color: #1d4ed8;
+}
+
+.delete-modal-btn {
+  padding-left: 1.5rem; /* px-6 */
+  padding-right: 1.5rem;
+  padding-top: 0.5rem; /* py-2 */
+  padding-bottom: 0.5rem;
+
+  background-color: #dc2626; /* bg-red-600 */
+  color: #ffffff; /* text-white */
+
+  border-radius: 0.5rem; /* rounded-lg (8px) */
+
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-duration: 150ms; /* transition-colors */
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.delete-modal-btn:hover {
+  background-color: #b91c1c; /* hover bg-red-700 */
+}
+
+.stock-table-wrapper {
+  max-height: 420px; /* 7개 행 정도 높이 (row 높이에 맞춰 조정 가능) */
+  overflow-y: auto; /* 세로 스크롤 */
+  overflow-x: hidden; /* 가로 스크롤은 필요 없으면 숨김 */
+  border: 1px solid #e5e7eb; /* 선택: 테이블 영역 구분선 */
+}
+
+/* 스크롤바 커스터마이징 (선택) */
+.stock-table-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stock-table-wrapper::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.5); /* 회색 */
+  border-radius: 3px;
+}
+
+.stock-table-wrapper::-webkit-scrollbar-track {
+  background-color: #f3f4f6; /* 연한 회색 */
 }

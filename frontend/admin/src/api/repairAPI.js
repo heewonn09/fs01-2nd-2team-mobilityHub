@@ -37,10 +37,7 @@ const createStock = async (stockData) => {
 
 const updateStock = async (updateStockData) => {
   try {
-    const response = await backendServer.post(
-      request.updateStock,
-      updateStockData
-    );
+    const response = await backendServer.post(request.updateStock, updateStockData);
     return response;
   } catch (error) {
     console.error("에러발생: ", error);
@@ -60,10 +57,15 @@ const deleteStock = async (inventoryId) => {
   }
 };
 
-export {
-  repairPageAllList,
-  reportAllList,
-  updateStock,
-  deleteStock,
-  createStock,
+const writeReport = async (reportData) => {
+  try {
+    const response = await backendServer.post(request.writeReport, reportData);
+
+    return response;
+  } catch (error) {
+    console.error("에러발생: ", error);
+    alert("보고서 작성도중 에러가 발생했습니다.");
+  }
 };
+
+export { repairPageAllList, reportAllList, updateStock, deleteStock, createStock, writeReport };

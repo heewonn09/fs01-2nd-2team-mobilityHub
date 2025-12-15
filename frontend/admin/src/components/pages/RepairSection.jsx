@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../style/RepairSection.css";
 import useMqtt from "../hook/useMqtt";
-import { repairPageAllList } from "../../api/repairAPI";
+import { repairPageAllList, reportAllList, writeReport } from "../../api/repairAPI";
 import { Check } from "lucide-react";
 import axios from "axios";
 import RepairReportModal from "../modal/RepairReportModal";
@@ -12,6 +12,9 @@ import StockCreateModal from "../modal/StockCreateModal";
 //const BROKER_URL = import.meta.env.VITE_BROKER_URL;
 // MQTT 브로커 주소 --> cctv 연결할 때
 //const BROKER_URL = "ws://192.168.45.84";
+
+// 노건우 개인작업할 때 테스트용으로 사용했던 브로커주소
+const BROKER_URL = "ws://192.168.14.39:9001";
 
 // 차량 상태 상수
 const CAR_STATE = {
@@ -35,7 +38,9 @@ const RepairSection = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [stockData, setStockData] = useState(null);
+  const [reportList, setReportList] = useState([]);
   const [showCreateStockModal, setShowCreateStockModal] = useState(false);
+  const { connectStatus, imageSrc, publish } = useMqtt(BROKER_URL);
 
   const refreshStockList = async () => {
     try {
@@ -54,28 +59,33 @@ const RepairSection = () => {
 
   // API 호출
   useEffect(() => {
+    if (connectStatus === "connected") {
+      publish("parking/web/repair/cam", "start");
+    }
     repairPageAllList()
       .then((res) => {
         getRepairList(res.repairList);
         getStockList(res.stockStatusList);
       })
       .catch((err) => console.error("차량 정보 조회 실패"));
-  }, []);
+
+    reportAllList()
+      .then((res) => {
+        setReportList(res);
+      })
+      .catch((err) => console.error("보고서 조회 시래"));
+  }, [connectStatus, publish]);
 
   console.log(repairList);
   console.log(stockList);
+  console.log(reportList);
 
   // 현재 작업 중인 차량
-  const workingCar = repairList.find(
-    (repair) => repair.carState === CAR_STATE.REPAIRING
-  );
+  const workingCar = repairList.find((repair) => repair.carState === 13);
 
   // 대기 중인 차량
   const waitForWark = repairList.find(
-    (repair) =>
-      repair.carState !== CAR_STATE.REPAIRING &&
-      repair.entryTime == null &&
-      repair.exitTime == null
+    (repair) => repair.carState !== CAR_STATE.REPAIRING && repair.entryTime == null && repair.exitTime == null
   );
 
   const handleCompleteWork = () => {
@@ -87,13 +97,9 @@ const RepairSection = () => {
     console.log("DB에 저장될 데이터: ", reportData);
 
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:9000/report/write",
-        reportData
-      );
+      const response = await writeReport(reportData);
 
       if (response.status === 200) {
-        console.log("서버응당: ", response.data);
         alert("보고서작성이 등록됐습니다.");
       }
     } catch (error) {
@@ -101,6 +107,48 @@ const RepairSection = () => {
       alert("보고서 등록 중 오류가 발생했습니다.");
     }
   };
+
+  // 오늘 날짜 문자열
+  const today = new Date();
+  const yyyy = today.getFullYear().toString();
+  const mm = (today.getMonth() + 1).toString().padStart(2, "0");
+  const dd = today.getDate().toString().padStart(2, "0");
+  const todayStr = yyyy + mm + dd; // yyyymmdd
+
+  // 렌더링할 리스트 필터링 및 상태 결정
+  const filteredRepairList = repairList
+    .map((list) => {
+      // 이미 출차된 차량 제외
+      if (list.exit_time) return null;
+
+      // 오늘 완료된 차량 제외
+      const hasReportToday = reportList.some(
+        (report) => report.reportId.startsWith(todayStr) && report.carNumber === list.car_number
+      );
+      if (hasReportToday) return null;
+
+      // 차량 상태 결정
+      let carStateText = "";
+      if (list.carState === 13) {
+        carStateText = "작업중";
+      } else if (
+        (list.carState === null ||
+          list.carState === 0 ||
+          list.carState === 1 ||
+          list.carState === 2 ||
+          list.carState === 12) &&
+        list.entry_time
+      ) {
+        carStateText = "대기중";
+      } else {
+        return null; // 제외
+      }
+
+      return { ...list, carStateText }; // 상태를 추가해서 반환
+    })
+    .filter(Boolean); // null 제거
+
+  console.log(filteredRepairList);
 
   return (
     <div className="main-page">
@@ -113,9 +161,7 @@ const RepairSection = () => {
           <div className="between-position">
             <div>
               <p className="working-info">현재 작업차량</p>
-              <p className="info-details insert">
-                {workingCar ? workingCar.car_number : "작업중인 차량 없음"}
-              </p>
+              <p className="info-details insert">{workingCar ? workingCar.car_number : "작업중인 차량 없음"}</p>
             </div>
             <div className="icon-box" style={{ backgroundColor: "#dbeafe" }}>
               {/* icon들어갈 자리, class=icon color:#2563eb*/}
@@ -127,9 +173,7 @@ const RepairSection = () => {
           <div className="between-position">
             <div>
               <p className="working-info">대기중</p>
-              <p className="info-details insert">
-                {waitForWark ? waitForWark + "건" : "대기 중인 차량 없음"}
-              </p>
+              <p className="info-details insert">{waitForWark ? waitForWark + "건" : "대기 중인 차량 없음"}</p>
             </div>
             <div className="icon-box" style={{ backgroundColor: "#fef9c3" }}>
               {/* icon 들어갈 자리, class=icon color:#ca8a04 */}
@@ -154,7 +198,7 @@ const RepairSection = () => {
       <div className="usage-status-container">
         {/* CCTV부분 */}
         <div className="repair-cctv">
-          <div className="insert">cctv추가</div>
+          <img src={imageSrc || null} alt="camera" className="cctv-view" />
         </div>
         {/* 이용 현황 패널 */}
         <div className="use-status-box">
@@ -162,19 +206,21 @@ const RepairSection = () => {
             <h3>이용 현황</h3>
           </div>
           <div className="status-box">
-            {repairList.map((list) => (
-              <div key={list.id} className="list-data">
-                <div>
-                  <div className="car-number">{list.car_number}</div>
-                  <span className="state"></span>
+            {filteredRepairList.length > 0 ? (
+              filteredRepairList.map((list) => (
+                <div key={list.id} className="list-data">
+                  <div>
+                    <div className="car-number">{list.car_number}</div>
+                    <span className="state"></span>
+                  </div>
+                  <span className="job-state">
+                    <p>{list.carStateText}</p>
+                  </span>
                 </div>
-                <span className="job-state">
-                  <p className={CAR_STATE_INFO[list.carState]?.color || ""}>
-                    {CAR_STATE_INFO[list.carState]?.label || ""}
-                  </p>
-                </span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p>현재 작업대기 중인 차량이 없습니다.</p>
+            )}
           </div>
         </div>
       </div>
@@ -194,16 +240,13 @@ const RepairSection = () => {
           </div>
 
           {/* 카드 본문: 현재 작업 차량 추가 요청사항 */}
-          {repairList.filter(
-            (rep) => rep.carStateNodeId === CAR_STATE.REPAIRING
-          ).length > 0 ? (
+          {repairList.filter((rep) => rep.carStateNodeId === CAR_STATE.REPAIRING).length > 0 ? (
             repairList
               .filter((rep) => rep.carStateNodeId === CAR_STATE.REPAIRING)
               .map((rep) => (
                 <div key={rep.id} className="repair-list">
                   <p className="add-repair">추가 요청사항</p>
-                  {rep.additionalRequests &&
-                  rep.additionalRequests.length > 0 ? (
+                  {rep.additionalRequests && rep.additionalRequests.length > 0 ? (
                     rep.additionalRequests.map((req, index) => (
                       <div key={index} className="repair-request">
                         {req}
@@ -220,10 +263,7 @@ const RepairSection = () => {
 
           {/* 카드 하단: 정비 내역 보기 버튼 */}
           <div className="checklist-footer">
-            <button
-              className="view-details-btn"
-              onClick={() => setShowHistoryModal(true)}
-            >
+            <button className="view-details-btn" onClick={() => setShowHistoryModal(true)}>
               정비 내역 보기
             </button>
           </div>
@@ -237,17 +277,9 @@ const RepairSection = () => {
               <h3>부품 재고 현황</h3>
               <div className="stockHeader-right">
                 <span className="outOfStock">
-                  {
-                    stockList.filter(
-                      (stock) => stock.stockQuantity < stock.minStockQuantity
-                    ).length
-                  }
-                  개 항목 재고 부족
+                  {stockList.filter((stock) => stock.stockQuantity < stock.minStockQuantity).length}개 항목 재고 부족
                 </span>
-                <button
-                  className="createStock"
-                  onClick={() => setShowCreateStockModal(true)}
-                >
+                <button className="createStock" onClick={() => setShowCreateStockModal(true)}>
                   재고 추가
                 </button>
               </div>
@@ -255,7 +287,7 @@ const RepairSection = () => {
           </div>
 
           {/* 부품별 재고현황 메인 */}
-          <div style={{ overflowX: "auto" }}>
+          <div className="stock-table-wrapper">
             <table className="stockStatus-table">
               <thead>
                 <tr>
@@ -271,14 +303,10 @@ const RepairSection = () => {
                 {stockList.map((res) => (
                   <tr key={res.inventoryId} className="stock-list-tr">
                     <td className="stock-list-td">
-                      <span className="stock-product-name">
-                        {res.productName}
-                      </span>
+                      <span className="stock-product-name">{res.productName}</span>
                     </td>
                     <td className="stock-list-td">
-                      <span className="stock-category">
-                        {res.stockCategory}
-                      </span>
+                      <span className="stock-category">{res.stockCategory}</span>
                     </td>
                     <td className="stock-list-td text-center">
                       {res.stockQuantity}
@@ -305,10 +333,7 @@ const RepairSection = () => {
                     </td>
                     <td className="stock-list-td">
                       <div className="stockDetail-box">
-                        <button
-                          onClick={() => openStockModal(res)}
-                          className="stock-detail-button"
-                        >
+                        <button onClick={() => openStockModal(res)} className="stock-detail-button">
                           상세보기
                         </button>
                       </div>
@@ -322,19 +347,13 @@ const RepairSection = () => {
       </div>
       {/* 정비완료 모달 */}
       {showReportModal && (
-        <RepairReportModal
-          onClose={() => setShowReportModal(false)}
-          onSubmit={handleReportSubmit}
-          data={repairList}
-        />
+        <RepairReportModal onClose={() => setShowReportModal(false)} onSubmit={handleReportSubmit} data={repairList} />
       )}
       {/* 정비내역 보기 모달 */}
       {showHistoryModal && (
         <RepairHistoryModal
           onClose={() => setShowHistoryModal(false)} // 모달 닫기
-          data={repairList.filter(
-            (rep) => rep.carStateNodeId === CAR_STATE.REPAIRING
-          )} // 현재 작업 차량 데이터 전달
+          data={repairList.filter((rep) => rep.carStateNodeId === CAR_STATE.REPAIRING)} // 현재 작업 차량 데이터 전달
         />
       )}
       {/* 재고id별 상세보기 모달 */}
@@ -348,10 +367,7 @@ const RepairSection = () => {
       )}
       {/* 재고 추가 모달 */}
       {showCreateStockModal && (
-        <StockCreateModal
-          onClose={() => setShowCreateStockModal(false)}
-          refreshStockList={refreshStockList}
-        />
+        <StockCreateModal onClose={() => setShowCreateStockModal(false)} refreshStockList={refreshStockList} />
       )}
     </div>
   );
