@@ -6,6 +6,7 @@ import com.iot2ndproject.mobilityhub.domain.vehicle.repository.CarRepository;
 import com.iot2ndproject.mobilityhub.domain.work.dao.WorkListDAO;
 import com.iot2ndproject.mobilityhub.domain.work.dto.WorkInfoResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.work.dto.EntranceEntryView;
+import com.iot2ndproject.mobilityhub.domain.work.dto.WorkInfoTotalListResponse;
 import com.iot2ndproject.mobilityhub.domain.work.entity.WorkInfoEntity;
 import com.iot2ndproject.mobilityhub.domain.work.repository.WorkInfoRepository;
 import com.iot2ndproject.mobilityhub.domain.work.repository.WorksearchRepository;
@@ -58,6 +59,18 @@ public class WorkInfoServiceImpl implements WorkInfoService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<WorkInfoTotalListResponse> workInfoTotalList() {
+
+        List<WorkInfoTotalListResponse> list = dao.findAll().stream()
+                .filter(entity -> entity.getRequestTime().toLocalDate().isEqual(LocalDate.now()))
+                .map(WorkInfoTotalListResponse::new)
+                .collect(Collectors.toList());
+
+
+        return list;
+    }
+
     // ✔ 번호판 수정
     @Override
     public void updatePlateNumber(Long workInfoId, String newCarNumber) {
@@ -72,6 +85,8 @@ public class WorkInfoServiceImpl implements WorkInfoService {
         carRepository.save(car);
     }
 
+
+    // 모든 작업 목록 가져오기
     @Override
     public List<WorkInfoResponseDTO> findAll() {
         System.out.println("작업목록 service");
@@ -89,12 +104,36 @@ public class WorkInfoServiceImpl implements WorkInfoService {
                 .collect(Collectors.toList());
     }
 
+    // 오늘 작업목록 전체 불러오기
+    @Override
+    public List<WorkInfoResponseDTO> findAllToday() {
+        System.out.println("오늘작업목록 조회 service");
+
+        LocalDate today = LocalDate.now();
+
+        return dao.findAllToday()
+                .stream()
+                .filter(w -> {
+                    LocalDate entryDate = w.getRequestTime().toLocalDate();
+                    return entryDate.equals(today);
+                })
+                .map(w -> {
+                    WorkInfoResponseDTO dto = new WorkInfoResponseDTO();
+                    dto.setWorkId(w.getWork().getWorkId());
+                    dto.setWorkType(w.getWork().getWorkType());
+                    dto.setEntryTime(w.getEntryTime());
+                    dto.setExitTime(w.getExitTime());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
     // 🔥 Projection → DTO 변환
     private WorkInfoResponseDTO convertToDTO(EntranceEntryView v) {
 
         WorkInfoResponseDTO dto = new WorkInfoResponseDTO();
 
-        dto.setId(v.getId());
+        dto.setId(Long.toString(v.getId()));
         dto.setEntryTime(v.getEntryTime());
         dto.setExitTime(v.getExitTime());
         dto.setCarNumber(v.getUserCar_Car_CarNumber());
@@ -108,5 +147,4 @@ public class WorkInfoServiceImpl implements WorkInfoService {
 
         return dto;
     }
-    }
-
+}
