@@ -323,9 +323,9 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
 
     @Override
     @Transactional
-    public void completeService(Long workInfoId, String stage) {
+    public void completeService(int workInfoId, String stage) {
         // WorkInfoEntity 조회
-        Optional<WorkInfoEntity> optionalWorkInfo = serviceRequestDAO.findById(workInfoId);
+        Optional<WorkInfoEntity> optionalWorkInfo = serviceRequestDAO.findById(Long.valueOf(workInfoId));
         if (optionalWorkInfo.isEmpty()) {
             throw new IllegalArgumentException("작업 정보를 찾을 수 없습니다: workInfoId=" + workInfoId);
         }

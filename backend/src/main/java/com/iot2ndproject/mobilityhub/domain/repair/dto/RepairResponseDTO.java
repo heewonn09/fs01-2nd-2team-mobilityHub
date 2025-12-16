@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class RepairResponseDTO {
     private Long id;
     private int workId;
+    private int userCarId;
     private String car_number;
     private String additionalRequest;
     private int carState;
@@ -37,6 +38,7 @@ public class RepairResponseDTO {
         }
 
         if (entity.getUserCar() != null && entity.getUserCar().getCar() != null) {
+            this.userCarId = Long.bitCount(entity.getUserCar().getId());
             this.car_number = entity.getUserCar().getCar().getCarNumber();
         }
 

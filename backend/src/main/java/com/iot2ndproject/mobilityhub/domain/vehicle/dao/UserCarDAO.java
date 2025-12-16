@@ -5,6 +5,8 @@ import java.util.List;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 
 public interface UserCarDAO {
+    UserCarEntity findById(long id);
+    List<UserCarEntity> findByUser_UserId(String userId);
     void save(UserCarEntity userCar);
     UserCarEntity findByCarNumber(String carNumber);
     List<UserCarEntity> findByUserId(String userId);

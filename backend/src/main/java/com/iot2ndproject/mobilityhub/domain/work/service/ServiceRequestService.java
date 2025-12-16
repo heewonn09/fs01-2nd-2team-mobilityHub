@@ -10,5 +10,5 @@ public interface ServiceRequestService {
     List<ServiceRequestDTO> getHistory(String userId);
     Optional<ServiceRequestDTO> getLatest(String userId);
     boolean updateStatus(Long id, String status, String service);
-    void completeService(Long workInfoId, String stage);
+    void completeService(int workInfoId, String stage);
 }

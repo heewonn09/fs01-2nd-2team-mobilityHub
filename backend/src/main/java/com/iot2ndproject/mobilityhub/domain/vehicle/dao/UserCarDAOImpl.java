@@ -5,10 +5,22 @@ import com.iot2ndproject.mobilityhub.domain.vehicle.repository.UserCarRepository
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class UserCarDAOImpl implements UserCarDAO{
     private final UserCarRepository userCarRepository;
+
+    @Override
+    public UserCarEntity findById(long id) {
+        return userCarRepository.findById(id);
+    }
+
+    @Override
+    public List<UserCarEntity> findByUser_UserId(String userId) {
+        return List.of();
+    }
 
     @Override
     public void save(UserCarEntity userCar) {

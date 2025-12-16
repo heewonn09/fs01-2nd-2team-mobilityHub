@@ -2,14 +2,12 @@ package com.iot2ndproject.mobilityhub.domain.repair.service;
 
 import com.iot2ndproject.mobilityhub.domain.admin.dao.AdminDAO;
 import com.iot2ndproject.mobilityhub.domain.admin.entity.AdminEntity;
-import com.iot2ndproject.mobilityhub.domain.image.dao.WorkInfoDAO;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.repository.ParkingRepository;
 import com.iot2ndproject.mobilityhub.domain.repair.dao.RepairDAO;
 import com.iot2ndproject.mobilityhub.domain.repair.dto.*;
 import com.iot2ndproject.mobilityhub.domain.repair.entity.ReportEntity;
 import com.iot2ndproject.mobilityhub.domain.repair.entity.StockStatusEntity;
-import com.iot2ndproject.mobilityhub.domain.repair.repository.RepairReportRepository;
 import com.iot2ndproject.mobilityhub.domain.vehicle.dao.UserCarDAO;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import jakarta.transaction.Transactional;
@@ -20,10 +18,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -142,11 +138,15 @@ public class RepairServiceImpl implements RepairService {
 
     @Override
     public List<ReportResponseDTO> reportList() {
+        System.out.println( repairDAO.reportList().get(0).getUserCar().getId() );
         return repairDAO.reportList().stream()
                 .map(report -> {
+                    System.out.println(report.getUserCar());
                     ReportResponseDTO dto = new ReportResponseDTO();
+                    UserCarEntity entity = userCarDAO.findById(report.getUserCar().getId());
 
                     dto.setReportId(report.getReportId());
+                    dto.setUserCarId(Math.toIntExact(entity.getId()));
                     dto.setCarNumber(report.getUserCar().getCar().getCarNumber());
                     dto.setUserName(report.getUserCar().getUser().getUserName());
                     dto.setRepairTitle(report.getRepairTitle());
@@ -176,7 +176,7 @@ public class RepairServiceImpl implements RepairService {
     @Override
     public void reportWrite(ReportRequestDTO reportRequestDTO) {
         AdminEntity adminEntity = adminDAO.findByAdminId("Radmin");
-        UserCarEntity userCarEntity = userCarDAO.findByCarNumber(reportRequestDTO.getCarNumber());
+        UserCarEntity userCarEntity = userCarDAO.findById(reportRequestDTO.getUserCarId());
         ReportEntity entity = new ReportEntity();
 
         entity.setUserCar(userCarEntity);

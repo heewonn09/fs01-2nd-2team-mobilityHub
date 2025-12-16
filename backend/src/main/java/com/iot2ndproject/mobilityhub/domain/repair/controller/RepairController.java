@@ -117,9 +117,10 @@ public class RepairController {
      * @return 성공 여부
      */
     @PostMapping("/complete")
-    public ResponseEntity<?> completeRepair(@RequestParam Long workInfoId) {
-            serviceRequestService.completeService(workInfoId, "repair");
-            return ResponseEntity.ok(Map.of("message", "정비 완료 신호 rc카에 전송"));
+    public ResponseEntity<?> completeRepair(@RequestParam(name = "workInfoId") int workInfoId) {
+        serviceRequestService.completeService(workInfoId, "repair");
+        System.out.println("sdfaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        return ResponseEntity.ok(Map.of("message", "정비 완료 신호 rc카에 전송"));
     }
 
 }

@@ -34,7 +34,7 @@ public class CarWashController {
      * @return 성공 여부
      */
     @PostMapping("/complete")
-    public ResponseEntity<?> completeCarWash(@RequestParam Long workInfoId) {
+    public ResponseEntity<?> completeCarWash(@RequestParam int workInfoId) {
             serviceRequestService.completeService(workInfoId, "carwash");
             return ResponseEntity.ok(Map.of("message", "세차 끝"));
 

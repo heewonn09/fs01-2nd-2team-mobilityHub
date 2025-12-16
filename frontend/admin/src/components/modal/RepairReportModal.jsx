@@ -1,62 +1,99 @@
 import { useEffect, useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import "../style/RepairReportModal.css";
+import { sendComplete, writeReport } from "../../api/repairAPI";
 
-export default function RepairReportModal({ onClose, onSubmit, data }) {
+export default function RepairReportModal({ onClose, data, refreshStockList }) {
   const [comment, setComment] = useState("");
   const [repairDescription, setRepairDescription] = useState("");
   const [usedParts, setUsedParts] = useState([]);
   const [selectedPartId, setSelectedPartId] = useState("");
   const [reportData, setReportData] = useState(null);
-
-  const BASE_PRICE = 50000;
-  const ADDITIONAL_PRICE = 10000;
+  const [formData, setFormData] = useState({
+    repairTitle: "",
+    repairDetail: "",
+    repairAmount: 0,
+  });
 
   useEffect(() => {
-    if (Array.isArray(data) && data.length > 0) {
-      setReportData(data[0]);
+    if (!data) return;
+
+    if (Array.isArray(data)) {
+      setReportData(data[0] ?? null);
+    } else {
+      setReportData(data);
     }
   }, [data]);
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (reportData) => {
+    console.log(reportData);
+
+    try {
+      const completeResponse = await sendComplete(reportData);
+
+      if (completeResponse.status === 200) {
+        console.log("작업 완료 신호 전송 성공");
+      }
+    } catch (error) {
+      console.error("전송 실패:", error);
+      alert("완료 신호 전송 실패");
+    }
+  };
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+
+    const isEmptyField = Object.values(formData).some((value) => value === "" || value == null || value == undefined);
+
+    if (isEmptyField) {
+      alert("모든 항목을 입력해주세요.");
+    }
+
+    const requestBody = {
+      userCarId: reportData.userCarId,
+      carNumber: reportData.car_number,
+      repairTitle: formData.repairTitle,
+      repairDetail: formData.repairDetail,
+      repairAmount: Number(calculateTotal()),
+    };
+
+    const workInfoId = reportData.id;
+
+    try {
+      const response = await writeReport(requestBody);
+
+      if (response.status === 200) {
+        alert("보고서 작성이 완료되었습니다.");
+
+        await handleSubmit(workInfoId);
+
+        await refreshStockList();
+        onClose();
+      }
+      return response;
+    } catch (error) {
+      console.error("보고서 작성 실패: ", error);
+      alert("보고서 작성 실패");
+    }
+    console.log(workInfoId);
+  };
+
   console.log(reportData);
 
-  const addUsedPart = () => {
-    if (!selectedPartId) return;
-    // const part = parts.find((p) => p.id === selectedPartId);
-
-    const existingIndex = usedParts.findIndex(
-      (up) => up.part.id === selectedPartId
-    );
-
-    if (existingIndex !== -1) {
-      const newUsedParts = [...usedParts];
-      newUsedParts[existingIndex].quantity += 1;
-      setUsedParts(newUsedParts);
-    }
-    setSelectedPartId("");
-  };
-
-  const removeUsedPart = (index) => {
-    setUsedParts(usedParts.filter((_, i) => i !== index));
-  };
-
-  const updateQuantity = (index, quantity) => {
-    if (quantity < 1) return;
-    const newUsedParts = [...usedParts];
-    newUsedParts[index].quantity = quantity;
-    setUsedParts(newUsedParts);
-  };
-
   const calculateTotal = () => {
-    let total = BASE_PRICE + ADDITIONAL_PRICE;
+    let total = 60000 + Number(formData.repairAmount);
     usedParts.forEach((up) => {
       total += up.part.price * up.quantity;
     });
     return total;
-  };
-
-  const handleSubmit = () => {
-    onSubmit(usedParts);
   };
 
   const today = new Date().toLocaleDateString("ko-KR", {
@@ -67,119 +104,78 @@ export default function RepairReportModal({ onClose, onSubmit, data }) {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
-        {/* 헤더 */}
-        <div className="modal-header">
-          <div>
-            <h2>정비 완료 보고서</h2>
-            {reportData && <p>차량번호: {reportData.car_number}</p>}
+      {reportData && (
+        <div className="modal-content">
+          {/* 헤더 */}
+          <div className="modal-header">
+            <div>
+              <h2>정비 완료 보고서</h2>
+            </div>
+            <p>차량번호: {reportData.car_number}</p>
+            <button className="modal-close-btn" onClick={onClose}>
+              <X className="icon" />
+            </button>
           </div>
-          <button className="modal-close-btn" onClick={onClose}>
-            <X className="icon" />
-          </button>
-        </div>
 
-        {/* 바디 */}
-        <div className="modal-body">
-          {/* 추가 요청사항 */}
-          {/* {additionalRequests.length > 0 && (
+          {/* 바디 */}
+          <div className="modal-body">
+            {/* 추가 요청사항 */}
             <div className="section">
               <h3>추가 요청사항</h3>
               <div className="section-content">
-                {additionalRequests.map((req) => (
-                  <div key={req.id} className="item-box">
-                    {req.request}
-                  </div>
-                ))}
+                <div className="item-box">{reportData.additionalRequest}</div>
               </div>
             </div>
-          )} */}
 
-          {/* 수리 내용 */}
-          <div className="section">
-            <h3>수리 내용</h3>
-            <textarea
-              value={repairDescription}
-              onChange={(e) => setRepairDescription(e.target.value)}
-              placeholder="수리한 내용을 입력하세요..."
-            />
-          </div>
+            {/* 수리 내용 */}
+            <div className="section">
+              <h3>수리 내용</h3>
+              <textarea
+                name="repairTitle"
+                value={formData.repairTitle}
+                onChange={handleChange}
+                placeholder="수리한 내용을 입력하세요..."
+              />
+            </div>
 
-          {/* 사용한 부품 */}
-          <div className="section">
-            <h3>사용한 부품</h3>
-            {/* <div className="flex-row">
-              <select
-                value={selectedPartId}
-                onChange={(e) => setSelectedPartId(e.target.value)}
-              >
-                <option value="">부품을 선택하세요</option>
-                {parts.map((part) => (
-                  <option key={part.id} value={part.id}>
-                    {part.name} ({part.price}원/{part.unit})
-                  </option>
-                ))}
-              </select>
-              <button
-                className="btn-add"
-                onClick={addUsedPart}
-                disabled={!selectedPartId}
-              >
-                <Plus className="icon" />
-              </button>
-            </div> */}
+            {/* 상세 내용 */}
+            <div className="section">
+              <h3>상세 내용</h3>
+              <textarea
+                name="repairDetail"
+                value={formData.repairDetail}
+                onChange={handleChange}
+                placeholder="상세 내용..."
+              />
+            </div>
+            <div className="section">
+              <h3>정비 금액</h3>
+              <div>
+                <span>기본금액 : 60000</span>
 
-            {usedParts.length > 0 && (
-              <div className="used-parts-list">
-                {usedParts.map((up, index) => (
-                  <div key={index} className="used-part-item">
-                    <span>{up.part.name}</span>
-                    <div className="flex-row">
-                      <input
-                        type="number"
-                        min="1"
-                        value={up.quantity}
-                        onChange={(e) =>
-                          updateQuantity(index, parseInt(e.target.value) || 1)
-                        }
-                      />
-                      <span>{up.part.unit}</span>
-                      <span>{up.part.price * up.quantity}원</span>
-                      <button onClick={() => removeUsedPart(index)}>
-                        <Minus className="icon red" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                <div>
+                  <span>추가금액 : </span>
+                  <input type="number" name="repairAmount" value={formData.repairAmount} onChange={handleChange} />
+                </div>
               </div>
-            )}
+            </div>
           </div>
 
-          {/* 관리자 코멘트 */}
-          <div className="section">
-            <h3>관리자 코멘트</h3>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="코멘트를 입력하세요..."
-            />
+          {/* 푸터 */}
+          <div className="modal-footer">
+            <span>정비한 날짜: {today}</span>
+            <span>총 금액: {calculateTotal()}원</span>
+            <div className="flex-row gap">
+              <button className="btn-cancel" onClick={onClose}>
+                취소
+              </button>
+              <button className="btn-submit" onClick={handleCreate}>
+                전송
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* 푸터 */}
-        <div className="modal-footer">
-          <span>정비한 날짜: {today}</span>
-          <span>총 금액: {calculateTotal()}원</span>
-          <div className="flex-row gap">
-            <button className="btn-cancel" onClick={onClose}>
-              취소
-            </button>
-            <button className="btn-submit" onClick={handleSubmit}>
-              전송
-            </button>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReportRequestDTO {
     private String reportId;
-    private String carNumber;
+    private int userCarId;
     private String repairTitle;  // 정비 내용 타이틀
     private String repairDetail;   // 정비 세부내용
     private int repairAmount;  //정비 청구금액
