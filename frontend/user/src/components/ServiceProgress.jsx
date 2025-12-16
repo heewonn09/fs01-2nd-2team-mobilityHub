@@ -37,6 +37,24 @@ export function ServiceProgress({ isLogin }) {
     return mapping[backendType] || backendType;
   };
 
+  // 상태를 한국어로 변환하는 함수
+  const getStatusLabel = (status, serviceType) => {
+    if (!status) return "-";
+    
+    const serviceName = SERVICE_NAMES[serviceType] || "";
+    
+    switch (status) {
+      case "REQUESTED":
+        return "대기중";
+      case "IN_PROGRESS":
+        return `${serviceName} 중`;
+      case "DONE":
+        return `${serviceName} 완료`;
+      default:
+        return status;
+    }
+  };
+
   // 뒤로 가기 함수
   const handleBack = () => {
     navigate(-1); // 이전 페이지로 이동
@@ -268,31 +286,36 @@ export function ServiceProgress({ isLogin }) {
       >
         <div style={{ fontWeight: "600", marginBottom: "8px" }}>진행 상황</div>
         {progress ? (
-          <div>
-            <div style={{ marginBottom: "4px" }}>전체 상태: {progress.status || "대기"}</div>
-            <div style={{ marginBottom: "4px" }}>차량: {progress.carNumber}</div>
-            <div style={{ marginBottom: "4px" }}>
-              서비스: {progress.services?.map((s) => SERVICE_NAMES[s] || s).join(", ")}
+          progress.status === "DONE" ? (
+            <div style={{ color: "#6b7280" }}>
+              작업중인 거 없다
             </div>
-            <div style={{ marginBottom: "4px" }}>
-              주차 상태: {progress.parkingStatus || "-"}
-            </div>
-            <div style={{ marginBottom: "4px" }}>
-              세차 상태: {progress.carwashStatus || "-"}
-            </div>
-            <div style={{ marginBottom: "4px" }}>
-              정비 상태: {progress.repairStatus || "-"}
-            </div>
-            <div style={{ marginBottom: "4px" }}>
-              현재 위치: {progress.carState || "-"}
-            </div>
-            <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "12px" }}>
-              요청 시각: {(progress.createdAt || "").replace("T", " ").slice(0, 19)}
-            </div>
+          ) : (
+            <div>
+              <div style={{ marginBottom: "4px" }}>전체 상태: {progress.status === "REQUESTED" ? "대기중" : progress.status === "IN_PROGRESS" ? "진행중" : progress.status}</div>
+              <div style={{ marginBottom: "4px" }}>차량: {progress.carNumber}</div>
+              <div style={{ marginBottom: "4px" }}>
+                서비스: {progress.services?.map((s) => SERVICE_NAMES[s] || s).join(", ")}
+              </div>
+              <div style={{ marginBottom: "4px" }}>
+                주차 상태: {progress.parkingStatus ? getStatusLabel(progress.parkingStatus, "parking") : "-"}
+              </div>
+              <div style={{ marginBottom: "4px" }}>
+                세차 상태: {progress.carwashStatus ? getStatusLabel(progress.carwashStatus, "carwash") : "-"}
+              </div>
+              <div style={{ marginBottom: "4px" }}>
+                정비 상태: {progress.repairStatus ? getStatusLabel(progress.repairStatus, "maintenance") : "-"}
+              </div>
+              <div style={{ marginBottom: "4px" }}>
+                현재 위치: {progress.carState || "-"}
+              </div>
+              <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "12px" }}>
+                요청 시각: {(progress.createdAt || "").replace("T", " ").slice(0, 19)}
+              </div>
             
             {/* 차량 호출 버튼 (주차 중일 때만 표시) */}
             {progress.services?.includes("parking") && 
-             progress.parkingStatus === "occupied" && (
+             progress.parkingStatus === "IN_PROGRESS" && (
               <button
                 onClick={async () => {
                   if (!progress.id) {
@@ -329,7 +352,8 @@ export function ServiceProgress({ isLogin }) {
                 {isCalling ? "호출 중..." : "🚗 차량 호출"}
               </button>
             )}
-          </div>
+            </div>
+          )
         ) : (
           <div style={{ color: "#6b7280" }}>
             아직 요청된 서비스가 없습니다. 서비스를 선택하고 전송하세요.

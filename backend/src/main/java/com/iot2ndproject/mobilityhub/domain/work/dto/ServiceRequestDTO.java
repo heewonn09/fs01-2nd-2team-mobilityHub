@@ -17,5 +17,6 @@ public class ServiceRequestDTO {
     private String carwashStatus;
     private String repairStatus;
     private String status;
+    private String carState; // 차량 현재 위치 (노드 이름)
 }
 

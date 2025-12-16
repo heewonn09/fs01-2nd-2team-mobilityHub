@@ -5,6 +5,7 @@ import com.iot2ndproject.mobilityhub.domain.mqtt.MyPublisher;
 import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.service.ParkingService;
 import com.iot2ndproject.mobilityhub.domain.parkingmap.repository.ParkingMapNodeRepository;
+import com.iot2ndproject.mobilityhub.domain.parkingmap.service.RouteService;
 import com.iot2ndproject.mobilityhub.domain.vehicle.entity.UserCarEntity;
 import com.iot2ndproject.mobilityhub.domain.work.dao.ServiceRequestDAO;
 import com.iot2ndproject.mobilityhub.domain.work.dto.ServiceRequestDTO;
@@ -31,6 +32,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     private final ServiceRequestDAO serviceRequestDAO;
     private final ParkingMapNodeRepository mapNodeRepository;
     private final ParkingService parkingService;
+    private final RouteService routeService;
     private final MyPublisher mqttPublisher;
     private final ObjectMapper objectMapper;
 
@@ -247,12 +249,116 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
                 : null;
         dto.setAdditionalRequest(additionalRequest);
 
-        String status = deriveStatus(representative);
-        dto.setStatus(status);
+        String overallStatus = deriveStatus(representative);
+        dto.setStatus(overallStatus);
 
-        dto.setParkingStatus(services.contains("park") ? status : null);
-        dto.setCarwashStatus(services.contains("carwash") ? status : null);
-        dto.setRepairStatus(services.contains("repair") ? status : null);
+        // =========================
+        // 서비스별 상태 계산
+        // - REQUESTED: 입차 전(대기)
+        // - IN_PROGRESS: 현재 진행중(동시에 2개 이상 "중"이 되지 않도록 순서 기반으로 계산)
+        // - DONE: 출차(전체 완료)
+        // =========================
+        boolean hasPark = services.contains("park");
+        boolean hasCarwash = services.contains("carwash");
+        boolean hasRepair = services.contains("repair");
+
+        String parkingStatus = null;
+        String carwashStatus = null;
+        String repairStatus = null;
+
+        // =========================
+        // 노드 기반 서비스별 상태 계산
+        // - 사이클 안에서 중복으로 밟는 노드가 없으므로, 노드 ID로 단계 판별
+        // - 세차: 10(세차_1)에서 진행중, 이후 노드에서 완료
+        // - 정비: 13(정비_1)에서 진행중, 이후 노드에서 완료
+        // - 주차: 5,7,9(주차_1,2,3)에서 진행중, 출구(20) 또는 exitTime 시 완료
+        // =========================
+        Integer currentNodeId = representative.getCarState() != null 
+                ? representative.getCarState().getNodeId() 
+                : null;
+        String currentNodeName = representative.getCarState() != null 
+                ? representative.getCarState().getNodeName() 
+                : null;
+
+        if ("REQUESTED".equalsIgnoreCase(overallStatus)) {
+            // 입차 전: 모두 대기
+            if (hasPark) parkingStatus = "REQUESTED";
+            if (hasCarwash) carwashStatus = "REQUESTED";
+            if (hasRepair) repairStatus = "REQUESTED";
+        } else if ("DONE".equalsIgnoreCase(overallStatus)) {
+            // 출차(exitTime): 모두 완료
+            if (hasPark) parkingStatus = "DONE";
+            if (hasCarwash) carwashStatus = "DONE";
+            if (hasRepair) repairStatus = "DONE";
+        } else { 
+            // IN_PROGRESS: 노드 ID 기반으로 판별
+            // ===== 세차 상태 =====
+            if (hasCarwash) {
+                // 세차 노드: 10
+                // 세차 이전 노드: 1, 2 (경로: 1 → 2 → 10 → ...)
+                // 세차 이후 노드: 15, 17, 18, 19, 3, 4, 5, 6, 7, 8, 9, 21, 22, 23, 20
+                if (currentNodeId == null || currentNodeId == 1 || currentNodeId == 2) {
+                    carwashStatus = "REQUESTED"; // 세차 전 (대기)
+                } else if (currentNodeId == 10) {
+                    carwashStatus = "IN_PROGRESS"; // 세차 중
+                } else {
+                    carwashStatus = "DONE"; // 세차 완료
+                }
+            }
+
+            // ===== 정비 상태 =====
+            if (hasRepair) {
+                // 정비 노드: 13
+                // 정비 이전 노드: 1, 2, 12 (경로: 1 → 2 → 12 → 13 → ...)
+                // 정비 이후 노드: 14, 17, 18, 19, 3, 4, 5, 6, 7, 8, 9, 21, 22, 23, 20
+                if (currentNodeId == null || currentNodeId == 1 || currentNodeId == 2 || currentNodeId == 12) {
+                    repairStatus = "REQUESTED"; // 정비 전 (대기)
+                } else if (currentNodeId == 13) {
+                    repairStatus = "IN_PROGRESS"; // 정비 중
+                } else {
+                    repairStatus = "DONE"; // 정비 완료
+                }
+            }
+
+            // ===== 주차 상태 =====
+            if (hasPark) {
+                // 주차 노드: 5, 7, 9
+                // 주차 이전: 세차/정비 + 이동 구간 (기점_2(3) 전까지는 대기, 주차 구간 전까지 대기)
+                // 주차 중: 5, 7, 9에 있을 때
+                // 주차 완료: 출구(20)로 이동 중 또는 도착
+
+                // 복합 서비스에서 주차는 세차/정비 이후에 진행됨
+                // park,carwash: 세차 완료 후(노드 15 이후부터) 주차 구간 진입
+                // park,repair: 정비 완료 후(노드 14 이후부터) 주차 구간 진입
+                
+                // 주차 노드에 있으면 주차 중
+                if (currentNodeId != null && (currentNodeId == 5 || currentNodeId == 7 || currentNodeId == 9)) {
+                    parkingStatus = "IN_PROGRESS"; // 주차 중
+                } else if (currentNodeId != null && (currentNodeId == 21 || currentNodeId == 22 || currentNodeId == 23 
+                        || currentNodeId == 19 || currentNodeId == 20)) {
+                    // 주차 후 출차 이동 중 (기점_13~15, 기점_12, 출구)
+                    parkingStatus = "DONE"; // 주차 완료
+                } else if (currentNodeName != null && currentNodeName.startsWith("주차_")) {
+                    // nodeName으로 보정
+                    parkingStatus = "IN_PROGRESS";
+                } else {
+                    // 그 외는 대기 (세차/정비 구간 또는 주차 전 이동 구간)
+                    parkingStatus = "REQUESTED";
+                }
+            }
+        }
+
+        dto.setParkingStatus(parkingStatus);
+        dto.setCarwashStatus(carwashStatus);
+        dto.setRepairStatus(repairStatus);
+        
+        // carState 매핑 (노드 이름)
+        if (representative.getCarState() != null && representative.getCarState().getNodeName() != null) {
+            dto.setCarState(representative.getCarState().getNodeName());
+        } else {
+            dto.setCarState(null);
+        }
+        
         return dto;
     }
 
