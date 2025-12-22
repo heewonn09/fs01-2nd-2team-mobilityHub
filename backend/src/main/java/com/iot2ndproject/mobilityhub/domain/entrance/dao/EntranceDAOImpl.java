@@ -7,24 +7,30 @@ import com.iot2ndproject.mobilityhub.domain.service_request.repository.WorkInfoR
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
 public class EntranceDAOImpl implements EntranceDAO {
-    private final WorkInfoRepository repository;
+
+    private final WorkInfoRepository workInfoRepository;
     private final ImageRepository imageRepository;
 
     @Override
     public List<WorkInfoEntity> findAll() {
-        System.out.println("작업목록 조회");
-        return repository.findAll();
+        return workInfoRepository.findAll();
     }
 
     @Override
     public List<WorkInfoEntity> findAllToday() {
-        System.out.println("오늘 작업목록만 조회");
-        return repository.findAll();
+        LocalDate today = LocalDate.now();
+        return workInfoRepository.findAll().stream()
+                .filter(w -> w.getRequestTime() != null &&
+                        w.getRequestTime().toLocalDate().isEqual(today))
+                .toList();
     }
 
     @Override
@@ -34,12 +40,27 @@ public class EntranceDAOImpl implements EntranceDAO {
 
     @Override
     public ImageEntity findById(Long imageId) {
-        return imageRepository.findById((imageId))
+        return imageRepository.findById(imageId)
                 .orElseThrow(() -> new IllegalArgumentException("이미지 없음"));
     }
 
     @Override
     public ImageEntity findLatest() {
-        return null;
+        return imageRepository.findTopByOrderByRegDateDesc();
+    }
+
+    @Override
+    public Optional<WorkInfoEntity> findLatestEntranceWork() {
+        return workInfoRepository.findTopByWork_WorkIdOrderByRequestTimeDesc(1);
+    }
+
+    @Override
+    public List<WorkInfoEntity> findEntryBetween(LocalDateTime start, LocalDateTime end) {
+        return workInfoRepository.findByEntryTimeBetween(start, end);
+    }
+
+    @Override
+    public List<WorkInfoEntity> findExitBetween(LocalDateTime start, LocalDateTime end) {
+        return workInfoRepository.findByExitTimeBetween(start, end);
     }
 }

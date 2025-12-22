@@ -3,23 +3,23 @@ package com.iot2ndproject.mobilityhub.domain.entrance.dao;
 import com.iot2ndproject.mobilityhub.domain.entrance.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface EntranceDAO {
 
-    // 전체목록 조회
-    List<WorkInfoEntity> findAll();
-
-    // 오늘 작업목록만 조회
-    List<WorkInfoEntity> findAllToday();
-
-//    ================================================================
-//    ImageDAO 파일 병합
-//    ================================================================
-
+    // Image
     ImageEntity save(ImageEntity image);
-
     ImageEntity findById(Long imageId);
-
     ImageEntity findLatest();
+
+    // WorkInfo
+    Optional<WorkInfoEntity> findLatestEntranceWork(); // workId=1
+    List<WorkInfoEntity> findEntryBetween(LocalDateTime start, LocalDateTime end);
+    List<WorkInfoEntity> findExitBetween(LocalDateTime start, LocalDateTime end);
+
+    // List
+    List<WorkInfoEntity> findAll();
+    List<WorkInfoEntity> findAllToday(); // 파생메서드가 애매해서 DAO에서 필터링
 }

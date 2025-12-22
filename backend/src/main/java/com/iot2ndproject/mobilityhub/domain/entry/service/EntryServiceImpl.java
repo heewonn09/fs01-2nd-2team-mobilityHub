@@ -1,15 +1,8 @@
 package com.iot2ndproject.mobilityhub.domain.entry.service;
 
-import com.iot2ndproject.mobilityhub.domain.entrance.entity.ImageEntity;
-import com.iot2ndproject.mobilityhub.domain.entrance.repository.ImageRepository;
-import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
-import com.iot2ndproject.mobilityhub.domain.parking.repository.ParkingRepository;
-import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
-import com.iot2ndproject.mobilityhub.domain.car.repository.UserCarRepository;
-import com.iot2ndproject.mobilityhub.domain.entrance.dto.EntranceEntryView;
-import com.iot2ndproject.mobilityhub.domain.entry.dto.OcrEntryRequest;
+import com.iot2ndproject.mobilityhub.domain.entry.dao.EntryDAO;
+import com.iot2ndproject.mobilityhub.domain.entrance.dto.EntranceEntryViewDTO;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
-import com.iot2ndproject.mobilityhub.domain.service_request.repository.WorkInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,67 +14,54 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EntryServiceImpl implements EntryService {
 
-    private final ImageRepository imageRepository;
-    private final UserCarRepository userCarRepository;
-    private final ParkingRepository parkingRepository;
-    private final WorkInfoRepository workInfoRepository;
-
-    /**
-     * ✅ 실제 입차 생성
-     */
-    @Override
-    public WorkInfoEntity handleEntry(OcrEntryRequest req) {
-
-        // 1️⃣ 이미지 조회
-        ImageEntity image = imageRepository.findById(req.getImageId())
-                .orElseThrow(() -> new IllegalArgumentException("이미지 없음"));
-
-        // 2️⃣ 차량 조회
-        UserCarEntity userCar =
-                userCarRepository.findByCarCarNumber(req.getCarNumber());
-
-        // 3️⃣ 주차 구역
-        ParkingEntity parking =
-                parkingRepository.findById(req.getCameraId()).orElse(null);
-
-        // 4️⃣ 입차 기록 생성 (🔥 여기서만 WorkInfo 생성)
-        WorkInfoEntity work = new WorkInfoEntity();
-        work.setUserCar(userCar);
-        work.setImage(image);
-        work.setSectorId(parking);
-
-        work.setEntryTime(LocalDateTime.now());
-        work.setExitTime(null); // 중요
-        work.setRequestTime(LocalDateTime.now());
-
-        workInfoRepository.save(work);
-
-        return work;
-    }
+    private final EntryDAO entryDAO;
 
     /**
      * 📊 금일 입차 조회
      */
     @Override
-    public List<EntranceEntryView> getTodayEntry() {
+    public List<EntranceEntryViewDTO> getTodayEntry() {
 
         LocalDate today = LocalDate.now();
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.plusDays(1).atStartOfDay();
 
-        return workInfoRepository.findByEntryTimeBetween(
-                today.atStartOfDay(),
-                today.plusDays(1).atStartOfDay()
-        );
+        return entryDAO.findTodayEntry(start, end)
+                .stream()
+                .map(work -> {
+                    EntranceEntryViewDTO dto = new EntranceEntryViewDTO();
+
+                    dto.setId(work.getId());
+                    dto.setEntryTime(work.getEntryTime());
+
+                    if (work.getUserCar() != null && work.getUserCar().getCar() != null) {
+                        dto.setCarNumber(work.getUserCar().getCar().getCarNumber());
+                    }
+
+                    if (work.getImage() != null) {
+                        dto.setImagePath(work.getImage().getImagePath());
+                        dto.setCameraId(work.getImage().getCameraId());
+                    }
+
+                    return dto;
+                })
+                .toList();
     }
 
+    /**
+     * ✅ 입차 승인
+     */
     @Override
     public void approveEntrance(Long workId) {
 
-        WorkInfoEntity work = workInfoRepository.findById(workId)
+        WorkInfoEntity workInfo = entryDAO.findWorkInfoById(workId)
                 .orElseThrow(() -> new IllegalArgumentException("입차 정보 없음"));
 
-        // 👉 지금은 승인 시점에 할 게 이것뿐
-        // (나중에 차단기 열기, 상태 변경 등 추가 가능)
+        // 승인 시점 확정
+        if (workInfo.getEntryTime() == null) {
+            workInfo.setEntryTime(LocalDateTime.now());
+        }
 
-        workInfoRepository.save(work);
+        entryDAO.save(workInfo);
     }
 }

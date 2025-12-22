@@ -7,12 +7,12 @@ import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntit
 import com.iot2ndproject.mobilityhub.domain.service_request.repository.WorkInfoRepository;
 import com.iot2ndproject.mobilityhub.domain.service_request.repository.WorkRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Component
+@Repository
 @RequiredArgsConstructor
 public class ServiceRequestDAOImpl implements ServiceRequestDAO {
 
@@ -37,10 +37,9 @@ public class ServiceRequestDAOImpl implements ServiceRequestDAO {
 
     @Override
     public List<WorkInfoEntity> findByUserIdOrderByRequestTimeDesc(String userId) {
-        // 서비스 요청 이력만 조회(work_id가 NULL인 입/출차 로그 제외)
-        return java.util.Objects.requireNonNull(
-                workInfoRepository.findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(userId)
-        );
+        // 서비스 요청 이력만 조회 (work_id가 NULL인 입/출차 로그 제외)
+        return workInfoRepository
+                .findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(userId);
     }
 
     @Override

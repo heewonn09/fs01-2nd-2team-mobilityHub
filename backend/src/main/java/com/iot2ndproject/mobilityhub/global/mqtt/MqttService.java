@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -83,15 +84,19 @@ public class MqttService {
             System.out.println(">>> RC카 위치 신호 수신: carId=" + carId + ", nodeId=" + nodeId + ", nodeName=" + nodeName);
             
             // carNumber로 진행 중인 최신 작업 정보 조회 (work_id가 null이 아닌 것만)
-            Optional<WorkInfoEntity> optionalWorkInfo = workInfoRepository
-                    .findTopByUserCar_Car_CarNumberAndWorkIsNotNullOrderByRequestTimeDesc(carId);
-            
-            if (optionalWorkInfo.isEmpty()) {
-                System.err.println("작업 정보를 찾을 수 없습니다: carNumber=" + carId + " (진행 중인 작업이 없습니다)");
+            List<WorkInfoEntity> workInfos =
+                    workInfoRepository
+                            .findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(carId);
+
+            if (workInfos.isEmpty()) {
+                System.err.println("작업 정보를 찾을 수 없습니다: carNumber=" + carId);
                 return;
             }
-            
-            WorkInfoEntity workInfo = optionalWorkInfo.get();
+
+            WorkInfoEntity workInfo = workInfos.get(0); // ✅ 핵심
+
+
+
             
             // 노드 ID로 ParkingMapNodeEntity 조회
             Optional<ParkingMapNodeEntity> optionalNode = parkingMapNodeRepository.findById(nodeId);
@@ -183,7 +188,7 @@ public class MqttService {
 
             imageRepository.save(image);
 
-            System.out.println("✅ image 테이블 저장 완료");
+            System.out.println(" image 테이블 저장 완료");
 
         } catch (Exception e) {
             e.printStackTrace();
