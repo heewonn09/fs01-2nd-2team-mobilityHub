@@ -1,5 +1,6 @@
-package com.iot2ndproject.mobilityhub.domain.user.security;
+package com.iot2ndproject.mobilityhub.global.security;
 
+import com.iot2ndproject.mobilityhub.domain.admin.dto.UserAdminDetail;
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserUserDetail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -18,14 +19,18 @@ public class MyAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String id = authentication.getName();
         String pass = authentication.getCredentials().toString();
-        UserDetails userDetails = (UserDetails) detailService.loadUserByUsername(id);
-
+        UserDetails userDetails = detailService.loadUserByUsername(id);
+        System.out.println("userDetails = " + userDetails.getUsername());
         boolean state = false;
         UsernamePasswordAuthenticationToken authenticationToken = null;
         if(userDetails!=null){
             state = passwordEncoder.matches(pass, userDetails.getPassword());
             if(state){
-                authenticationToken = new UsernamePasswordAuthenticationToken(((UserUserDetail) userDetails).getResponseDTO(),null, userDetails.getAuthorities());
+                if (userDetails.getUsername().endsWith("admin")) {
+                    authenticationToken = new UsernamePasswordAuthenticationToken(((UserAdminDetail) userDetails).getAdminResponseDTO(), null, userDetails.getAuthorities());
+                }else{
+                    authenticationToken = new UsernamePasswordAuthenticationToken(((UserUserDetail) userDetails).getResponseDTO(),null, userDetails.getAuthorities());
+                }
             }
         }
 

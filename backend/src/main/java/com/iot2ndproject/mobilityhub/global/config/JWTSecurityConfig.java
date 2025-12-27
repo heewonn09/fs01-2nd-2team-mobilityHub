@@ -1,8 +1,9 @@
 package com.iot2ndproject.mobilityhub.global.config;
 
+import com.iot2ndproject.mobilityhub.domain.user.jwt.CustomJWTFilter;
 import com.iot2ndproject.mobilityhub.domain.user.jwt.TokenProvider;
-import com.iot2ndproject.mobilityhub.domain.user.security.MyAuthenticationProvider;
-import com.iot2ndproject.mobilityhub.domain.user.security.UserSecurityDetailService;
+import com.iot2ndproject.mobilityhub.global.security.MyAuthenticationProvider;
+import com.iot2ndproject.mobilityhub.global.security.UserSecurityDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -26,10 +28,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class JWTSecurityConfig {
     private final UserSecurityDetailService detailService;
     private final TokenProvider tokenProvider;
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
+
     @Bean
     public AuthenticationProvider authenticationProvider(){
         return new MyAuthenticationProvider(passwordEncoder(),detailService);
@@ -39,9 +43,9 @@ public class JWTSecurityConfig {
         http.csrf(csrf->csrf.disable())
                 //사용자정의필터를 어느 위치에서 실행할건지 등록하는 작업 필요
                 //특정 필터가 실행되기 전에 실행되도록 작업
-//                .addFilterBefore(new CustomJWTFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new CustomJWTFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth-> auth
-                        .requestMatchers("/user/create","/user/login",  "/carwash/select", "/api/entry/ocr").permitAll()
+                        .requestMatchers("/user/create","/user/login",  "/carwash/select", "/api/entry/ocr", "/admin/login").permitAll()
 //                        .requestMatchers("/customer/create").hasAnyRole("ADMIN")
 //                        .requestMatchers("product/**").hasAnyRole("USER","ADMIN")
                         //.anyRequest().authenticated())

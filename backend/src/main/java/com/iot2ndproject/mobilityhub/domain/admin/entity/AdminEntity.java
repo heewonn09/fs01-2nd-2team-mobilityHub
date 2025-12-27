@@ -31,4 +31,7 @@ public class AdminEntity {
 
     @Column(nullable = false)
     private String phone;     // 전화번호
+
+    @Column(nullable = false)
+    private String role;      // role
 }

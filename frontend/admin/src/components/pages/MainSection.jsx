@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../style/MainSection.css";
 import { getWeatherInfo } from "../../api/weather";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getTodayEntry, getTodayExit } from "../../api/EntranceAPI";
 import InOutLineChart from "../chart/InOutLineChart";
 import { getTodayWorkList, workInfoTotalList } from "../../api/workInfoAPI";
@@ -11,6 +11,8 @@ import { AlignCenter, Car } from "lucide-react";
 import { getParkingList } from "../../api/parkingAPI";
 
 const MainSection = () => {
+  const navigate = useNavigate();
+
   //날씨
   const [weather, setWeather] = useState("");
 
@@ -163,7 +165,9 @@ const MainSection = () => {
                     (v) =>
                       Number(v.carState) ===
                         Number(
-                          Object.keys(carStateToSector).find((k) => carStateToSector[k] === sector)
+                          Object.keys(carStateToSector).find(
+                            (k) => carStateToSector[k] === sector
+                          )
                         ) && !v.exit_time // exit_time이 없는 데이터만
                   );
 
@@ -174,7 +178,11 @@ const MainSection = () => {
                         <span>{vehicle ? vehicle.carNumber : "비어있음"}</span>
                       </td>
                       <td>{sector}</td>
-                      <td>{vehicle ? vehicle.entry_time || "-" : "사용중인 차량이 없습니다"}</td>
+                      <td>
+                        {vehicle
+                          ? vehicle.entry_time || "-"
+                          : "사용중인 차량이 없습니다"}
+                      </td>
                     </tr>
                   );
                 })}

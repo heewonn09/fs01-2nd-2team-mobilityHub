@@ -1,11 +1,16 @@
 package com.iot2ndproject.mobilityhub.domain.admin.controller;
 
-import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminPassChangeRequest;
-import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminResponseDTO;
-import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminUpdateRequest;
+import com.iot2ndproject.mobilityhub.domain.admin.dto.*;
 import com.iot2ndproject.mobilityhub.domain.admin.service.AdminService;
+import com.iot2ndproject.mobilityhub.domain.user.dto.UserProfileDTO;
+import com.iot2ndproject.mobilityhub.domain.user.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +20,39 @@ import java.util.Map;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminController {
+    private final AuthenticationManagerBuilder managerBuilder;
     private final AdminService adminService;
+    private final TokenProvider tokenProvider;
+
+    //로그인
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(@RequestBody AdminLoginRequest loginRequest) {
+        System.out.println(loginRequest);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequest.getAdminId(), loginRequest.getAdminPass());
+        AuthenticationManager authenticationManager = managerBuilder.getObject();
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        AdminResponseDTO response = (AdminResponseDTO) authentication.getPrincipal();
+
+        String jwtToken = "";
+        if(response != null) {
+            jwtToken = tokenProvider.createToken(authentication);
+        }
+
+        System.out.println("jwtToken: " + jwtToken);
+        HttpHeaders httpHeaders = new HttpHeaders();
+
+        httpHeaders.add("Authorization", "Bearer "+jwtToken);
+        System.out.println(response);
+
+        return ResponseEntity.ok()
+                .headers(httpHeaders)
+                .body(Map.of(
+                        "accessToken", jwtToken,
+                        "adminId", response.getAdminId(),
+                        "roles", response.getRole(),
+                        "email", response.getEmail()
+                ));
+    }
 
     // GET : 관리자 전체조회
     @GetMapping("/list")
@@ -42,6 +79,7 @@ public class AdminController {
         return "비밀번호가 변경되었습니다.";
     }
 
+    // 일반 비밀번호를 bcrypt 보안으로 변경
     @PostMapping("/bcryptpass")
     public ResponseEntity<String> updatePassword(
             @RequestParam String adminId,

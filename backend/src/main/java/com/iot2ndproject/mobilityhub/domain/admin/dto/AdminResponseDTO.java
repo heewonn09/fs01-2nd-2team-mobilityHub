@@ -12,14 +12,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AdminResponseDTO {
     private String adminId;
+    private String adminPass;
     private String adminName;
     private String email;
     private String phone;
+    private String role;
 
     public AdminResponseDTO(AdminEntity entity) {
         this.adminId = entity.getAdminId();
+        this.adminPass = entity.getAdminPass();
         this.adminName = entity.getAdminName();
         this.email = entity.getEmail();
         this.phone = entity.getPhone();
+        this.role = entity.getRole();
     }
 }

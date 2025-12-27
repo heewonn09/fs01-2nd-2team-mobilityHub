@@ -69,7 +69,8 @@ export default function StatisticsSection() {
       const dayIndex = getDayIndex(user.createDate);
 
       if (regDate >= startOfThisWeek) thisWeek[dayIndex]++;
-      else if (regDate >= startOfLastWeek && regDate < startOfThisWeek) lastWeek[dayIndex]++;
+      else if (regDate >= startOfLastWeek && regDate < startOfThisWeek)
+        lastWeek[dayIndex]++;
     });
 
     return { thisWeek, lastWeek };
@@ -142,7 +143,10 @@ export default function StatisticsSection() {
   };
 
   /* ===================== 총 매출 ===================== */
-  const total = (repairAmount || []).reduce((sum, r) => sum + r.repairAmount, 0);
+  const total = (repairAmount || []).reduce(
+    (sum, r) => sum + r.repairAmount,
+    0
+  );
   console.log(thisWeek);
   /* ===================== 렌더 ===================== */
   return (
@@ -170,7 +174,9 @@ export default function StatisticsSection() {
         <div className="summary-card">
           <div>
             <p className="summary-title">이번 주 신규 회원</p>
-            <p className="summary-value">{thisWeek.reduce((sum, count) => sum + count, 0)} 명</p>
+            <p className="summary-value">
+              {thisWeek.reduce((sum, count) => sum + count, 0)} 명
+            </p>
           </div>
           <div className="card-icon" style={{ backgroundColor: "#f3e8ff" }}>
             <UserPlus className="icon" style={{ color: "purple" }} />
@@ -186,19 +192,25 @@ export default function StatisticsSection() {
             <div className="period-buttons">
               <button
                 onClick={() => setPeriodType("daily")}
-                className={`period-btn ${periodType === "daily" ? "active" : ""}`}
+                className={`period-btn ${
+                  periodType === "daily" ? "active" : ""
+                }`}
               >
                 일별
               </button>
               <button
                 onClick={() => setPeriodType("weekly")}
-                className={`period-btn ${periodType === "weekly" ? "active" : ""}`}
+                className={`period-btn ${
+                  periodType === "weekly" ? "active" : ""
+                }`}
               >
                 주별
               </button>
               <button
                 onClick={() => setPeriodType("monthly")}
-                className={`period-btn ${periodType === "monthly" ? "active" : ""}`}
+                className={`period-btn ${
+                  periodType === "monthly" ? "active" : ""
+                }`}
               >
                 월별
               </button>

@@ -1,8 +1,48 @@
 import { useNavigate } from "react-router-dom";
 import "../style/AdminLogin.css";
+import { useState } from "react";
+import { adminLoginAPI } from "../../api/adminAPI";
 
-const AdminLogin = () => {
+export default function AdminLogin() {
+  const [adminLoginData, setAdminLoginData] = useState({
+    adminId: "",
+    adminPass: "",
+  });
+
   const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const currentAdminId = adminLoginData.adminId;
+    if (!currentAdminId || !currentAdminId.trim()) return;
+
+    console.log(adminLoginData);
+
+    // 로그인
+    adminLoginAPI(adminLoginData)
+      .then((data) => {
+        console.log("로그인 성공", data);
+        if (data && data.accessToken) {
+          console.log("인증성공");
+          localStorage.setItem("accessToken", data.accessToken);
+          localStorage.setItem("adminId", data.adminId);
+          localStorage.setItem("role", data.roles);
+          localStorage.setItem("email", data.email);
+          window.alert("로그인에 성공했습니다.");
+
+          window.location.reload();
+          navigate("/main");
+        } else {
+          alert("로그인 실패: 아이디와 패스워드를 확인하세요.");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("로그인 실패: 아이디와 패스워드를 확인하세요.");
+      });
+  };
+
   return (
     <div className="login-container">
       <div className="login-card">
@@ -11,15 +51,21 @@ const AdminLogin = () => {
           <h1 className="text-title">스마트 주차장 관리 시스템</h1>
           <p className="text-subtitle">관리자 로그인</p>
         </div>
-        <form className="login-form-space">
+        <form onSubmit={handleSubmit} className="login-form-space">
           <div>
             <label htmlFor="username" className="text-block">
               아이디
             </label>
             <div className="block-relative">
               <input
-                id="username"
+                id="adminId"
                 type="text"
+                onChange={(e) =>
+                  setAdminLoginData({
+                    ...adminLoginData,
+                    adminId: e.target.value,
+                  })
+                }
                 className="input-field"
                 placeholder="아이디를 입력하세요"
               />
@@ -32,19 +78,21 @@ const AdminLogin = () => {
             </label>
             <div className="block-relative">
               <input
-                id="password"
+                id="adminPass"
                 type="password"
+                onChange={(e) =>
+                  setAdminLoginData({
+                    ...adminLoginData,
+                    adminPass: e.target.value,
+                  })
+                }
                 className="input-field"
                 placeholder="비밀번호를 입력하세요"
               />
             </div>
           </div>
 
-          <button
-            type="submit"
-            onClick={() => navigate("/main")}
-            className="login-subButton"
-          >
+          <button type="submit" className="login-subButton">
             로그인
           </button>
         </form>
@@ -53,6 +101,4 @@ const AdminLogin = () => {
       {/* 로그인 실패 팝업 만들기*/}
     </div>
   );
-};
-
-export default AdminLogin;
+}

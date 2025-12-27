@@ -19,7 +19,7 @@ export default function RepairHistoryModal({ onClose }) {
         setReportList(res);
       })
       .catch((err) => console.error("보고서 조회 실패: ", err));
-  });
+  }, []);
 
   return (
     <div

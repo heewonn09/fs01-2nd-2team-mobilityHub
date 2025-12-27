@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 
 import "./SideMenu.css";
 import { Link, useLocation } from "react-router-dom";
@@ -14,6 +14,18 @@ import {
 } from "lucide-react";
 
 const SideMenu = () => {
+  const [adminId, setAdminInfo] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+
+  useEffect(() => {
+    const storedAdminId = localStorage.getItem("adminId");
+    const storedAdminEmail = localStorage.getItem("email");
+    if (storedAdminId && storedAdminEmail) {
+      setAdminInfo(storedAdminId);
+      setAdminEmail(storedAdminEmail);
+    }
+  }, []);
+
   const location = useLocation();
 
   // 현재 페이지 확인 후 active 클래스 도움
@@ -71,8 +83,8 @@ const SideMenu = () => {
               <User className="profile" />
             </div>
             <div className="admin">
-              <p id="admin-name">관리자 이름</p>
-              <p id="admin-email">관리자 이메일</p>
+              <p id="admin-name">{adminId}</p>
+              <p id="admin-email">{adminEmail}</p>
             </div>
           </div>
           <div className="today">{currentDate}</div>

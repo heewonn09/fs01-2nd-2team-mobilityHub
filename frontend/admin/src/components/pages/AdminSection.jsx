@@ -12,7 +12,7 @@ export default function AdminSection() {
         setAdminList(res);
       })
       .catch((err) => console.error("관리자 정보조회 실패"));
-  });
+  }, []);
 
   return (
     <div className="admin-wrapper">

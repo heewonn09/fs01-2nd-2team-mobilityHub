@@ -1,5 +1,6 @@
 package com.iot2ndproject.mobilityhub.domain.user.jwt;
 
+import com.iot2ndproject.mobilityhub.domain.admin.dto.AdminResponseDTO;
 import com.iot2ndproject.mobilityhub.domain.user.dto.UserResponseDTO;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -57,12 +58,15 @@ public class TokenProvider {
         System.out.println("******************************");
 
         String userId = "";
-        if(userInfo.getPrincipal() instanceof UserResponseDTO){
-            UserResponseDTO dto = (UserResponseDTO) userInfo.getPrincipal();
-            userId = dto.getUserId();
-        }else{
-            userId = userInfo.getName(); //Authentication의 기본 메서드 호출
 
+        if (userInfo.getPrincipal() instanceof UserResponseDTO userDTO) {
+            userId = userDTO.getUserId();
+
+        } else if (userInfo.getPrincipal() instanceof AdminResponseDTO adminDTO) {
+            userId = adminDTO.getAdminId();
+
+        } else {
+            userId = userInfo.getName();
         }
         String jwtToken = Jwts.builder()
                 .setSubject(userId) //페이로드: id 정보

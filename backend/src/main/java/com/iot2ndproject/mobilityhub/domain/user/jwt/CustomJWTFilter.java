@@ -14,11 +14,12 @@ import java.io.IOException;
 
 //실제필터에서 인증을 확인하도록 구
 public class CustomJWTFilter extends GenericFilterBean {
+    private final TokenProvider tokenProvider;
+
     public CustomJWTFilter(TokenProvider tokenProvider) {
         this.tokenProvider = tokenProvider;
     }
 
-    private final TokenProvider tokenProvider;
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         //클라이언트가 요청하면 토큰을 꺼내서 유효성 체크를 하고 스프링시큐리티 내부에서 인식할 수 있도록
@@ -43,7 +44,10 @@ public class CustomJWTFilter extends GenericFilterBean {
 
     //클라이언트의 요청정보에서 토큰을 꺼내서 리턴하는 메서드
     public String getToken(HttpServletRequest request){
+        System.out.println("request: " + request.getHeader("Authorization"));
         String bearerToken = request.getHeader("Authorization");
+        System.out.println("=============================");
+        System.out.println("bearerToken: " +  bearerToken);
         if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")){
             return bearerToken.substring(7);
 

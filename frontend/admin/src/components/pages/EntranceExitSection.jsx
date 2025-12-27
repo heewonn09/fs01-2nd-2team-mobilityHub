@@ -3,12 +3,15 @@ import axios from "axios";
 import LicenseModal from "./LicenseModal";
 import useMqtt from "../hook/useMqtt.js";
 import "../style/EntranceExitSection.css";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = "http://localhost:9000";
 const MQTT_BROKER = "ws://localhost:9001";
 const PAGE_SIZE = 6;
 
 export default function EntranceExitSection() {
+  const navigation = useNavigate();
+
   /* ================= 상태 ================= */
   const [latest, setLatest] = useState(null);
   const [latestImage, setLatestImage] = useState(null);
@@ -99,7 +102,10 @@ export default function EntranceExitSection() {
           )}
 
           {/* 캡처 트리거 */}
-          <button className="btn-capture" onClick={() => publish("parking/web/entrance", "comeIn")}>
+          <button
+            className="btn-capture"
+            onClick={() => publish("parking/web/entrance", "comeIn")}
+          >
             캡처
           </button>
         </div>
@@ -115,7 +121,9 @@ export default function EntranceExitSection() {
               <p>
                 번호판 :{" "}
                 <span className="plate-error">
-                  {latestImage.correctedOcrNumber || latestImage.ocrNumber || "미인식"}
+                  {latestImage.correctedOcrNumber ||
+                    latestImage.ocrNumber ||
+                    "미인식"}
                 </span>
               </p>
               <p>카메라 : {latestImage.cameraId}</p>
@@ -148,7 +156,11 @@ export default function EntranceExitSection() {
       </div>
 
       {modalData && (
-        <LicenseModal data={modalData} onClose={() => setModalData(null)} onSuccess={loadAll} />
+        <LicenseModal
+          data={modalData}
+          onClose={() => setModalData(null)}
+          onSuccess={loadAll}
+        />
       )}
     </div>
   );
@@ -156,7 +168,15 @@ export default function EntranceExitSection() {
 
 /* ================= 하위 컴포넌트 ================= */
 
-function RecordTable({ title, data, page, total, onPageChange, onClickPlate, type }) {
+function RecordTable({
+  title,
+  data,
+  page,
+  total,
+  onPageChange,
+  onClickPlate,
+  type,
+}) {
   const totalPage = Math.ceil(total / PAGE_SIZE);
 
   return (
@@ -187,8 +207,18 @@ function RecordTable({ title, data, page, total, onPageChange, onClickPlate, typ
                 >
                   {v.carNumber || "미확인"}
                 </td>
-                <td>{new Date(type === "entry" ? v.entryTime : v.exitTime).toLocaleString()}</td>
-                <td>{type === "exit" ? "출차 완료" : v.carNumber ? "정상" : "확인 필요"}</td>
+                <td>
+                  {new Date(
+                    type === "entry" ? v.entryTime : v.exitTime
+                  ).toLocaleString()}
+                </td>
+                <td>
+                  {type === "exit"
+                    ? "출차 완료"
+                    : v.carNumber
+                    ? "정상"
+                    : "확인 필요"}
+                </td>
               </tr>
             ))
           )}
@@ -203,7 +233,10 @@ function RecordTable({ title, data, page, total, onPageChange, onClickPlate, typ
           <span>
             {page} / {totalPage}
           </span>
-          <button disabled={page === totalPage} onClick={() => onPageChange(page + 1)}>
+          <button
+            disabled={page === totalPage}
+            onClick={() => onPageChange(page + 1)}
+          >
             ▶
           </button>
         </div>

@@ -93,7 +93,10 @@ const RepairSection = () => {
     : 0;
 
   const handleCompleteWork = () => {
-    if (!repairList) return alert("현재 작업중인 차량이 없습니다.");
+    if (workingCar.length === 0) {
+      alert("현재 작업중인 차량이 없습니다.");
+      return;
+    }
     setShowReportModal(true);
   };
 
