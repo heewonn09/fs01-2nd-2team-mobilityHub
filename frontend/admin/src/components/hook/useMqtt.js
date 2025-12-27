@@ -46,7 +46,8 @@ const useMqtt = (brokerUrl) => {
       if (
         topic === "parking/web/carwash/cam" ||
         topic === "parking/web/repair/cam" ||
-        topic === "parking/web/entrance/cam"
+        topic === "parking/web/entrance/cam" ||
+        topic === "parking/web/parkingzone/cam"
       ) {
         setImageState(`data:image/jpeg;base64,${payload}`);
         return;
@@ -84,6 +85,7 @@ const useMqtt = (brokerUrl) => {
         mqttClient.publish("parking/web/carwash/cam", "stop");
         mqttClient.publish("parking/web/repair/cam", "stop");
         mqttClient.publish("parking/web/entrance/cam", "stop");
+        mqttClient.publish("parking/web/parkingzone/cam", "stop");
         mqttClient.end();
         setConnectStatus("connecting");
         console.log("MQTT연결종료");

@@ -3,9 +3,12 @@ import { Car, CheckCircle, XCircle } from "lucide-react";
 
 import "../style/ParkingSection.css"; // CSS 분리
 import { workInfoTotalList } from "../../api/workInfoAPI";
+import useMqtt from "../hook/useMqtt";
 
+const BROKER_URL = "ws://192.168.137.1:9001";
 export default function ParkingSection() {
   const [workTotalList, setWorkTotalList] = useState([]);
+  const { connectStatus, imageSrc, publish } = useMqtt(BROKER_URL);
 
   useEffect(() => {
     workInfoTotalList()
@@ -14,6 +17,12 @@ export default function ParkingSection() {
       })
       .catch((err) => console.error("조회실패: ", err));
   }, []);
+
+  useEffect(() => {
+    if (connectStatus === "connected") {
+      publish("parking/web/parkingzone/cam", "start");
+    }
+  }, [connectStatus, publish]);
 
   console.log(workTotalList);
 
@@ -108,7 +117,7 @@ export default function ParkingSection() {
         {/* CCTV 화면 */}
         <div className="cctv-container">
           <div className="card cctv-box">
-            <div className="cctv-placeholder">📷 CCTV 스트림 대기중</div>
+            <img src={imageSrc || " "} alt="camera" className="cctv-placeholder" />
           </div>
         </div>
 
