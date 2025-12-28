@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../style/CarWashSection.css";
+import "../../App.css";
 import { getCarWashing } from "../../api/carWashAPI";
 import { Clock, Droplets, CheckCircle } from "lucide-react";
 import CarWashBarChart from "../chart/CarWashBarChart";
@@ -70,11 +71,11 @@ const CarWashSection = () => {
   const completeCount = completeCarList.length;
 
   return (
-    <div className="wash-page">
+    <div className="page">
       {/* 통계 카드 */}
-      <div className="statistics-card">
+      <div className="status-card">
         {/* 진행중 */}
-        <div className="statistics-component">
+        <div className="status-component">
           <div className="card-item">
             <div>
               <p className="text">진행중</p>
@@ -87,7 +88,7 @@ const CarWashSection = () => {
         </div>
 
         {/* 대기중 */}
-        <div className="statistics-component">
+        <div className="status-component">
           <div className="card-item">
             <div>
               <p className="text">대기중</p>
@@ -100,7 +101,7 @@ const CarWashSection = () => {
         </div>
 
         {/* 완료 건수 */}
-        <div className="statistics-component">
+        <div className="status-component">
           <div className="card-item">
             <div>
               <p className="text">완료 건수</p>

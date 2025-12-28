@@ -18,3 +18,55 @@
 
   background-color: #f9fafb;
 }
+
+/* 페이지 상단 카드 영역 공통 스타일 */
+.page {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.status-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.status-component {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(221, 221, 221);
+}
+
+.card-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.text {
+  color: rgb(58, 58, 58);
+}
+
+.count {
+  color: rgb(51, 51, 51);
+  font-weight: 700;
+  margin-top: 0.75rem;
+}
+
+.card-icon {
+  width: 3rem;
+  height: 3rem;
+  background-color: blue;
+  border-radius: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
