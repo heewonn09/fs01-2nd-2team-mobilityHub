@@ -6,7 +6,7 @@ import "../../App.css";
 import { workInfoTotalList } from "../../api/workInfoAPI";
 import useMqtt from "../hook/useMqtt";
 
-const BROKER_URL = "ws://192.168.137.1:9001";
+const BROKER_URL = "ws://192.168.14.69:9001";
 export default function ParkingSection() {
   const [workTotalList, setWorkTotalList] = useState([]);
   const { connectStatus, imageSrc, publish } = useMqtt(BROKER_URL);

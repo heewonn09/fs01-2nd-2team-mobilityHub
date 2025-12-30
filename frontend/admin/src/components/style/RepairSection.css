@@ -9,6 +9,10 @@
   gap: 6px;
 }
 
+.lift-btn-wrapper h3 {
+  font-size: 20px;
+  font-weight: 600;
+}
 .repair-cctv {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -36,16 +40,6 @@
   border: none;
   font-weight: bold;
   cursor: pointer;
-}
-
-.lift-btn.up {
-  background-color: #dc2626;
-  color: white;
-}
-
-.lift-btn.down {
-  background-color: #2563eb;
-  color: white;
 }
 
 .lift-btn:hover {

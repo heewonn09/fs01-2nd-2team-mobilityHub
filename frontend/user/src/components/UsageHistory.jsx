@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchServiceHistory } from "../api/serviceApi";
+import { ReviewModal } from "../modal/ReviewModal";
+import "../style/UsageHistory.css";
+import jwtAxios from "../api/jwtUtil";
 
 export function UsageHistory({ isLogin }) {
   const navigate = useNavigate();
@@ -12,6 +15,13 @@ export function UsageHistory({ isLogin }) {
   const [availableVehicles, setAvailableVehicles] = useState([]);
   const [availableDates, setAvailableDates] = useState([]);
   const [userId, setUserId] = useState("");
+
+  // 후기가 이미 작성되었는지 여부를 관리하는 상태
+  const [isReviewed, setIsReviewed] = useState(false);
+
+  // 리뷰 모달창
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   // 뒤로 가기 함수
   const handleBack = () => {
@@ -36,8 +46,10 @@ export function UsageHistory({ isLogin }) {
   const loadHistory = async (id) => {
     try {
       const data = await fetchServiceHistory(id);
+      console.log("확인", data);
       const mapped = data.map((item, idx) => ({
         id: `${idx}`,
+        workId: item.workId,
         plateNumber: item.carNumber,
         date: (item.createdAt || "").slice(0, 10),
         services: item.services,
@@ -56,6 +68,8 @@ export function UsageHistory({ isLogin }) {
     }
   };
 
+  console.log("이용내역", filteredHistory);
+
   const applyFilter = () => {
     let filtered = [...history];
 
@@ -72,6 +86,69 @@ export function UsageHistory({ isLogin }) {
     setFilterType("all");
     setSelectedDate("");
     setSelectedVehicle("");
+  };
+
+  //리뷰 작성
+  const [reviewData, setReviewData] = useState({
+    userId: "",
+    workId: 0,
+    title: "",
+    content: "",
+  });
+
+  useEffect(() => {
+    const fetchReview = async () => {
+      try {
+        const res = await jwtAxios.get(`/reviews/${workId}`);
+        if (res.data) {
+          setIsReviewed(true);
+        }
+      } catch (e) {
+        setIsReviewed(false);
+      }
+    };
+
+    fetchReview();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setReviewData({
+      ...reviewData,
+      [name]: value,
+    });
+  };
+
+  // 리뷰 저장
+  const handleSaveReview = async (e) => {
+    e.preventDefault();
+    console.log("전송할 데이터: ", reviewData);
+
+    try {
+      const response = await jwtAxios.post("http://127.0.0.1:9000/reviews", reviewData);
+
+      if (response.status === 200) {
+        console.log("서버응답: ", response.data);
+        alert("리뷰 등록이 완료됐습니다.");
+
+        setShowReviewDialog(false);
+        setIsReviewed(true);
+      }
+    } catch (error) {
+      console.error("에러발생: ", error);
+      alert("리뷰 등록 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 리뷰 삭제
+  const handleDeleteReview = async () => {
+    try {
+      await jwtAxios.delete(`/reviews/${reviewId}`);
+
+      setIsReviewed(false);
+    } catch (error) {
+      console.error("후기 삭제 실패", error);
+    }
   };
 
   return (
@@ -239,13 +316,38 @@ export function UsageHistory({ isLogin }) {
                 paddingTop: "4px",
                 color: "#4b5563",
               }}
-            >
-              <span>결제 금액</span>
-              <span>{item.payment.toLocaleString()}원</span>
-            </div>
+            ></div>
+            {!isReviewed ? (
+              <button
+                className="review-write-btn"
+                onClick={() => {
+                  setSelectedItem(item);
+                  setReviewData({
+                    userId: userId,
+                    workId: item.workId,
+                    title: "",
+                    content: "",
+                  });
+                  setShowReviewDialog(true);
+                }}
+              >
+                후기 작성
+              </button>
+            ) : (
+              <>
+                <button onClick={handleDeleteReview}>후기 삭제</button>
+              </>
+            )}
           </div>
         ))
       )}
+      <ReviewModal
+        visible={showReviewDialog}
+        reviewData={reviewData}
+        onChange={handleChange}
+        onClose={() => setShowReviewDialog(false)}
+        onSave={handleSaveReview}
+      />
     </div>
   );
 }
