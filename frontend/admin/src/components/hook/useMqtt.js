@@ -13,6 +13,8 @@ const useMqtt = (brokerUrl) => {
   // 🟢 캡처된 정지 이미지
   const [capturedImage, setCapturedImage] = useState("");
 
+  // 🔴 YOLO 번호판 박스 좌표
+  const [yoloBox, setYoloBox] = useState(null);
   // 리프트 각도
   const [angleValue, setAngleValue] = useState(null);
 
@@ -90,6 +92,7 @@ const useMqtt = (brokerUrl) => {
         mqttClient.publish("parking/web/carwash/cam", "stop");
         mqttClient.publish("parking/web/repair/cam", "stop");
         mqttClient.publish("parking/web/entrance/cam", "stop");
+
         mqttClient.publish("parking/web/parkingzone/cam", "stop");
         mqttClient.end();
         setConnectStatus("connecting");
@@ -114,6 +117,7 @@ const useMqtt = (brokerUrl) => {
     connectStatus,
     imageSrc, // 실시간 CCTV
     capturedImage, // 📸 캡처 이미지
+    yoloBox,
     angleValue,
     publish,
   };

@@ -39,3 +39,10 @@ export const updateOcrNumber = async (imageId, carNumber) => {
 export const approveEntrance = async (workId) => {
   return backendServer.post(`/entrance/${workId}/approve`);
 };
+
+// 등록 차량 전체 조회
+export const getRegisteredCars = () => backendServer.get("/admin/registered-cars");
+
+// 등록 차량 기준 입차 승인
+export const approveRegisteredCar = (userCarId) =>
+  backendServer.post(`/entrance/approve/registered/${userCarId}`);
