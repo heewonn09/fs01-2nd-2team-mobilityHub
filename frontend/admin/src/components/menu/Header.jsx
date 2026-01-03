@@ -32,6 +32,8 @@ const Header = ({ onLogout }) => {
     // 로그아웃 완료 알림
     window.alert("로그아웃 되었습니다.");
 
+    navigate("/");
+
     // 새로고침
     window.location.reload();
   };

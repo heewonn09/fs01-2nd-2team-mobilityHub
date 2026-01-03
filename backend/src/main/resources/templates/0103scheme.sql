@@ -1,5 +1,8 @@
--- Full schema derived from Dump20251213.sql
--- NOTE: This resets the schema (DROP + CREATE) so the DB matches the dump.
+-- MySQL dump 10.13  Distrib 8.0.21, for Win64 (x86_64)
+--
+-- Host: 127.0.0.1    Database: mobilityhub
+-- ------------------------------------------------------
+-- Server version	8.0.21
 
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -24,8 +27,10 @@ CREATE TABLE `admin` (
   `admin_pass` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `phone` varchar(255) NOT NULL,
+  `role` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`admin_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `car` (
   `car_id` bigint NOT NULL AUTO_INCREMENT,
@@ -34,6 +39,7 @@ CREATE TABLE `car` (
   `car_number` varchar(255) NOT NULL,
   PRIMARY KEY (`car_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `image` (
   `image_id` int NOT NULL AUTO_INCREMENT,
@@ -45,6 +51,7 @@ CREATE TABLE `image` (
   PRIMARY KEY (`image_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+
 CREATE TABLE `parking` (
   `admin_id` varchar(255) DEFAULT NULL,
   `sector_id` char(3) NOT NULL,
@@ -55,6 +62,59 @@ CREATE TABLE `parking` (
   CONSTRAINT `FK9n4ix3n657w0t1g87sckolw0x` FOREIGN KEY (`admin_id`) REFERENCES `admin` (`admin_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+
+CREATE TABLE `parking_map_edge` (
+  `edge_id` int NOT NULL AUTO_INCREMENT,
+  `from_node_id` int NOT NULL,
+  `to_node_id` int NOT NULL,
+  `direction` varchar(255) NOT NULL,
+  PRIMARY KEY (`edge_id`),
+  UNIQUE KEY `uk_parking_map_edge_from_to_dir` (`from_node_id`,`to_node_id`,`direction`),
+  KEY `fk_parking_map_edge_from` (`from_node_id`),
+  KEY `fk_parking_map_edge_to` (`to_node_id`),
+  CONSTRAINT `fk_parking_map_edge_from` FOREIGN KEY (`from_node_id`) REFERENCES `parking_map_node` (`node_id`),
+  CONSTRAINT `fk_parking_map_edge_to` FOREIGN KEY (`to_node_id`) REFERENCES `parking_map_node` (`node_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE `parking_map_node` (
+  `node_id` int NOT NULL,
+  `node_name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`node_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE `repair_report` (
+  `repair_amount` int NOT NULL,
+  `user_car_id` bigint DEFAULT NULL,
+  `admin_id` varchar(255) DEFAULT NULL,
+  `repair_detail` text,
+  `repair_title` varchar(255) DEFAULT NULL,
+  `report_id` varchar(255) NOT NULL,
+  PRIMARY KEY (`report_id`),
+  KEY `FK7ywyyresorl75enang97maeyo` (`admin_id`),
+  KEY `FK49iv2mjk37yklrxf6bo8lomn5` (`user_car_id`),
+  CONSTRAINT `FK49iv2mjk37yklrxf6bo8lomn5` FOREIGN KEY (`user_car_id`) REFERENCES `user_car` (`id`),
+  CONSTRAINT `FK7ywyyresorl75enang97maeyo` FOREIGN KEY (`admin_id`) REFERENCES `admin` (`admin_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE `stock_status` (
+  `stock_price` int NOT NULL,
+  `stock_quantity` int NOT NULL,
+  `update_time` datetime DEFAULT NULL,
+  `inventory_id` char(3) NOT NULL,
+  `product_name` varchar(255) NOT NULL,
+  `sector_id` char(3) DEFAULT NULL,
+  `stock_category` varchar(255) NOT NULL,
+  `stock_units` varchar(255) NOT NULL,
+  `min_stock_quantity` int NOT NULL,
+  PRIMARY KEY (`inventory_id`),
+  KEY `FKej08ugjeniettp0qbmtiyylud` (`sector_id`),
+  CONSTRAINT `FKej08ugjeniettp0qbmtiyylud` FOREIGN KEY (`sector_id`) REFERENCES `parking` (`sector_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
 CREATE TABLE `user` (
   `create_date` datetime DEFAULT NULL,
   `phone_number` varchar(255) NOT NULL,
@@ -64,6 +124,7 @@ CREATE TABLE `user` (
   `user_password` varchar(255) NOT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `user_car` (
   `car_id` bigint NOT NULL,
@@ -76,11 +137,13 @@ CREATE TABLE `user_car` (
   CONSTRAINT `FKgs1lsnqcl7dmnbsvc1m8wuy6h` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+
 CREATE TABLE `work` (
   `work_id` int NOT NULL AUTO_INCREMENT,
   `work_type` varchar(255) NOT NULL,
   PRIMARY KEY (`work_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 CREATE TABLE `work_info` (
   `image_id` int DEFAULT NULL,
@@ -98,60 +161,10 @@ CREATE TABLE `work_info` (
   UNIQUE KEY `UKeordm0gxactpg36ifpmll8h67` (`sector_id`),
   KEY `FKl80yh9weaiiuh84l4bg5is08n` (`user_car_id`),
   KEY `FK7e3uinn7c438naeg8rlrfc6ev` (`work_id`),
+  KEY `FK_work_info_car_state_node_id` (`car_state`),
   CONSTRAINT `FK7e3uinn7c438naeg8rlrfc6ev` FOREIGN KEY (`work_id`) REFERENCES `work` (`work_id`),
+  CONSTRAINT `FK_work_info_car_state_node_id` FOREIGN KEY (`car_state`) REFERENCES `parking_map_node` (`node_id`),
   CONSTRAINT `FKkjvlqnkju90vy48jjw6ta71rt` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`),
   CONSTRAINT `FKl80yh9weaiiuh84l4bg5is08n` FOREIGN KEY (`user_car_id`) REFERENCES `user_car` (`id`),
   CONSTRAINT `FKlu817s6o8af70dahlltlo6bi3` FOREIGN KEY (`sector_id`) REFERENCES `parking` (`sector_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `repair_report` (
-  `repair_amount` int NOT NULL,
-  `user_car_id` bigint DEFAULT NULL,
-  `admin_id` varchar(255) DEFAULT NULL,
-  `repair_detail` text,
-  `repair_title` varchar(255) DEFAULT NULL,
-  `report_id` varchar(255) NOT NULL,
-  PRIMARY KEY (`report_id`),
-  KEY `FK7ywyyresorl75enang97maeyo` (`admin_id`),
-  KEY `FK49iv2mjk37yklrxf6bo8lomn5` (`user_car_id`),
-  CONSTRAINT `FK49iv2mjk37yklrxf6bo8lomn5` FOREIGN KEY (`user_car_id`) REFERENCES `user_car` (`id`),
-  CONSTRAINT `FK7ywyyresorl75enang97maeyo` FOREIGN KEY (`admin_id`) REFERENCES `admin` (`admin_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `stock_status` (
-  `stock_price` int NOT NULL,
-  `stock_quantity` int NOT NULL,
-  `update_time` datetime DEFAULT NULL,
-  `inventory_id` char(3) NOT NULL,
-  `product_name` varchar(255) NOT NULL,
-  `sector_id` char(3) DEFAULT NULL,
-  `stock_category` varchar(255) NOT NULL,
-  `stock_units` varchar(255) NOT NULL,
-  `min_stock_quantity` int NOT NULL,
-  PRIMARY KEY (`inventory_id`),
-  KEY `FKej08ugjeniettp0qbmtiyylud` (`sector_id`),
-  CONSTRAINT `FKej08ugjeniettp0qbmtiyylud` FOREIGN KEY (`sector_id`) REFERENCES `parking` (`sector_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `parking_map_node` (
-  `node_id` int NOT NULL,
-  `node_name` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`node_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-ALTER TABLE `work_info`
-  ADD CONSTRAINT `FK_work_info_car_state_node_id`
-  FOREIGN KEY (`car_state`) REFERENCES `parking_map_node` (`node_id`);
-
-CREATE TABLE `parking_map_edge` (
-  `edge_id` int NOT NULL AUTO_INCREMENT,
-  `from_node_id` int NOT NULL,
-  `to_node_id` int NOT NULL,
-  `direction` varchar(255) NOT NULL,
-  PRIMARY KEY (`edge_id`),
-  UNIQUE KEY `uk_parking_map_edge_from_to_dir` (`from_node_id`,`to_node_id`,`direction`),
-  KEY `fk_parking_map_edge_from` (`from_node_id`),
-  KEY `fk_parking_map_edge_to` (`to_node_id`),
-  CONSTRAINT `fk_parking_map_edge_from` FOREIGN KEY (`from_node_id`) REFERENCES `parking_map_node` (`node_id`),
-  CONSTRAINT `fk_parking_map_edge_to` FOREIGN KEY (`to_node_id`) REFERENCES `parking_map_node` (`node_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import "../style/RepairReportModal.css";
 import { sendComplete, writeReport } from "../../api/repairAPI";
@@ -8,21 +8,19 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
   const [repairDescription, setRepairDescription] = useState("");
   const [usedParts, setUsedParts] = useState([]);
   const [selectedPartId, setSelectedPartId] = useState("");
-  const [reportData, setReportData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const [formData, setFormData] = useState({
     repairTitle: "",
     repairDetail: "",
     repairAmount: 0,
   });
 
-  useEffect(() => {
-    if (!data) return;
-
-    if (Array.isArray(data)) {
-      setReportData(data[0] ?? null);
-    } else {
-      setReportData(data);
-    }
+  const reportData = useMemo(() => {
+    if (!data) return null;
+    return Array.isArray(data) ? data[0] ?? null : data;
   }, [data]);
 
   const handleChange = (e) => {
@@ -51,10 +49,11 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
   const handleCreate = async (e) => {
     e.preventDefault();
 
-    const isEmptyField = Object.values(formData).some((value) => value === "" || value == null || value == undefined);
+    const isEmptyField = Object.values(formData).some((value) => value === "" || value == null);
 
     if (isEmptyField) {
       alert("모든 항목을 입력해주세요.");
+      return;
     }
 
     const requestBody = {
@@ -68,22 +67,27 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
     const workInfoId = reportData.id;
 
     try {
+      setLoading(true);
+
       const response = await writeReport(requestBody);
 
       if (response.status === 200) {
         alert("보고서 작성이 완료되었습니다.");
 
-        await handleSubmit(workInfoId);
+        await delay(2000);
 
+        await handleSubmit(workInfoId);
         await refreshStockList();
         onClose();
       }
+
       return response;
     } catch (error) {
       console.error("보고서 작성 실패: ", error);
       alert("보고서 작성 실패");
+    } finally {
+      setLoading(false);
     }
-    console.log(workInfoId);
   };
 
   console.log(reportData);
@@ -155,7 +159,12 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
 
                 <div>
                   <span>추가금액 : </span>
-                  <input type="number" name="repairAmount" value={formData.repairAmount} onChange={handleChange} />
+                  <input
+                    type="number"
+                    name="repairAmount"
+                    value={formData.repairAmount}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
             </div>

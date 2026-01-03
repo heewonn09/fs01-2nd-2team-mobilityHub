@@ -2,13 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../style/RepairSection.css";
 import "../../App.css";
 import useMqtt from "../hook/useMqtt";
-import {
-  reportAllList,
-  writeReport,
-  sendComplete,
-  repairTodayList,
-  stockAllList,
-} from "../../api/repairAPI";
+import { reportAllList, repairTodayList, stockAllList } from "../../api/repairAPI";
 import { Check, Clock, Wrench } from "lucide-react";
 import RepairReportModal from "../modal/RepairReportModal";
 import RepairHistoryModal from "../modal/RepairHistoryModal";
@@ -19,7 +13,8 @@ import StockCreateModal from "../modal/StockCreateModal";
 // MQTT 브로커 주소 --> cctv 연결할 때
 //const BROKER_URL = "ws://192.168.14.39:9001";
 //const BROKER_URL = "ws://192.168.45.84";
-const BROKER_URL = "ws://192.168.14.69:9001";
+const BROKER_URL = "ws://192.168.137.1:9001";
+
 const RepairSection = () => {
   const [repairList, getRepairList] = useState([]);
   const [stockList, getStockList] = useState([]);
@@ -108,44 +103,6 @@ const RepairSection = () => {
     publish("parking/web/repair/lift", "status"); // 초기 상태 요청용(선택)
   }, [connectStatus, publish]);
 
-  // useEffect(() => {
-  //   if (!message) return;
-
-  //   if (message.topic === "parking/web/repair/lift") {
-  //     if (message.payload === "up") {
-  //       setLiftStatus("상승중");
-  //     } else if (message.payload === "down") {
-  //       setLiftStatus("하강중");
-  //     }
-  //   }
-  // }, [message]);
-
-  const handleReportSubmit = async (reportData) => {
-    console.log("DB에 저장될 데이터: ", reportData);
-
-    try {
-      const response = await writeReport(reportData);
-
-      if (response.status === 200) {
-        alert("보고서작성이 등록됐습니다.");
-
-        // 보고서 작성 성공 후 작업 완료 신호 전송
-        if (reportData.workInfoId) {
-          const completeResponse = await sendComplete({
-            workInfoId: reportData.workInfoId,
-          });
-          if (completeResponse?.status === 200) {
-            console.log("작업 완료 신호 전송 성공");
-          }
-        }
-      }
-      return response;
-    } catch (error) {
-      console.error("에러발생: ", error);
-      alert("보고서 등록 중 오류가 발생했습니다.");
-    }
-  };
-
   // 오늘 날짜 문자열
   const today = new Date();
   const yyyy = today.getFullYear().toString();
@@ -229,7 +186,16 @@ const RepairSection = () => {
             <div className="icon-box">
               {/* icon 들어갈 자리, class=icon color:#dc2626 */}
               <div className="lift-btn-wrapper">
-                <h3>{angleValue === null ? "0" : angleValue} 도</h3>
+                <button
+                  className="lift-btn up"
+                  onClick={() => publish("parking/web/repair/lift", "up")}>
+                  ▲
+                </button>
+                <button
+                  className="lift-btn down"
+                  onClick={() => publish("parking/web/repair/lift", "down")}>
+                  ▼
+                </button>
               </div>
             </div>
           </div>
@@ -381,8 +347,7 @@ const RepairSection = () => {
                         <div className="stockDetail-box">
                           <button
                             onClick={() => openStockModal(res)}
-                            className="stock-detail-button"
-                          >
+                            className="stock-detail-button">
                             상세보기
                           </button>
                         </div>
