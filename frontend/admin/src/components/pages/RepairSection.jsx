@@ -9,11 +9,7 @@ import RepairHistoryModal from "../modal/RepairHistoryModal";
 import StockModal from "../modal/StockModal";
 import StockCreateModal from "../modal/StockCreateModal";
 
-//const BROKER_URL = import.meta.env.VITE_BROKER_URL;
-// MQTT 브로커 주소 --> cctv 연결할 때
-//const BROKER_URL = "ws://192.168.14.39:9001";
-//const BROKER_URL = "ws://192.168.45.84";
-const BROKER_URL = "ws://192.168.137.1:9001";
+const BROKER_URL = "ws://192.168.14.45:9001";
 
 const RepairSection = () => {
   const [repairList, getRepairList] = useState([]);
@@ -47,7 +43,7 @@ const RepairSection = () => {
   // API 호출
   useEffect(() => {
     if (connectStatus === "connected") {
-      publish("parking/web/repair/cam", "start");
+      publish("parking/web/repair/cam/control", "start");
     }
     repairTodayList()
       .then((res) => {
@@ -66,6 +62,10 @@ const RepairSection = () => {
         setReportList(res);
       })
       .catch((err) => console.error("보고서 조회 실패: ", err));
+
+    return () => {
+      publish("parking/web/repair/cam/control", "stop");
+    };
   }, [connectStatus, publish]);
 
   const workingCar = Array.isArray(repairList)

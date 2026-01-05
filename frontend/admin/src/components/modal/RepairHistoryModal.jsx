@@ -23,7 +23,7 @@ export default function RepairHistoryModal({ onClose }) {
             <h2>정비 내역</h2>
             <p>완료된 정비 작업 목록</p>
           </div>
-          <button onClick={onClose} className="close-modal">
+          <button onClick={onClose} className="closed-modal">
             X
           </button>
         </div>

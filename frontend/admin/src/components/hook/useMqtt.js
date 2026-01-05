@@ -7,13 +7,13 @@ const useMqtt = (brokerUrl) => {
   const [connectStatus, setConnectStatus] = useState("connecting");
   const [client, setClient] = useState(null);
 
-  // 🔴 실시간 CCTV 스트리밍 이미지
+  // 실시간 CCTV 스트리밍 이미지
   const [imageSrc, setImageState] = useState("");
 
-  // 🟢 캡처된 정지 이미지
+  // 캡처된 정지 이미지
   const [capturedImage, setCapturedImage] = useState("");
 
-  // 🔴 YOLO 번호판 박스 좌표
+  // YOLO 번호판 박스 좌표
   const [yoloBox, setYoloBox] = useState(null);
   // 리프트 각도
   const [angleValue, setAngleValue] = useState(null);
@@ -50,9 +50,9 @@ const useMqtt = (brokerUrl) => {
       // 📺 실시간 CCTV
       if (
         topic === "parking/web/carwash/cam" ||
-        topic === "parking/web/repair/cam" ||
+        topic === "parking/web/repair/cam/frame" ||
         topic === "parking/web/entrance/cam" ||
-        topic === "parking/web/parkingzone/cam"
+        topic === "parking/web/parking/cam/frame"
       ) {
         setImageState(`data:image/jpeg;base64,${payload}`);
         return;
@@ -90,10 +90,10 @@ const useMqtt = (brokerUrl) => {
     return () => {
       if (mqttClient) {
         mqttClient.publish("parking/web/carwash/cam", "stop");
-        mqttClient.publish("parking/web/repair/cam", "stop");
+        mqttClient.publish("parking/web/repair/cam/control", "stop");
         mqttClient.publish("parking/web/entrance/cam", "stop");
+        mqttClient.publish("parking/web/parking/cam/control", "stop");
 
-        mqttClient.publish("parking/web/parkingzone/cam", "stop");
         mqttClient.end();
         setConnectStatus("connecting");
         console.log("MQTT연결종료");
