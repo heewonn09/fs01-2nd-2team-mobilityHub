@@ -1,5 +1,5 @@
-import threading
-import time
+import threading 
+import time 
 import io
 import base64
 from picamera2 import Picamera2
@@ -29,7 +29,7 @@ class MyCamera:
         
         # 상하좌우를 반전시킬 수 있도록 작업 - start 이후설정
         device.hflip = True 
-        device.vflip = True 
+        device.vflip = False 
         
         time.sleep(1)
         
