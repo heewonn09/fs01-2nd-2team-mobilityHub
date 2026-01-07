@@ -494,9 +494,17 @@ def publish_position(client, car_id, node_id, node_name):
         "nodeName": node_name,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
     }
+
     json_payload = json.dumps(payload, ensure_ascii=False)
     client.publish(topic, json_payload)
     print(f"\n📤 [위치 발행] {topic} | {json_payload}", flush=True)
+    if node_id == 5 or node_id == 7 or node_id == 9:
+        topic2 = f"parking/rccar"
+        client.publish(topic2, f"{node_id}:on")
+    elif node_id == 21 or node_id == 22 or node_id == 23:
+        client.publish(topic2, f"{node_id}:off")
+        print(f"\n📤 [주차장] {topic} | {json_payload}", flush=True)
+            
 
 
 # ==========================================

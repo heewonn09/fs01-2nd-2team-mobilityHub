@@ -4,11 +4,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iot2ndproject.mobilityhub.domain.entrance.entity.ImageEntity;
 import com.iot2ndproject.mobilityhub.domain.entrance.repository.ImageRepository;
-import com.iot2ndproject.mobilityhub.domain.service_request.service.ServiceRequestService;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.ParkingMapNodeEntity;
 import com.iot2ndproject.mobilityhub.domain.service_request.repository.ParkingMapNodeRepository;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkInfoEntity;
 import com.iot2ndproject.mobilityhub.domain.service_request.repository.WorkInfoRepository;
+import com.iot2ndproject.mobilityhub.domain.service_request.service.ServiceRequestService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.mqtt.support.MqttHeaders;
@@ -39,25 +40,33 @@ public class MqttService {
 //        System.out.println("Received Message: " + payload);
 //        System.out.println("Received Topic: " + topic);
 
-        // rccar/+/position 토픽 처리
-        if (topic != null && topic.startsWith("rccar/") && topic.endsWith("/position")) {
-            handleRcCarPosition(topic, payload);
+        if (topic == null) {
             return;
         }
 
+        // 입구 이미지 토픽 처리
         if ("parking/web/entrance/image".equals(topic)) {
             handleEntranceImage(payload);
             return;
         }
 
+        // 입구 캡처 토픽 처리
         if ("parking/web/entrance/capture".equals(topic)) {
             System.out.println(topic);
             System.out.println(payload);
             return;
         }
 
+        // 세차 완료 신호 처리
         if ("parking/web/carwash".equals(topic)) {
             handleCarwashSignal(payload);
+            return;
+        }
+
+        // RC카 위치 신호 처리 (rccar/+/position)
+        if (topic.startsWith("rccar/") && topic.endsWith("/position")) {
+            handleRcCarPosition(topic, payload);
+            return;
         }
 
     }

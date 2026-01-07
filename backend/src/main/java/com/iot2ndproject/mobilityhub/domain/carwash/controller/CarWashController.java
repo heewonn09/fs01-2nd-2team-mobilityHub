@@ -36,6 +36,5 @@ public class CarWashController {
     public ResponseEntity<?> completeCarWash(@RequestParam int workInfoId) {
             serviceRequestService.completeService(workInfoId, "carwash");
             return ResponseEntity.ok(Map.of("message", "세차 끝"));
-
     }
 }

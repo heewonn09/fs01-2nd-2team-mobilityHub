@@ -82,8 +82,6 @@ def on_message(client, userdata, msg):
 
 
 def setup_mqtt():
-    if mqtt is None:
-        raise RuntimeError("paho-mqtt not installed.")
     client = mqtt.Client(MQTT_CLIENT_ID)
     client.on_connect = on_connect
     client.on_message = on_message

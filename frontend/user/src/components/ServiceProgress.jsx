@@ -41,9 +41,9 @@ export function ServiceProgress({ isLogin }) {
   // 상태를 한국어로 변환하는 함수
   const getStatusLabel = (status, serviceType) => {
     if (!status) return "-";
-    
+
     const serviceName = SERVICE_NAMES[serviceType] || "";
-    
+
     switch (status) {
       case "REQUESTED":
         return "대기중";
@@ -72,28 +72,28 @@ export function ServiceProgress({ isLogin }) {
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
-        const loadLatest = async () => {
-          try {
-            const latest = await fetchLatestServiceRequest(userId);
-            if (latest) {
-              // 백엔드 서비스 타입을 프론트엔드 형식으로 변환
-              const frontendServices = latest.services?.map(toFrontendServiceType) || [];
-              setProgress({
-                id: latest.id,
-                status: latest.status,
-                carNumber: latest.carNumber,
-                services: frontendServices,
-                createdAt: latest.createdAt,
-                parkingStatus: latest.parkingStatus,
-                carwashStatus: latest.carwashStatus,
-                repairStatus: latest.repairStatus,
-                carState: latest.carState,
-              });
-            }
-          } catch (e) {
-            // 무시
-          }
-        };
+    const loadLatest = async () => {
+      try {
+        const latest = await fetchLatestServiceRequest(userId);
+        if (latest) {
+          // 백엔드 서비스 타입을 프론트엔드 형식으로 변환
+          const frontendServices = latest.services?.map(toFrontendServiceType) || [];
+          setProgress({
+            id: latest.id,
+            status: latest.status,
+            carNumber: latest.carNumber,
+            services: frontendServices,
+            createdAt: latest.createdAt,
+            parkingStatus: latest.parkingStatus,
+            carwashStatus: latest.carwashStatus,
+            repairStatus: latest.repairStatus,
+            carState: latest.carState,
+          });
+        }
+      } catch (e) {
+        // 무시
+      }
+    };
     loadLatest();
     const interval = setInterval(loadLatest, 4000);
     return () => clearInterval(interval);
@@ -237,10 +237,12 @@ export function ServiceProgress({ isLogin }) {
                     userId,
                     carNumber: selectedVehicle,
                     services: backendServices,
-                    additionalRequest: hasAdditionalRequest && additionalRequest ? additionalRequest : null,
+                    additionalRequest:
+                      hasAdditionalRequest && additionalRequest ? additionalRequest : null,
                   });
                   // 백엔드 응답의 서비스 타입을 프론트엔드 형식으로 변환
-                  const frontendServices = result.services?.map(toFrontendServiceType) || Array.from(selectedServices);
+                  const frontendServices =
+                    result.services?.map(toFrontendServiceType) || Array.from(selectedServices);
                   setProgress({
                     id: result.id,
                     status: result.status || "REQUESTED",
@@ -258,8 +260,10 @@ export function ServiceProgress({ isLogin }) {
                   setAdditionalRequest("");
                   alert("서비스 요청이 접수되었습니다.");
                 } catch (e) {
-                  console.error(e);
-                  alert("서비스 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
+                  console.error("서비스 요청 에러:", e, e.response?.data);
+                  const serverMessage =
+                    e.response?.data?.error || e.response?.data?.message || null;
+                  alert(serverMessage || "서비스 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
                 } finally {
                   setIsSubmitting(false);
                 }
@@ -286,72 +290,79 @@ export function ServiceProgress({ isLogin }) {
         <div style={{ fontWeight: "600", marginBottom: "8px" }}>진행 상황</div>
         {progress ? (
           progress.status === "DONE" ? (
-            <div style={{ color: "#6b7280" }}>
-              작업중인 거 없다
-            </div>
+            <div style={{ color: "#6b7280" }}>작업중인 거 없다</div>
           ) : (
             <div>
-              <div style={{ marginBottom: "4px" }}>전체 상태: {progress.status === "REQUESTED" ? "대기중" : progress.status === "IN_PROGRESS" ? "진행중" : progress.status}</div>
+              <div style={{ marginBottom: "4px" }}>
+                전체 상태:{" "}
+                {progress.status === "REQUESTED"
+                  ? "대기중"
+                  : progress.status === "IN_PROGRESS"
+                  ? "진행중"
+                  : progress.status}
+              </div>
               <div style={{ marginBottom: "4px" }}>차량: {progress.carNumber}</div>
               <div style={{ marginBottom: "4px" }}>
                 서비스: {progress.services?.map((s) => SERVICE_NAMES[s] || s).join(", ")}
               </div>
               <div style={{ marginBottom: "4px" }}>
-                주차 상태: {progress.parkingStatus ? getStatusLabel(progress.parkingStatus, "parking") : "-"}
+                주차 상태:{" "}
+                {progress.parkingStatus ? getStatusLabel(progress.parkingStatus, "parking") : "-"}
               </div>
               <div style={{ marginBottom: "4px" }}>
-                세차 상태: {progress.carwashStatus ? getStatusLabel(progress.carwashStatus, "carwash") : "-"}
+                세차 상태:{" "}
+                {progress.carwashStatus ? getStatusLabel(progress.carwashStatus, "carwash") : "-"}
               </div>
               <div style={{ marginBottom: "4px" }}>
-                정비 상태: {progress.repairStatus ? getStatusLabel(progress.repairStatus, "maintenance") : "-"}
+                정비 상태:{" "}
+                {progress.repairStatus ? getStatusLabel(progress.repairStatus, "maintenance") : "-"}
               </div>
-              <div style={{ marginBottom: "4px" }}>
-                현재 위치: {progress.carState || "-"}
-              </div>
+              <div style={{ marginBottom: "4px" }}>현재 위치: {progress.carState || "-"}</div>
               <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "12px" }}>
                 요청 시각: {(progress.createdAt || "").replace("T", " ").slice(0, 19)}
               </div>
-            
-            {/* 차량 호출 버튼 (주차 중일 때만 표시) */}
-            {progress.services?.includes("parking") && 
-             progress.parkingStatus === "IN_PROGRESS" && (
-              <button
-                onClick={async () => {
-                  if (!progress.id) {
-                    alert("작업 정보를 찾을 수 없습니다.");
-                    return;
-                  }
-                  if (isCalling) return;
-                  
-                  try {
-                    setIsCalling(true);
-                    await callVehicle(progress.id);
-                    alert("차량 호출 신호가 발행되었습니다. 차량이 출구로 이동합니다.");
-                  } catch (error) {
-                    console.error("차량 호출 에러:", error);
-                    console.error("에러 응답:", error.response?.data);
-                    const errorMessage = error.response?.data?.error || "차량 호출 중 오류가 발생했습니다.";
-                    alert(errorMessage);
-                  } finally {
-                    setIsCalling(false);
-                  }
-                }}
-                disabled={isCalling}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  backgroundColor: isCalling ? "#9ca3af" : "#10b981",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: isCalling ? "not-allowed" : "pointer",
-                  fontWeight: "600",
-                  fontSize: "16px",
-                }}
-              >
-                {isCalling ? "호출 중..." : "🚗 차량 호출"}
-              </button>
-            )}
+
+              {/* 차량 호출 버튼 (주차 중일 때만 표시) */}
+              {progress.services?.includes("parking") &&
+                progress.parkingStatus === "IN_PROGRESS" && (
+                  <button
+                    onClick={async () => {
+                      if (!progress.id) {
+                        alert("작업 정보를 찾을 수 없습니다.");
+                        return;
+                      }
+                      if (isCalling) return;
+
+                      try {
+                        setIsCalling(true);
+                        await callVehicle(progress.id);
+                        alert("차량 호출 신호가 발행되었습니다. 차량이 출구로 이동합니다.");
+                      } catch (error) {
+                        console.error("차량 호출 에러:", error);
+                        console.error("에러 응답:", error.response?.data);
+                        const errorMessage =
+                          error.response?.data?.error || "차량 호출 중 오류가 발생했습니다.";
+                        alert(errorMessage);
+                      } finally {
+                        setIsCalling(false);
+                      }
+                    }}
+                    disabled={isCalling}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      backgroundColor: isCalling ? "#9ca3af" : "#10b981",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "8px",
+                      cursor: isCalling ? "not-allowed" : "pointer",
+                      fontWeight: "600",
+                      fontSize: "16px",
+                    }}
+                  >
+                    {isCalling ? "호출 중..." : "🚗 차량 호출"}
+                  </button>
+                )}
             </div>
           )
         ) : (
