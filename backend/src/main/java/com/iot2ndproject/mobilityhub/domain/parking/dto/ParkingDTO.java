@@ -19,5 +19,4 @@ public class ParkingDTO {
     private LocalDateTime entryTime;
     private LocalDateTime exitTime;
     private String state;
-    private String adminId;
 }

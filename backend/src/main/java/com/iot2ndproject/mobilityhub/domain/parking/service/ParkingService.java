@@ -131,9 +131,6 @@ public class ParkingService {
                             : null)
                     .entryTime(work != null ? work.getEntryTime() : null)
                     .exitTime(work != null ? work.getExitTime() : null)
-                    .adminId(work != null && work.getUserCar() != null
-                            ? work.getUserCar().getUser().getUserId()
-                            : null)
                     .build();
         }).toList();
     }
