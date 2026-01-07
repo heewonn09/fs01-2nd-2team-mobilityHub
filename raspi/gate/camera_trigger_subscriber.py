@@ -1,250 +1,180 @@
-# -*- coding: utf-8 -*-
-"""
-Entrance Camera Worker (FINAL)
+import paho.mqtt.client as client
+from threading import Thread
 
-기능:
-- 카메라 스트리밍 항상 유지
-- MQTT comeIn 수신 시:
-  - 현재 프레임 캡처
-  - 이미지 파일 저장
-  - 캡처 이미지(base64) MQTT 전송
-  - 이미지 메타(JSON) MQTT 전송 (DB 저장용)
-  - 서보 모터 OPEN → 일정 시간 후 CLOSE
-"""
+from mycamera import MyCamera
+from gate_servo import GateServo
+import paho.mqtt.publish as publisher
 
-import threading
+from water import PumpController
 import time
-import io
 import os
 import json
 import base64
 from datetime import datetime
+from exit_worker import ExitWorker
 
-import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publisher
-from picamera2 import Picamera2
-import RPi.GPIO as GPIO
 
-# =========================
-# MQTT 설정
-# =========================
-BROKER_IP = "192.168.14.56"
-BROKER_PORT = 1883
-
-TOPIC_BASE = "parking/web/entrance"
-TOPIC_CAM_STREAM = f"{TOPIC_BASE}/cam"
-TOPIC_CAPTURE_TRIGGER = TOPIC_BASE          # comeIn
-TOPIC_CAPTURE_IMAGE = f"{TOPIC_BASE}/capture"
-TOPIC_IMAGE_META = f"{TOPIC_BASE}/image"
-TOPIC_APPROVE = f"{TOPIC_BASE}/approve"
-
-# =========================
-# 저장 설정
-# =========================
-SAVE_DIR = "./images"
-os.makedirs(SAVE_DIR, exist_ok=True)
-
-CAMERA_ID = "CAM_ENT"
-
-# =========================
-# 서보 모터 클래스
-# =========================
-class GateServo:
-    def __init__(self, pin=18):
-        self.pin = pin
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pin, GPIO.OUT)
-        self.pwm = GPIO.PWM(self.pin, 50)  # 50Hz
-        self.pwm.start(0)
-        print("🧩 서보 모터 초기화 완료")
-
-    def open(self):
-        print("🔓 서보 OPEN")
-        self.pwm.ChangeDutyCycle(7.5)
-        time.sleep(0.7)
-        self.pwm.ChangeDutyCycle(0)
-
-    def close(self):
-        print("🔒 서보 CLOSE")
-        self.pwm.ChangeDutyCycle(2.5)
-        time.sleep(0.7)
-        self.pwm.ChangeDutyCycle(0)
-
-    def cleanup(self):
-        self.pwm.stop()
-        GPIO.cleanup()
-
-# =========================
-# 카메라 클래스 (스트리밍 전용)
-# =========================
-class MyCamera:
+class MqttWorker:
+    # 생성자에서 mqtt통신할 수 있는 객체생성, 필요한 다양한 객체생성, 콜백함수등록
     def __init__(self):
-        self.camera = Picamera2()
-        self.frame = None
-        self.running = True
-        self._init_camera()
-
-        self.thread = threading.Thread(
-            target=self._streaming_loop,
-            daemon=True
-        )
-        self.thread.start()
-
-    def _init_camera(self):
-        config = self.camera.create_video_configuration(
-            main={"format": "RGB888", "size": (320, 240)}
-        )
-        self.camera.configure(config)
-        self.camera.start()
-        self.camera.hflip = True
-        self.camera.vflip = True
-        print("📷 카메라 초기화 완료 (스트리밍 유지)")
-
-    def _streaming_loop(self):
-        stream = io.BytesIO()
-        while self.running:
-            try:
-                self.camera.capture_file(stream, format="jpeg")
-                stream.seek(0)
-                self.frame = stream.read()
-                stream.seek(0)
-                stream.truncate()
-                time.sleep(0.05)
-            except Exception as e:
-                print("❌ 스트리밍 오류:", e)
-                self.running = False
-
-    def get_frame(self):
-        return self.frame
-
-# =========================
-# MQTT Worker
-# =========================
-class EntranceCameraWorker:
-    def __init__(self):
-        self.client = mqtt.Client("entrance_camera_worker")
+        self.client = client.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
 
+        # ===== 공통 =====
         self.camera = MyCamera()
+        self.is_streaming = False
+
+        # ===== 입출구 =====
         self.servo = GateServo(pin=18)
+        self.last_capture = 0
+        self.SAVE_DIR = "images"
+        os.makedirs(self.SAVE_DIR, exist_ok=True)
 
-        self.last_capture_time = 0
+        # 출구 워커
+        self.exit_worker = ExitWorker()
 
-    # MQTT 연결
+        # ===== 세차장 =====
+        # self.pump = PumpController()
+
+    # ==================================================
+    # broker 연결 후 실행될 콜백
+    # ==================================================
     def on_connect(self, client, userdata, flags, rc):
-        print("🔌 MQTT 연결 결과:", rc)
-        client.subscribe(f"{TOPIC_BASE}/#")
-        print(f"📡 구독: {TOPIC_BASE}/#")
+        print("connect...:::", rc)
+        if rc == 0:
+            client.subscribe("parking/web/entrance/#")
+            client.subscribe("parking/web/exit/#")
+        else:
+            print("연결실패")
 
-    # MQTT 수신
-    def on_message(self, client, userdata, msg):
-        topic = msg.topic
-        payload = msg.payload.decode("utf-8").strip()
+    # ==================================================
+    # 메시지 수신 처리
+    # ==================================================
+    def on_message(self, client, userdata, message):
+        payload = message.payload.decode()
 
-        # 📸 캡처 트리거
-        if topic == TOPIC_CAPTURE_TRIGGER and payload == "comeIn":
-            print("📸 comeIn 수신 → 캡처 시작")
+        # ===============================
+        #  입출구 영역
+        # ===============================
+        if message.topic == "parking/web/entrance/cam/control":
+            if payload == "start" and not self.is_streaming:
+                print(message.topic, payload)
+                self.is_streaming = True
+                Thread(target=self.send_camera_frame, daemon=True).start()
+
+            elif payload == "stop":
+                print(message.topic, payload)
+                self.is_streaming = False
+
+        elif message.topic == "parking/web/entrance" and payload == "comeIn":
+            print("[ENT] 차량 진입 감지")
             self.capture_image()
 
-        # 🔓 승인 토픽 (확장용)
-        elif topic == TOPIC_APPROVE and payload == "open":
-            print("🔓 승인 수신 → 서보 OPEN")
-            threading.Thread(
-                target=self._open_and_close_gate,
-                daemon=True
-            ).start()
+        elif message.topic == "parking/web/entrance/approve" and payload == "open":
+            print("[ENT] 출입구 OPEN")
+            Thread(target=self.open_and_close_gate, daemon=True).start()
 
-    # =========================
-    # 서보 비동기 제어
-    # =========================
-    def _open_and_close_gate(self):
-        try:
-            self.servo.open()
-            time.sleep(3)
-            self.servo.close()
-        except Exception as e:
-            print("❌ 서보 오류:", e)
+        
+    # ==================================================
+    # 카메라 프레임 전송 (❗ 절대 수정 금지)
+    # ==================================================
+    def send_camera_frame(self):
+        while self.is_streaming:
+            try:
+                frame = self.camera.getStreaming()
+                publisher.single(
+                    "parking/web/entrance/cam/frame",
+                    frame,
+                    hostname="192.168.14.83"
+                )
+            except Exception:
+                self.is_streaming = False
+                break
 
-    # =========================
-    # 캡처 처리
-    # =========================
+    # ==================================================
+    #  캡처 처리 (기존 코드 유지)
+    # ==================================================
     def capture_image(self):
         now = time.time()
-        if now - self.last_capture_time < 1:
-            print("⚠️ 연속 캡처 방지")
+        if now - self.last_capture < 1:
             return
-        self.last_capture_time = now
+        self.last_capture = now
 
-        frame = self.camera.get_frame()
-        if frame is None:
-            print("⚠️ 프레임 없음 → 캡처 실패")
+        frame = self.camera.getStreaming()
+        if not frame:
             return
 
+        img_bytes = base64.b64decode(frame)
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{CAMERA_ID}_{ts}.jpg"
-        path = os.path.join(SAVE_DIR, filename)
+        path = f"{self.SAVE_DIR}/CAM_ENT_{ts}.jpg"
 
-        # 1️⃣ 이미지 저장
         with open(path, "wb") as f:
-            f.write(frame)
-        print("💾 이미지 저장:", path)
+            f.write(img_bytes)
 
-        # 2️⃣ 서보 비동기 실행
-        threading.Thread(
-            target=self._open_and_close_gate,
-            daemon=True
-        ).start()
+        publisher.single(
+            "parking/web/entrance/capture",
+            frame,
+            hostname="192.168.14.83"
+        )
 
-        # 3️⃣ 캡처 이미지 MQTT 전송
-        encoded = base64.b64encode(frame).decode()
-        self.client.publish(TOPIC_CAPTURE_IMAGE, encoded)
-        print("📤 캡처 이미지 MQTT 전송")
-
-        # 4️⃣ 이미지 메타 MQTT 전송 (DB 저장용)
         meta = {
-            "cameraId": CAMERA_ID,
+            "cameraId": "CAM_ENT",
             "imagePath": path,
             "ocrNumber": None
         }
-        self.client.publish(
-            TOPIC_IMAGE_META,
-            json.dumps(meta, ensure_ascii=False)
+
+        publisher.single(
+            "parking/web/entrance/image",
+            json.dumps(meta),
+            hostname="192.168.14.83"
         )
-        print("📤 이미지 메타 MQTT 전송:", meta)
 
-    # =========================
-    # 스트리밍 송신
-    # =========================
-    def publish_stream(self):
-        while True:
-            frame = self.camera.get_frame()
-            if frame:
-                encoded = base64.b64encode(frame).decode()
-                publisher.single(
-                    TOPIC_CAM_STREAM,
-                    encoded,
-                    hostname=BROKER_IP
-                )
-            time.sleep(0.05)
+        print("[ENT] 캡처 완료:", path)
 
-    def start(self):
-        self.client.connect(BROKER_IP, BROKER_PORT, 60)
+    # ==================================================
+    #  게이트 제어
+    # ==================================================
+    def open_and_close_gate(self):
+        self.servo.open()
+        time.sleep(7)
+        self.servo.close()
 
-        threading.Thread(
-            target=self.publish_stream,
-            daemon=True
-        ).start()
+    # ==================================================
+    #  출구 감지 콜백 
+    # ==================================================
+    def handle_exit_detected(self):
+        print("📤 출구 감지 → MQTT 전송")
 
-        print("🟢 Entrance Camera Worker 실행 중")
-        self.client.loop_forever()
+        publisher.single(
+            "parking/web/exit/detected",
+            json.dumps({
+                "gate": "EXIT",
+                "time": time.time()
+            }),
+            hostname="192.168.14.83"
+        )
 
-# =========================
-# Main
-# =========================
-if __name__ == "__main__":
-    try:
-        worker = EntranceCameraWorker()
-        worker.start()
-    except KeyboardInterrupt:
-        print("\n🛑 종료")
+
+
+    # ==================================================
+    # MQTT 연결
+    # ==================================================
+    def mymqtt_connect(self):
+        try:
+            print("브로커 연결 시작하기")
+            self.client.connect("192.168.14.83", 1883, 60)
+
+            Thread(target=self.client.loop_forever, daemon=True).start()
+
+            #  출구 감지 시작 (콜백 연결)
+            Thread(
+                target=self.exit_worker.watch_exit,
+                args=(self.handle_exit_detected,),
+                daemon=True
+            ).start()
+
+        except KeyboardInterrupt:
+            pass
+        finally:
+            print("종료")
