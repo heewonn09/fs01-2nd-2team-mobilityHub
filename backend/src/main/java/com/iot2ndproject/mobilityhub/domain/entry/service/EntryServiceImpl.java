@@ -16,9 +16,7 @@ public class EntryServiceImpl implements EntryService {
 
     private final EntryDAO entryDAO;
 
-    /**
-     * 📊 금일 입차 조회
-     */
+    //금일 입차조회
     @Override
     public List<EntranceEntryViewDTO> getTodayEntry() {
 
@@ -48,9 +46,7 @@ public class EntryServiceImpl implements EntryService {
                 .toList();
     }
 
-    /**
-     * ✅ 입차 승인
-     */
+    // 입차승인
     @Override
     public void approveEntrance(Long workId) {
 

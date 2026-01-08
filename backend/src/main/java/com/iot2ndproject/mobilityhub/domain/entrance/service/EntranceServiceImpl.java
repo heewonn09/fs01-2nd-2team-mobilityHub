@@ -24,52 +24,6 @@ import java.util.stream.Collectors;
 public class EntranceServiceImpl implements EntranceService {
 
     private final EntranceDAO entranceDAO;
-    private final CarDAO carDAO;
-    private final WorkInfoDAO workInfoDAO;
-
-    // ===============================================
-    // OCR 수신
-    // ===============================================
-    @Override
-    public EntranceResponseDTO receiveOcr(OcrEntryRequestDTO dto) {
-
-        ImageEntity image = new ImageEntity();
-        image.setCameraId(dto.getCameraId());
-        image.setImagePath(dto.getImagePath());
-        image.setOcrNumber(dto.getOcrNumber());
-
-        entranceDAO.save(image);
-
-        // 자동 매칭
-        autoMatch(image);
-
-        EntranceResponseDTO response = new EntranceResponseDTO();
-        response.setImageId((long) image.getImageId());
-        response.setImagePath(image.getImagePath());
-        response.setCameraId(image.getCameraId());
-        response.setOcrNumber(image.getOcrNumber());
-        response.setCorrectedOcrNumber(image.getCorrectedOcrNumber());
-        response.setTime(image.getRegDate());
-        response.setMatch(false);
-
-        return response;
-    }
-
-    // ===============================================
-    // OCR 번호 수정 (관리자)
-    // ===============================================
-    @Override
-    public void updateOcrNumber(Long imageId, String carNumber) {
-
-        ImageEntity image = entranceDAO.findById(imageId);
-        image.setCorrectedOcrNumber(carNumber);
-
-        entranceDAO.save(image);
-
-        // OCR 수정 후 재매칭
-        autoMatch(image);
-    }
-
     // ===============================================
     // 최근 입차 조회
     // ===============================================
@@ -97,43 +51,6 @@ public class EntranceServiceImpl implements EntranceService {
 
         return dto;
     }
-
-    // 최신 이미지
-    @Override
-    public Object getLatestEntranceImage() {
-        return entranceDAO.findLatest();
-    }
-
-    // ===============================================
-    // OCR 자동 매칭 핵심 로직
-    // ===============================================
-    private void autoMatch(ImageEntity image) {
-
-        String plate =
-                (image.getCorrectedOcrNumber() != null)
-                        ? image.getCorrectedOcrNumber()
-                        : image.getOcrNumber();
-
-        if (plate == null) return;
-
-        UserCarEntity userCar = carDAO.findUserCarByCarNumber(plate).orElse(null);
-        if (userCar == null) return;
-
-        // 중복 매칭 방지
-        if (workInfoDAO.existsByImageId((long) image.getImageId())) return;
-
-        WorkInfoEntity workInfo = new WorkInfoEntity();
-        workInfo.setUserCar(userCar);
-        workInfo.setImage(image);
-        workInfo.setRequestTime(LocalDateTime.now());
-
-        WorkEntity entryWork = new WorkEntity();
-        entryWork.setWorkId(1); // 입차
-        workInfo.setWork(entryWork);
-
-        workInfoDAO.save(workInfo);
-    }
-
     // 금일 입차
     @Override
     public List<WorkInfoResponseDTO> getTodayEntryDTO() {
@@ -197,26 +114,6 @@ public class EntranceServiceImpl implements EntranceService {
                 })
                 .collect(Collectors.toList());
     }
-
-
-
-
-
-    // 번호판 수정
-    @Override
-    public void updatePlateNumber(Long workInfoId, String newCarNumber) {
-
-        WorkInfoEntity workInfo = workInfoDAO.findById(workInfoId)
-                .orElseThrow(() -> new IllegalArgumentException("입차 기록이 없습니다."));
-
-        UserCarEntity userCar = workInfo.getUserCar();
-        CarEntity car = (userCar != null) ? userCar.getCar() : null;
-        if (car == null) throw new IllegalArgumentException("차량 정보가 없습니다.");
-
-        car.setCarNumber(newCarNumber);
-        carDAO.save(car);
-    }
-
     private WorkInfoResponseDTO convertToDTOFromWorkInfo(WorkInfoEntity w) {
 
         WorkInfoResponseDTO dto = new WorkInfoResponseDTO();

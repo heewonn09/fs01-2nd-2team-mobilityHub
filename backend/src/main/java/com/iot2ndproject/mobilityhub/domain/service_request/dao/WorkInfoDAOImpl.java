@@ -19,9 +19,7 @@ public class WorkInfoDAOImpl implements WorkInfoDAO {
 
     private final WorkInfoRepository workInfoRepository;
 
-    /**
-     * 이미지 기준 중복 매칭 방지
-     */
+
     @Override
     public boolean existsByImageId(Long imageId) {
         return workInfoRepository.existsByImage_ImageId(imageId);

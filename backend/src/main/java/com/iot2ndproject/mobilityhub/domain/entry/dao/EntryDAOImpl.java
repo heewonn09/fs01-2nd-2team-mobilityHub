@@ -19,12 +19,10 @@ public class EntryDAOImpl implements EntryDAO {
     public Optional<WorkInfoEntity> findWorkInfoById(Long workId) {
         return workInfoRepository.findById(workId);
     }
-
     @Override
     public List<WorkInfoEntity> findTodayEntry(LocalDateTime start, LocalDateTime end) {
         return workInfoRepository.findByEntryTimeBetween(start, end);
     }
-
     @Override
     public WorkInfoEntity save(WorkInfoEntity workInfo) {
         return workInfoRepository.save(workInfo);
