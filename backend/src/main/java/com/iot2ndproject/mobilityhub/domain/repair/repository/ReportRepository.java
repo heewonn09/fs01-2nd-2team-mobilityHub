@@ -10,4 +10,7 @@ public interface ReportRepository extends JpaRepository<ReportEntity, String> {
 
     // 보고서 삭제
     void deleteByReportId(String reportId);
+
+    // 차량별 최신 보고서 조회(정비 추가요금 계산용)
+    ReportEntity findTopByUserCar_IdOrderByReportIdDesc(Long userCarId);
 }

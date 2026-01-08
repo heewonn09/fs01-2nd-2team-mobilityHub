@@ -14,4 +14,6 @@ public interface UserService {
     // 주간 회원 통계 생성 (차트용)
     List<UserListDTO> getUserList();
 
+    // 비밀번호 변경
+    boolean changePassword(String userId, String currentPassword, String newPassword);
 }

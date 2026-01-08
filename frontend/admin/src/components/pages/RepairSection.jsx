@@ -1,26 +1,32 @@
 import { useEffect, useState } from "react";
 import { Check, Clock, Wrench } from "lucide-react";
 
+// MQTT 훅
 import useMqtt from "../hook/useMqtt";
+
+// API
 import { reportAllList, repairTodayList, stockAllList } from "../../api/repairAPI";
 
+// 모달 컴포넌트
 import RepairReportModal from "../modal/RepairReportModal";
 import RepairHistoryModal from "../modal/RepairHistoryModal";
 import StockModal from "../modal/StockModal";
 import StockCreateModal from "../modal/StockCreateModal";
 
+// 스타일
 import "../style/RepairSection.css";
 import "../../App.css";
 
+// 정비소 페이지
 const RepairSection = () => {
-  const [repairList, getRepairList] = useState([]);
-  const [stockList, getStockList] = useState([]);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [stockData, setStockData] = useState(null);
-  const [reportList, setReportList] = useState([]);
-  const [showCreateStockModal, setShowCreateStockModal] = useState(false);
-  const { connectStatus, imageSrc, angleValue, publish } = useMqtt();
+  const [repairList, getRepairList] = useState([]); // 오늘 정비 요청 리스트
+  const [stockList, getStockList] = useState([]); // 재고 리스트
+  const [showReportModal, setShowReportModal] = useState(false); // 보고서 모달 상태
+  const [showHistoryModal, setShowHistoryModal] = useState(false); // 정비 내역 모달 상태
+  const [stockData, setStockData] = useState(null); // 재고 모달 데이터
+  const [reportList, setReportList] = useState([]); // 전체 보고서 리스트
+  const [showCreateStockModal, setShowCreateStockModal] = useState(false); // 재고 추가 모달 상태
+  const { connectStatus, imageSrc, angleValue, publish } = useMqtt(); // MQTT 상태 및 발행 함수
 
   // 재고 리스트 갱신 함수
   const refreshStockList = async () => {
@@ -105,8 +111,6 @@ const RepairSection = () => {
       ).length
     : 0;
 
-  console.log(waitForWark);
-
   // 작업 완료 버튼 핸들러
   const handleCompleteWork = () => {
     if (workingCar.length === 0) {
@@ -135,6 +139,7 @@ const RepairSection = () => {
         reportList.some(
           (report) => report.reportId.startsWith(todayStr) && report.carNumber === list.car_number
         );
+
       if (hasReportToday) return null;
 
       let carStateText = "";

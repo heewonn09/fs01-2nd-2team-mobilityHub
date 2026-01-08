@@ -1,0 +1,11 @@
+.stock-modal-content {
+  background-color: #ffffff; /* bg-white */
+
+  border-radius: 0.5rem; /* rounded-lg (8px) */
+
+  width: 100%; /* w-full */
+  max-width: 42rem; /* max-w-2xl (672px) */
+
+  margin-left: 1rem; /* mx-4 */
+  margin-right: 1rem;
+}

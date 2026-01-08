@@ -1,6 +1,7 @@
 package com.iot2ndproject.mobilityhub.domain.user.controller;
 
 import com.iot2ndproject.mobilityhub.domain.user.dto.*;
+import com.iot2ndproject.mobilityhub.domain.user.dto.PasswordChangeDTO;
 import com.iot2ndproject.mobilityhub.domain.user.jwt.TokenProvider;
 import com.iot2ndproject.mobilityhub.domain.user.service.UserService;
 import com.iot2ndproject.mobilityhub.domain.car.entity.CarEntity;
@@ -51,30 +52,20 @@ public class UserController {
         return userService.getUserList();
     }
 
-    //@@@@@ 아이디 비밀번호 찾기 / 수정 구현 예정
-    // @PutMapping("/password-change")
-    // public ResponseEntity<?> passwordChange(@RequestBody String newPassword) {
-    //     userService.updatePassoword(newPassword);
-    //     return ResponseEntity.ok(HttpStatus.OK);
-    // }
-
-    // @PostMapping("/password-reissue")
-    // public String passwordReissue(@RequestBody String userId) {
-    //     userService.reissuePassoword(userId);
-    //     return new String();
-    // }
-    
-    // @PostMapping("/passowrd-mapping")
-    // public String passwordMatch(@ResponseBody String password){
-    //     userService.passwordMatch(password);
-    //     return new String();
-    // }
-
-    // @PostMapping("/id-find")
-    // public String postMethodName(@RequestBody String phoneNumber) {
-    //     userService.idFind(phoneNumber);
-    //     return new String();
-    // }
+    // 비밀번호 변경 API
+    @PutMapping("/password-change")
+    public ResponseEntity<?> passwordChange(@RequestBody PasswordChangeDTO passwordChangeDTO) {
+        boolean result = userService.changePassword(
+            passwordChangeDTO.getUserId(),
+            passwordChangeDTO.getCurrentPassword(),
+            passwordChangeDTO.getNewPassword()
+        );
+        if (result) {
+            return ResponseEntity.ok(Map.of("message", "비밀번호가 성공적으로 변경되었습니다."));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("error", "현재 비밀번호가 일치하지 않습니다."));
+        }
+    }
     
 
     @PostMapping("/login")

@@ -17,17 +17,6 @@ public class EntranceController {
     private final EntranceService entranceService;
     private final EntryService entryService;
 
-    @GetMapping("/latest_image")
-    public ResponseEntity<?> getLatestEntranceImage() {
-        return ResponseEntity.ok(entranceService.getLatestEntranceImage());
-    }
-
-    // OCR 수신
-    @PostMapping("/ocr")
-    public ResponseEntity<?> ocr(@RequestBody OcrEntryRequestDTO dto) {
-        return ResponseEntity.ok(entranceService.receiveOcr(dto));
-    }
-
     // 입차 승인
     @PostMapping("/{workId}/approve")
     public ResponseEntity<?> approve(@PathVariable Long workId) {
@@ -66,19 +55,4 @@ public class EntranceController {
         return entranceService.getTodayExitDTO();
     }
 
-    // 번호판 수정
-    @PutMapping("/{id}/plate")
-    public ResponseEntity<?> updatePlate(@PathVariable Long id,
-                                         @RequestBody PlateUpdateRequest request) {
-        entranceService.updatePlateNumber(id, request.getCarNumber());
-        return ResponseEntity.ok().build();
-    }
-
-    // OCR 수정 (관리자)
-    @PutMapping("/image/{imageId}/ocr")
-    public ResponseEntity<?> updateOcr(@PathVariable Long imageId,
-                                       @RequestBody OcrUpdateRequestDTO dto) {
-        entranceService.updateOcrNumber(imageId, dto.getCarNumber());
-        return ResponseEntity.ok().build();
-    }
 }

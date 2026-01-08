@@ -6,6 +6,7 @@ import com.iot2ndproject.mobilityhub.domain.parking.entity.ParkingEntity;
 import com.iot2ndproject.mobilityhub.domain.parking.service.ParkingService;
 import com.iot2ndproject.mobilityhub.domain.service_request.repository.ParkingMapNodeRepository;
 import com.iot2ndproject.mobilityhub.domain.car.entity.UserCarEntity;
+import com.iot2ndproject.mobilityhub.domain.repair.repository.ReportRepository;
 import com.iot2ndproject.mobilityhub.domain.service_request.dao.ServiceRequestDAO;
 import com.iot2ndproject.mobilityhub.domain.service_request.dto.ServiceRequestDTO;
 import com.iot2ndproject.mobilityhub.domain.service_request.entity.WorkEntity;
@@ -28,6 +29,7 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
     private final RouteService routeService;
     private final MyPublisher mqttPublisher;
     private final ObjectMapper objectMapper;
+    private final ReportRepository reportRepository;
 
     @Override
     @Transactional
@@ -351,6 +353,58 @@ public class ServiceRequestServiceImpl implements ServiceRequestService {
         } else {
             dto.setCarState(null);
         }
+
+        // =========================
+        // 간단 요금 계산 로직 (데모용)
+        // - 주차: 출차 완료 시, 시간당 2000원 (올림)
+        // - 세차: 완료 시 8000원 고정
+        // - 정비: 완료 시 DB의 repair_amount만 청구
+        // =========================
+        Integer parkingFee = 0;
+        Integer carwashFee = 0;
+        Integer repairFee = 0;
+
+        // 주차 요금: entry~exit 시간으로 계산, 시간당 2000원(올림)
+        if (hasPark && representative.getEntryTime() != null && representative.getExitTime() != null) {
+            try {
+                long minutes = java.time.Duration.between(representative.getEntryTime(), representative.getExitTime()).toMinutes();
+                long hours = (long) Math.ceil(Math.max(0, minutes) / 60.0);
+                parkingFee = (int) (hours * 2000);
+            } catch (Exception e) {
+                System.err.println("주차 요금 계산 오류: " + e.getMessage());
+                parkingFee = 0;
+            }
+        }
+
+        // 세차 고정 요금: 완료 시 8000원
+        if (hasCarwash && "DONE".equalsIgnoreCase(carwashStatus)) {
+            carwashFee = 8000;
+        }
+
+        // 정비 요금: 완료 시 repair_report.repair_amount
+        if (hasRepair && "DONE".equalsIgnoreCase(repairStatus)) {
+            int repairExtraFee = 0;
+
+            try {
+                Long userCarId = representative.getUserCar() != null ? representative.getUserCar().getId() : null;
+                if (userCarId != null) {
+                    var report = reportRepository.findTopByUserCar_IdOrderByReportIdDesc(userCarId);
+                    if (report != null) {
+                        repairExtraFee = Math.max(0, report.getRepairAmount());
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("정비 추가요금(repair_amount) 조회 오류: " + e.getMessage());
+                repairExtraFee = 0;
+            }
+
+            repairFee = repairExtraFee;
+        }
+
+        dto.setParkingFee(parkingFee);
+        dto.setCarwashFee(carwashFee);
+        dto.setRepairFee(repairFee);
+        dto.setTotalFee(parkingFee + carwashFee + repairFee);
         
         return dto;
     }

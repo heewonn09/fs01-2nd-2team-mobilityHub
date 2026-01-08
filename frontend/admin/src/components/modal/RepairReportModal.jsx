@@ -1,12 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
-import { X, Plus, Minus } from "lucide-react";
-import "../style/RepairReportModal.css";
+import { useMemo, useState } from "react";
+import { X } from "lucide-react";
+
+// API
 import { sendComplete, writeReport } from "../../api/repairAPI";
 
+// 스타일
+import "../style/RepairReportModal.css";
+
+// 정비 보고서 모달
 export default function RepairReportModal({ onClose, data, refreshStockList }) {
-  const [usedParts, setUsedParts] = useState([]);
-  // 로딩 상태
-  const [loading, setLoading] = useState(false);
+  const [usedParts] = useState([]); // 사용된 부품 상태
+  const [setLoading] = useState(false); // 로딩 상태
 
   // 지연 함수
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -35,14 +39,10 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
 
   // 작업 완료 신호 전송 핸들러
   const handleSubmit = async (reportData) => {
-    console.log(reportData);
-
     try {
       const completeResponse = await sendComplete(reportData);
 
-      if (completeResponse.status === 200) {
-        console.log("작업 완료 신호 전송 성공");
-      }
+      return completeResponse;
     } catch (error) {
       console.error("전송 실패:", error);
       alert("완료 신호 전송 실패");
@@ -53,6 +53,7 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
   const handleCreate = async (e) => {
     e.preventDefault();
 
+    // 빈 칸 확인
     const isEmptyField = Object.values(formData).some((value) => value === "" || value == null);
 
     if (isEmptyField) {
@@ -60,6 +61,7 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
       return;
     }
 
+    // 요청 바디 구성
     const requestBody = {
       userCarId: reportData.userCarId,
       carNumber: reportData.car_number,
@@ -68,6 +70,7 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
       repairAmount: Number(calculateTotal()),
     };
 
+    // 작업 정보 ID
     const workInfoId = reportData.id;
 
     // 보고서 작성 API 호출
@@ -76,6 +79,7 @@ export default function RepairReportModal({ onClose, data, refreshStockList }) {
 
       const response = await writeReport(requestBody);
 
+      // 보고서 작성 성공 시 작업 완료 신호 전송
       if (response.status === 200) {
         await delay(1000);
 

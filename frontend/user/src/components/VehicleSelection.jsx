@@ -28,7 +28,6 @@ export default function VehicleSelection({ isLogin }) {
   const loadVehicles = async (id) => {
     try {
       const data = await fetchUserCars(id);
-      console.log("받은 차량 데이터:", data);
       
       // 데이터가 배열인지 확인
       let list = data;
@@ -41,7 +40,6 @@ export default function VehicleSelection({ isLogin }) {
       
       // list가 배열이 아니면 빈 배열로 설정
       if (!Array.isArray(list)) {
-        console.warn("차량 데이터가 배열이 아닙니다:", list);
         list = [];
       }
       
@@ -52,7 +50,6 @@ export default function VehicleSelection({ isLogin }) {
       }));
       setVehicles(mapped);
     } catch (e) {
-      console.error("차량 목록 로드 에러:", e);
       alert("차량 목록을 불러올 수 없습니다. 다시 로그인해주세요.");
     }
   };
@@ -69,7 +66,6 @@ export default function VehicleSelection({ isLogin }) {
       setNewModel("");
       setShowAddDialog(false);
     } catch (e) {
-      console.error(e);
       alert("차량 등록에 실패했습니다. 다시 시도해주세요.");
     }
   };

@@ -34,13 +34,14 @@
 }
 
 .admin-table th {
-  text-align: left;
+  text-align: center;
   padding: 12px 20px;
   background: #fafafa;
   color: #555;
 }
 
 .admin-table td {
+  text-align: center;
   padding: 12px 20px;
 }
 
@@ -91,43 +92,6 @@
   width: 18px;
   height: 18px;
   color: white;
-}
-
-/* 태그 색상 */
-.tag {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 13px;
-  display: inline-block;
-}
-
-.tag.purple {
-  background: #ede9fe;
-  color: #6b21a8;
-}
-.tag.blue {
-  background: #dbeafe;
-  color: #1e40af;
-}
-.tag.green {
-  background: #d1fae5;
-  color: #047857;
-}
-.tag.orange {
-  background: #ffedd5;
-  color: #b45309;
-}
-.tag.indigo {
-  background: #e0e7ff;
-  color: #4338ca;
-}
-.tag.pink {
-  background: #fce7f3;
-  color: #be185d;
-}
-.tag.gray {
-  background: #f3f4f6;
-  color: #374151;
 }
 
 /* 연락처 / 이메일 */

@@ -7,23 +7,15 @@ import java.util.Optional;
 
 public interface WorkInfoDAO {
 
-    /**
-     * 이미지 기준 중복 매칭 방지
-     */
+    //이미지 기준 중복 매칭 방지
     boolean existsByImageId(Long imageId);
 
-    /**
-     * WorkInfo 저장
-     */
+    //WorkInfo 저장
     WorkInfoEntity save(WorkInfoEntity workInfo);
 
-    /**
-     * workInfoId로 단건 조회
-     */
+    //workInfoId로 단건 조회
     Optional<WorkInfoEntity> findById(Long workInfoId);
 
-    /**
-     * 전체 작업 목록
-     */
+    //전체 작업 목록
     List<WorkInfoEntity> findAll();
 }

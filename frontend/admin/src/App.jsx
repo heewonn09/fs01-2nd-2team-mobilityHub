@@ -69,7 +69,7 @@ function App() {
             <Route
               path="/carwash"
               element={
-                <ProtectedRoute allowRoles={["TOTAL", "CARWASH"]}>
+                <ProtectedRoute allowRoles={["TOTAL", "WASH"]}>
                   <CarWashSection />
                 </ProtectedRoute>
               }

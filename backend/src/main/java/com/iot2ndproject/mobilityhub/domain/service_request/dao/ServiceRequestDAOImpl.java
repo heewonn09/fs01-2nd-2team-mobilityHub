@@ -29,7 +29,6 @@ public class ServiceRequestDAOImpl implements ServiceRequestDAO {
     public List<WorkInfoEntity> saveAll(Iterable<WorkInfoEntity> entities) {
         return workInfoRepository.saveAll(entities);
     }
-
     @Override
     public Optional<WorkInfoEntity> findById(Long id) {
         return workInfoRepository.findById(id);
@@ -41,12 +40,10 @@ public class ServiceRequestDAOImpl implements ServiceRequestDAO {
         return workInfoRepository
                 .findByUserCar_User_UserIdAndWorkIsNotNullOrderByRequestTimeDesc(userId);
     }
-
     @Override
     public Optional<UserCarEntity> findByUser_UserIdAndCar_CarNumber(String userId, String carNumber) {
         return userCarRepository.findByUser_UserIdAndCar_CarNumber(userId, carNumber);
     }
-
     @Override
     public Optional<WorkEntity> findWorkById(int workId) {
         return workRepository.findById(workId);

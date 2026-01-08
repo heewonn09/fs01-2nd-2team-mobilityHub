@@ -1,21 +1,27 @@
-import axios from "axios";
-import React, { useState } from "react";
+import { useState } from "react";
+
+// API
 import { deleteStock, updateStock } from "../../api/repairAPI";
 
+// 재고 수정/삭제 모달
 export default function StockModal({ onClose, data, refreshStockList }) {
-  const [modalData, setModalData] = useState({ ...data });
+  const [modalData, setModalData] = useState({ ...data }); // 모달 데이터 상태
 
+  // 입력 필드 변경 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // 업데이트
     setModalData((data) => ({
       ...data,
       [name]: value,
     }));
   };
 
+  // 수정
   const handleUpdate = async (e) => {
     e.preventDefault();
 
+    // 요청 본문 구성
     const requestBody = {
       inventoryId: modalData.inventoryId,
       productName: modalData.productName,
@@ -24,11 +30,11 @@ export default function StockModal({ onClose, data, refreshStockList }) {
       stockPrice: Number(modalData.stockPrice),
     };
 
+    // 재고 수정 API 호출
     try {
       const response = await updateStock(requestBody);
 
       if (response.status === 200) {
-        console.log("서버응답: ", response.data);
         alert("수정 완료");
 
         await refreshStockList();
@@ -44,15 +50,15 @@ export default function StockModal({ onClose, data, refreshStockList }) {
   const handleDelete = async () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
+    // 재고 삭제 API 호출
     try {
       const response = await deleteStock(modalData.inventoryId);
 
       if (response.status === 200) {
-        console.log("서버응답: ", response.data);
         alert("삭제 완료");
 
-        await refreshStockList(); // ✅ 즉시 반영
-        onClose(); // ✅ 모달 닫기
+        await refreshStockList();
+        onClose();
       }
     } catch (error) {
       console.error("삭제실패:", error);

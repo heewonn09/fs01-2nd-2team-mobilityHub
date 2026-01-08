@@ -63,4 +63,21 @@ public class UserServiceImpl implements UserService {
                 })
                 .collect(Collectors.toList());
     }
+
+    // 비밀번호 변경
+    @Override
+    public boolean changePassword(String userId, String currentPassword, String newPassword) {
+        UserEntity user = userDAO.findById(userId);
+        if (user == null) {
+            return false;
+        }
+        // 현재 비밀번호 검증
+        if (!encoder.matches(currentPassword, user.getPassword())) {
+            return false;
+        }
+        // 새 비밀번호로 업데이트
+        user.setPassword(encoder.encode(newPassword));
+        userDAO.save(user);
+        return true;
+    }
 }

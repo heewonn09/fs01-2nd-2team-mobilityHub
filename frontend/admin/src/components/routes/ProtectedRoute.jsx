@@ -1,7 +1,8 @@
-import React from "react";
 import { Navigate } from "react-router-dom";
 
+// 보호된 라우트 컴포넌트
 const ProtectedRoute = ({ children, allowRoles }) => {
+  // 로컬 스토리지에서 토큰 및 역할 가져오기
   const token = localStorage.getItem("accessToken");
   const role = localStorage.getItem("role");
 

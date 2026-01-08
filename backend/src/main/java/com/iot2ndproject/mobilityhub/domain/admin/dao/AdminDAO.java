@@ -9,12 +9,13 @@ public interface AdminDAO {
     // 전체 관리자 목록 조회
     List<AdminEntity> findAll();
 
+    // 아이디로 관리자 조회
     AdminEntity findByAdminId(String adminId);
 
+    // 관리자 정보수정
     AdminEntity updateAdminInfo(AdminEntity admin);
 
+    // 관리자 비밀번호 수정
     void updatePassword(String adminId, String encodedPass);
 
-    // 임시로 만들어둠(비밀번호만 암호화한 상태로 변경시키기)
-    AdminEntity save(AdminEntity admin);
 }

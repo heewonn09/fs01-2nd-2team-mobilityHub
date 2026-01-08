@@ -78,6 +78,7 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
+  height: 500px;
 }
 
 /* 주차 리스트 */
@@ -186,6 +187,11 @@
   display: flex; /* flex로 자식 정렬 */
   align-items: center; /* 수직 중앙 */
   justify-content: center; /* 수평 중앙 */
+}
+
+.cctv-container img {
+  max-width: auto;
+  height: 450px;
 }
 
 .cctv-stream img {
