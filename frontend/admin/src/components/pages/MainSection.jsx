@@ -11,10 +11,6 @@ import { AlignCenter, Car } from "lucide-react";
 import { getParkingList } from "../../api/parkingAPI";
 
 const MainSection = () => {
-  const navigate = useNavigate();
-
-  //날씨
-  const [weather, setWeather] = useState("");
 
   // 금일 입출차 그래프
   const [inOutData, setInOutData] = useState([["시간", "입차", "출차"]]);
@@ -33,36 +29,29 @@ const MainSection = () => {
     weekday: "long",
   });
 
-  // 날씨 API
-  useEffect(() => {
-    getWeatherInfo()
-      .then((todayWeather) => {
-        // "비"가 아닌 경우 모두 "맑음"으로 처리
-        const processedWeather = todayWeather === "비" ? "비" : "맑음";
-        setWeather(processedWeather);
-      })
-      .catch((err) => console.error("API 오류:", err));
-  }, []);
-
   // 금일 시간대별 입출차 집계
   const inOutChartData = async () => {
     const entryList = await getTodayEntry();
     const exitList = await getTodayExit();
 
+    // 시간대별 입차/출차 카운트용
     const entryCount = {};
     const exitCount = {};
 
+    // 입차 시간 기준으로 시간대별 집계
     entryList.forEach((item) => {
       if (!item.entryTime) return;
       const hour = new Date(item.entryTime).getHours();
       entryCount[hour] = (entryCount[hour] || 0) + 1;
     });
 
+    // 출차 시간 기준으로 시간대별 집계
     exitList.forEach((item) => {
       if (!item.exitTime) return;
       const hour = new Date(item.exitTime).getHours();
       exitCount[hour] = (exitCount[hour] || 0) + 1;
 
+      // Google Chart 형식 데이터 생성
       const data = [["시간", "입차", "출차"]];
       for (let hour = 0; hour < 24; hour++) {
         const entry = Number(entryCount[hour] || 0);
@@ -85,7 +74,6 @@ const MainSection = () => {
     // 주차장 현황
     getParkingList()
       .then((res) => {
-        console.log("주차 데이터:", res);
         setParkingSpace(res);
       })
       .catch((err) => console.error("주차장 조회 실패:", err));
@@ -110,7 +98,12 @@ const MainSection = () => {
           <div className="chart-title">
             <h3>금일 시간대별 입출차 집계</h3>
           </div>
-          <InOutLineChart className="chart-content" data={inOutData} />
+            {inOutData && inOutData.length > 1 ? (
+            <InOutLineChart data={inOutData} />
+          ) : (
+            <div>데이터가 없습니다</div>
+          )}
+
         </div>
         <div className="chart-box">
           <div className="chart-title">

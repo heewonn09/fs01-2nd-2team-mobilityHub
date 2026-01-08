@@ -9,10 +9,10 @@ const UseByArea = ({ workList }) => {
     if (!workList || workList.length === 0) return;
 
     const dataMap = workList.reduce((acc, item) => {
-      const types = (item.workType || "Unknown").split(",");
+      const types = (item.workType || "Unknown").split(","); // 주차,세차 또는 주차, 정비
       types.forEach((type) => {
-        const trimmed = type.trim();
-        acc[trimmed] = (acc[trimmed] || 0) + 1;
+        const trimmed = type.trim(); // 공백 제거
+        acc[trimmed] = (acc[trimmed] || 0) + 1;  // 해당 유형이 이미 있으면 +1
       });
       return acc;
     }, {});
@@ -26,7 +26,7 @@ const UseByArea = ({ workList }) => {
 
     const data = [
       ["작업 유형", "이용수", { role: "style" }, { role: "annotation" }],
-      ...Object.entries(dataMap).map(([type, count]) => [
+      ...Object.entries(dataMap).map(([type, count]) => [     // [키, 값] 형태의 배열로 변환
         type,
         count,
         colorMap[type] || "#76A7FA",
@@ -37,7 +37,7 @@ const UseByArea = ({ workList }) => {
     setChartData(data);
   }, [workList]);
 
-  if (!chartData || chartData.length === 0) return <div>데이터 없음</div>;
+  if (!chartData || chartData.length === 0) return <div>데이터가 없습니다</div>;
 
   return (
     <div style={{ width: "100%", height: "400px" }}>

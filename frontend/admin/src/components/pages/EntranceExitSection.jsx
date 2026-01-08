@@ -9,7 +9,13 @@ import {
   getCurrentEntranceCar,
   approveEntrance,
 } from "../../api/EntranceAPI";
+<<<<<<< HEAD
 // 입출구 섹션 페이지
+=======
+
+const MQTT_BROKER = "ws://192.168.14.69:9001";
+
+>>>>>>> 581ed9fe9f525993aadcd68ca45d841ebf460d14
 export default function EntranceExitSection() {
   const { connectStatus, imageSrc, capturedImage, publish } = useMqtt();
   // 입출구 섹션 상태
@@ -60,7 +66,15 @@ export default function EntranceExitSection() {
     };
   }, [publish, connectStatus]);
 
+<<<<<<< HEAD
   // 입차 승인 처리
+=======
+  /* =========================
+       입차 승인
+       - entryTime
+       - 승인 신호 + 차단기 OPEN
+    ========================= */
+>>>>>>> 581ed9fe9f525993aadcd68ca45d841ebf460d14
   const handleApprove = async () => {
     if (!currentCar) return;
 

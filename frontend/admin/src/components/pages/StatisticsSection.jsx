@@ -9,6 +9,12 @@ import MembershipChart from "../chart/MembershipChart";
 import { Clock, DollarSign, UserPlus } from "lucide-react";
 import { getUserInfo } from "../../api/newUser";
 
+// 공통 함수
+// 조건에 맞는 데이터 개수 계산
+const countByCondition = (list, conditionFn) => {
+  return list.filter(conditionFn).length;
+};
+
 export default function StatisticsSection() {
   // 기간 상태
   const [periodType, setPeriodType] = useState("daily");
@@ -22,55 +28,67 @@ export default function StatisticsSection() {
   // 로딩 상태
   const [isLoaded, setIsLoaded] = useState(false);
 
-  /* ===================== 초기 데이터 로딩 ===================== */
+  // 작업 정보, 사용자 정보, 수리 금액 데이터 불러오기
   useEffect(() => {
     Promise.all([getWorkInfoList(), getUserInfo(), getRepairAmount()])
       .then(([workRes, userRes, repairRes]) => {
-        setWorkList(workRes.data || workRes);
-        setUserList(userRes.data || userRes);
-        setRepairAmount(repairRes.data || repairRes);
-        setIsLoaded(true);
+        setWorkList(workRes.data || workRes);     // 작업 목록
+        setUserList(userRes.data || userRes);     // 사용자 목록
+        setRepairAmount(repairRes.data || repairRes); // 수리 금액
+        setIsLoaded(true); 
       })
       .catch(console.error);
   }, []);
 
-  /* ===================== 오늘 작업 가져오기 (파이 차트) ===================== */
+  // 오늘 작업 목록만
   useEffect(() => {
     getTodayWorkList()
       .then((res) => setTodayWorkList(res.data || res))
       .catch(console.error);
   }, []);
 
-  /* ===================== 회원 주간 차트 ===================== */
-  const getDayIndex = (dateStr) => {
-    const day = new Date(dateStr).getDay();
-    return day === 0 ? 6 : day - 1;
-  };
+  // 날짜 공통 함수
+  const getStartOfThisWeek = () => {
+    const now = new Date();
+    const day = now.getDay() === 0 ? 7: now.getDay(); // 일요일이면 7로 변환 (계산 효율성 위함)
+    const startOfWeek = new Date(now);
 
+    startOfWeek.setDate(now.getDate() - day + 1);    // 오늘 날짜에서 (오늘 요일 -1)만큼 뻬서 월요일 이동 
+    startOfWeek.setHours(0,0,0,0);   // 시간을 00:00:00
+
+    return startOfWeek;
+  }
+
+  // 요일 인덱스로 변환 
+  const getDayIndex = (date) => {
+    const d = new Date(date);
+    return d.getDay() === 0 ? 6 : d.getDay() - 1;
+  }
+
+  // 사용자 가입 날짜 기준
+  // 이번주/지난주 계산
   const weeklyChartData = (users) => {
     const thisWeek = Array(7).fill(0);
     const lastWeek = Array(7).fill(0);
 
-    const today = new Date();
-    const day = today.getDay() === 0 ? 7 : today.getDay();
-
     // 이번 주 월요일
-    const startOfThisWeek = new Date(today);
-
-    startOfThisWeek.setDate(today.getDate() - day + 1);
-    startOfThisWeek.setHours(0, 0, 0, 0);
-
+    const startOfThisWeek = getStartOfThisWeek();
     // 지난 주 월요일
     const startOfLastWeek = new Date(startOfThisWeek);
     startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
 
+    // 사용자 데이터 - 주차별, 요일별 카운트
     users.forEach((user) => {
       if (!user.createDate) return;
       const regDate = new Date(user.createDate);
       const dayIndex = getDayIndex(user.createDate);
 
-      if (regDate >= startOfThisWeek) thisWeek[dayIndex]++;
-      else if (regDate >= startOfLastWeek && regDate < startOfThisWeek) lastWeek[dayIndex]++;
+      // 이번 주 가입자
+      if (regDate >= startOfThisWeek) {thisWeek[dayIndex]++;}
+      // 지난 주 가입자
+      else if (regDate >= startOfLastWeek && regDate < startOfThisWeek) {
+        lastWeek[dayIndex]++;
+      }
     });
 
     return { thisWeek, lastWeek };
@@ -78,49 +96,58 @@ export default function StatisticsSection() {
 
   const { thisWeek, lastWeek } = weeklyChartData(userList);
 
-  /* ===================== 이용량 차트 ===================== */
-  const now = new Date();
-  const startOfWeek = new Date(now);
-  const todayDay = now.getDay() === 0 ? 7 : now.getDay();
-  startOfWeek.setDate(now.getDate() - todayDay + 1);
-  startOfWeek.setHours(0, 0, 0, 0);
-
-  // 일별 (이번 주 7일만)
+  // 일별 / 주별/ 월별
+  const startOfWeek = getStartOfThisWeek();
+  
+  // 일별 (이번 주 7일 - 7번 반복)
   const dailyArray = Array.from({ length: 7 }, (_, i) => {
+    // i=0 -> 월요일 | i=1 -> 화요일
     const day = new Date(startOfWeek);
     day.setDate(startOfWeek.getDate() + i);
-    const count = workList.filter((w) => {
+
+    // 해당 날짜의 작업 건수 계산
+    // entryTime 날짜가 현재 day와 같은 것만 카운트
+    const count = countByCondition(workList, (w) => {
       const d = new Date(w.entryTime);
       return (
         d.getFullYear() === day.getFullYear() &&
         d.getMonth() === day.getMonth() &&
         d.getDate() === day.getDate()
       );
-    }).length;
+    });
     return { date: `${day.getMonth() + 1}/${day.getDate()}`, count };
   });
 
   // 주별 (이번 달 1~4주)
+  const now = new Date();
   const thisMonth = now.getMonth();
+
+
   const weeklyArray = Array.from({ length: 4 }, (_, i) => {
-    const count = workList.filter((w) => {
+    // i=0 -> 1주 | i=1 -> 2주
+    const count = countByCondition(workList, (w) => {
       const d = new Date(w.entryTime);
+      // 날짜를 7로 나눠서 주차 계산
       const week = Math.ceil(d.getDate() / 7);
+
       return d.getMonth() === thisMonth && week === i + 1;
-    }).length;
+    });
     return { week: `${i + 1}주`, count };
   });
 
-  // 월별 (이번 년 1~12월)
+  // 월별 (이번 년도 1~12월)
   const thisYear = now.getFullYear();
+
   const monthlyArray = Array.from({ length: 12 }, (_, i) => {
-    const count = workList.filter((w) => {
+    // i = 0 -> 1월 | i=1 -> 2월
+    const count = countByCondition(workList, (w) => {
       const d = new Date(w.entryTime);
       return d.getFullYear() === thisYear && d.getMonth() === i;
-    }).length;
+    });
     return { month: `${i + 1}월`, count };
   });
 
+  // 선택된 기간 타입에 따라 차트 데이터 변환
   const getCurrentData = () => {
     if (periodType === "daily") return dailyArray;
     if (periodType === "weekly") return weeklyArray;
@@ -128,6 +155,7 @@ export default function StatisticsSection() {
     return dailyArray;
   };
 
+  // 차트 x축 key 반환
   const getXAxisKey = () => {
     if (periodType === "daily") return "date";
     if (periodType === "weekly") return "week";
@@ -135,6 +163,7 @@ export default function StatisticsSection() {
     return "date";
   };
 
+  // 선택된 기간 타입에 따라 차트 제목 변환
   const getPeriodLabel = () => {
     if (periodType === "daily") return "일별 이용량";
     if (periodType === "weekly") return "주별 이용량";
@@ -142,10 +171,8 @@ export default function StatisticsSection() {
     return "이용량";
   };
 
-  /* ===================== 총 매출 ===================== */
   const total = (repairAmount || []).reduce((sum, r) => sum + r.repairAmount, 0);
-  console.log(thisWeek);
-  /* ===================== 렌더 ===================== */
+
   return (
     <div className="page">
       {/* SUMMARY */}
@@ -212,35 +239,35 @@ export default function StatisticsSection() {
             </div>
           </div>
         </div>
-        <div className="line-chart" style={{ height: "300px" }}>
-          {getCurrentData().length > 0 && (
-            <StatisticsByDateChart
-              data={getCurrentData()}
-              xKey={getXAxisKey()}
-              periodType={periodType}
-            />
-          )}
-        </div>
+          <div className="line-chart">
+            <div className="chart-fixed-260">
+                <StatisticsByDateChart
+                  data={getCurrentData()}
+                  xKey={getXAxisKey()}
+                  periodType={periodType}
+                />
+            </div>
+          </div>
       </div>
 
       {/* 하단 차트 */}
       <div className="bottom-chart">
         <div className="chart-card">
           <div className="chart-title">서비스 유형별 이용 비율</div>
-          <div className="chart-content" style={{ backgroundColor: "#f7f7f7" }}>
-            <div className="chart-height-260">
-              {isLoaded && <UseByAreaPieChart workList={todayWorkList} />}
+            <div className="chart-content">
+              <div className="chart-fixed-260">
+                {isLoaded && <UseByAreaPieChart workList={todayWorkList} />}
+              </div>
             </div>
-          </div>
         </div>
 
         <div className="chart-card">
           <div className="chart-title">요일별 신규 회원 수</div>
-          <div className="chart-card-body">
-            <div className="chart-height-260">
-              <MembershipChart thisWeek={thisWeek} lastWeek={lastWeek} />
+            <div className="chart-card-body">
+              <div className="chart-fixed-320">
+                <MembershipChart thisWeek={thisWeek} lastWeek={lastWeek} />
+              </div>
             </div>
-          </div>
         </div>
       </div>
     </div>

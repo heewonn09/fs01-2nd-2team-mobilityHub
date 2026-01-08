@@ -3,8 +3,6 @@ import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 
 const MembershipChart = ({ thisWeek, lastWeek }) => {
-  console.log("이번주: ", thisWeek);
-  console.log("저번주: ", lastWeek);
 
   const options = {
     colors: ["#FCB9AA", "#55CBCD"],

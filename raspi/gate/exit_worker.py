@@ -10,11 +10,11 @@ class ExitWorker:
         self.detecting = True
 
     def watch_exit(self, on_detect):   
-        print("🚗 출구 감지 시작")
+        print(" 출구 감지 시작")
 
         while self.detecting:
             if self.sensor.is_vehicle_detected():
-                print("🚘 출차 차량 감지")
+                print(" 출차 차량 감지")
                 self.servo.open()
 
                 on_detect()        

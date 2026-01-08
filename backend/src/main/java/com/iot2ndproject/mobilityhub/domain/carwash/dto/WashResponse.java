@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class WashResponse {
     private Long id;   // work_info PK
     private Long carStateNodeId;  // nodeId만
-    private String carStateName;  // 세차장에 도착했을 떼 car_state: washIn
+    private String carStateName;  // 세차장에 도착했을 때 car_state: washIn
     private LocalDateTime entryTime;
     private LocalDateTime exitTime;
     private Long carId;  // 세차장 차량번호
