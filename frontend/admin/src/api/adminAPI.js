@@ -12,7 +12,7 @@ export const adminLoginAPI = async (loginData) => {
     return response.data;
   } catch (error) {
     console.error("에러발생:", error);
-    alert("로그인중오류가발생했습니다.");
+    alert("로그인 실패\n아이디 또는 패스워드를 확인하세요");
   }
 };
 
