@@ -9,4 +9,4 @@ if __name__ == "__main__":
         while True:
             time.sleep(1)   
     except KeyboardInterrupt:
-        print("🛑 종료 요청")
+        print(" 종료 요청")

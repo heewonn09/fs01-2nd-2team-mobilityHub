@@ -9,7 +9,7 @@ import {
   approveEntrance,
 } from "../../api/EntranceAPI";
 
-const MQTT_BROKER = "ws://192.168.14.83:9001";
+const MQTT_BROKER = "ws://192.168.14.69:9001";
 
 export default function EntranceExitSection() {
   const { connectStatus, imageSrc, capturedImage, publish } = useMqtt(MQTT_BROKER);
@@ -70,7 +70,7 @@ export default function EntranceExitSection() {
 
   /* =========================
        입차 승인
-       - entryTime ❌
+       - entryTime
        - 승인 신호 + 차단기 OPEN
     ========================= */
   const handleApprove = async () => {
