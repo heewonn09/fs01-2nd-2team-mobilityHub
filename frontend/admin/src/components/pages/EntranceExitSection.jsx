@@ -1,186 +1,194 @@
-import { useEffect, useRef, useState } from "react";
-import axios from "axios";
-import useMqtt from "../hook/useMqtt";
-import RegisteredCarSection from "./RegisteredCarSection";
+import { useEffect, useState } from "react";
 import "../style/EntranceExitSection.css";
 
-const API_BASE = "http://localhost:9000";
-const PAGE_SIZE = 6;
+import useMqtt from "../hook/useMqtt";
+import {
+  getTodayEntry,
+  getTodayExit,
+  getCurrentEntranceCar,
+  approveEntrance,
+} from "../../api/EntranceAPI";
+
+const MQTT_BROKER = "ws://192.168.14.83:9001";
 
 export default function EntranceExitSection() {
-  /* ================= 상태 ================= */
-  const [todayEntry, setTodayEntry] = useState([]);
-  const [todayExit, setTodayExit] = useState([]);
-  const [entryPage, setEntryPage] = useState(1);
-  const [exitPage, setExitPage] = useState(1);
+  const { connectStatus, imageSrc, capturedImage, publish } = useMqtt(MQTT_BROKER);
 
-  /* ================= MQTT ================= */
-  const { imageSrc, capturedImage, publish } = useMqtt();
+  const [currentCar, setCurrentCar] = useState(null); // 입구 대기 차량
+  const [parkingList, setParkingList] = useState([]); // 현재 주차 중
+  const [exitList, setExitList] = useState([]); // 출차 완료
 
-  /* ================= Canvas Ref ================= */
-  const canvasRef = useRef(null);
+  /* =========================
+       데이터 로딩 함수 분리
+    ========================= */
 
-  /* ================= 초기 로딩 ================= */
-  useEffect(() => {
-    loadAll();
-  }, []);
+  const loadParking = async () => {
+    const entry = await getTodayEntry();
+    setParkingList(entry.filter((car) => !car.exitTime));
+  };
 
-  /* ================= CCTV 시작 / 종료 ================= */
-  useEffect(() => {
-    publish("parking/web/entrance/cam", "start");
-    return () => publish("parking/web/entrance/cam", "stop");
-  }, [publish]);
+  const loadExit = async () => {
+    const exit = await getTodayExit();
+    setExitList(exit);
+  };
 
-  const loadAll = async () => {
+  const loadCurrentEntrance = async () => {
     try {
-      const [entryRes, exitRes] = await Promise.all([
-        axios.get(`${API_BASE}/entrance/today/entry`),
-        axios.get(`${API_BASE}/entrance/today/exit`),
-      ]);
-
-      setTodayEntry(entryRes.data);
-      setTodayExit(exitRes.data);
+      const car = await getCurrentEntranceCar(1); // nodeId = 1 (입구)
+      setCurrentCar(car);
     } catch (e) {
-      console.error("입출구 데이터 로딩 실패", e);
+      setCurrentCar(null);
+      throw e;
     }
   };
 
-  /* ================= 페이지네이션 ================= */
-  const paginate = (list, page) => {
-    const start = (page - 1) * PAGE_SIZE;
-    return list.slice(start, start + PAGE_SIZE);
+  const loadAll = async () => {
+    await Promise.all([loadParking(), loadExit(), loadCurrentEntrance()]);
   };
 
-  /* ================= 입차 승인 ================= */
-  const handleApprove = async (workId) => {
-    try {
-      await axios.post(`${API_BASE}/entrance/${workId}/approve`);
+  /* =========================
+       초기 로딩
+    ========================= */
+  useEffect(() => {
+    const init = async () => {
       await loadAll();
+    };
+    init();
+  }, []);
+
+  /* =========================
+       CCTV 스트리밍 제어
+    ========================= */
+  useEffect(() => {
+    if (connectStatus === "connected") {
+      publish("parking/web/entrance/cam/control", "start");
+    }
+    return () => {
+      publish("parking/web/entrance/cam/control", "stop");
+    };
+  }, [publish, connectStatus]);
+
+  /* =========================
+       입차 승인
+       - entryTime ❌
+       - 승인 신호 + 차단기 OPEN
+    ========================= */
+  const handleApprove = async () => {
+    if (!currentCar) return;
+
+    try {
+      // 승인 처리 (상태 변경용)
+      await approveEntrance(currentCar.workId);
+
+      // 차단기 OPEN
+      publish("parking/web/entrance/approve", "open");
+
+      // 화면 갱신
+      await Promise.all([loadParking(), loadExit()]);
+
+      // 입구 차량 제거
+      setCurrentCar(null);
     } catch (e) {
-      console.error("입차 승인 실패", e);
+      console.error(e);
       alert("입차 승인 실패");
     }
   };
 
   return (
-    <div className="entrance-page">
-      {/* ================= 요약 ================= */}
-      <div className="summary-grid">
-        <div className="summary-card entry">
-          <p className="summary-title">금일 입차</p>
-          <p className="summary-count">{todayEntry.length}대</p>
-        </div>
+    <div className="entrance-exit-section">
+      <h2>구역 관리 : 입출구</h2>
+      <p className="sub-title">실시간 모니터링 및 관리</p>
 
-        <div className="summary-card exit">
-          <p className="summary-title">금일 출차</p>
-          <p className="summary-count">{todayExit.length}대</p>
-        </div>
-      </div>
-
-      {/* ================= CCTV ================= */}
+      {/* ================= 상단 ================= */}
       <div className="top-grid">
-        <div className="card cctv-box">
+        {/* CCTV */}
+        <div className="card cctv-card">
           {imageSrc ? (
-            <img src={imageSrc} alt="cctv" className="cctv-image" />
+            <img src={imageSrc} alt="CCTV" />
           ) : (
-            <div className="cctv-placeholder">📺 CCTV 대기중</div>
+            <div className="cctv-placeholder">📹 CCTV 대기중</div>
           )}
         </div>
 
-        <div className="card cctv-box">
-          {capturedImage ? (
-            <img src={capturedImage} alt="capture" className="cctv-image" />
-          ) : (
-            <div className="cctv-placeholder">📸 캡처 이미지 없음</div>
-          )}
+        {/* 현재 입구 차량 */}
+        <div className="card current-car-card">
+          <h3>현재 입구 차량</h3>
 
-          <button className="btn-capture" onClick={() => publish("parking/web/entrance", "comeIn")}>
-            캡처
-          </button>
+          {currentCar ? (
+            <>
+              <p>
+                <strong>차량 번호:</strong> {currentCar.carNumber}
+              </p>
+
+              <p>
+                <strong>요청 시간:</strong>{" "}
+                {currentCar.requestTime ? new Date(currentCar.requestTime).toLocaleString() : "-"}
+              </p>
+
+              <button className="approve-btn" onClick={handleApprove}>
+                입차 승인
+              </button>
+            </>
+          ) : (
+            <p className="placeholder">현재 입구 대기 차량 없음</p>
+          )}
         </div>
       </div>
 
-      {/* ================= 등록 차량 리스트 ================= */}
-      <RegisteredCarSection />
+      {/* ================= 하단 ================= */}
+      <div className="bottom-grid">
+        {/* 현재 주차 차량 */}
+        <div className="card">
+          <h3>현재 입차 차량</h3>
 
-      {/* ================= 입차 / 출차 기록 ================= */}
-      <div className="record-grid">
-        <RecordTable
-          title="입차 차량 기록"
-          data={paginate(todayEntry, entryPage)}
-          page={entryPage}
-          total={todayEntry.length}
-          onPageChange={setEntryPage}
-          onApprove={handleApprove}
-          type="entry"
-        />
-
-        <RecordTable
-          title="출차 차량 기록"
-          data={paginate(todayExit, exitPage)}
-          page={exitPage}
-          total={todayExit.length}
-          onPageChange={setExitPage}
-          type="exit"
-        />
-      </div>
-    </div>
-  );
-}
-
-/* ================= 테이블 ================= */
-
-function RecordTable({ title, data, page, total, onPageChange, onApprove, type }) {
-  const totalPage = Math.ceil(total / PAGE_SIZE);
-
-  return (
-    <div className="card record-card">
-      <h3>{title}</h3>
-
-      <table>
-        <thead>
-          <tr>
-            <th>번호판</th>
-            <th>시간</th>
-            <th>상태</th>
-            {type === "entry" && <th>승인</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {data.length === 0 ? (
-            <tr>
-              <td colSpan="4">기록 없음</td>
-            </tr>
+          {parkingList.length === 0 ? (
+            <p className="placeholder">입차 중인 차량 없음</p>
           ) : (
-            data.map((v) => (
-              <tr key={v.id}>
-                <td>{v.carNumber || "미확인"}</td>
-                <td>{new Date(v.entryTime || v.exitTime).toLocaleString()}</td>
-                <td>{type === "exit" ? "출차 완료" : "대기"}</td>
-                {type === "entry" && (
-                  <td>
-                    <button onClick={() => onApprove(v.id)}>입차 승인</button>
-                  </td>
-                )}
-              </tr>
-            ))
+            <table>
+              <thead>
+                <tr>
+                  <th>차량 번호</th>
+                  <th>입차 시간</th>
+                </tr>
+              </thead>
+              <tbody>
+                {parkingList.map((row) => (
+                  <tr key={row.workId}>
+                    <td>{row.carNumber}</td>
+                    <td>{row.entryTime ? new Date(row.entryTime).toLocaleString() : "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
-        </tbody>
-      </table>
-
-      {totalPage > 1 && (
-        <div className="pagination">
-          <button disabled={page === 1} onClick={() => onPageChange(page - 1)}>
-            ◀
-          </button>
-          <span>
-            {page} / {totalPage}
-          </span>
-          <button disabled={page === totalPage} onClick={() => onPageChange(page + 1)}>
-            ▶
-          </button>
         </div>
-      )}
+
+        {/* 출차 기록 */}
+        <div className="card">
+          <h3>출차 차량 기록</h3>
+
+          {exitList.length === 0 ? (
+            <p className="placeholder">출차 기록 없음</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>차량 번호</th>
+                  <th>출차 시간</th>
+                </tr>
+              </thead>
+              <tbody>
+                {exitList.map((row) => (
+                  <tr key={row.workId}>
+                    <td>{row.carNumber}</td>
+                    <td>{row.exitTime ? new Date(row.exitTime).toLocaleString() : "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
