@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
+
+// API
 import { reportAllList } from "../../api/repairAPI";
+
+// 스타일
 import "../style/RepairReportModal.css";
 import "../style/RepairHistoryModal.css";
 
+// 정비 내역 모달
 export default function RepairHistoryModal({ onClose }) {
-  const [reportList, setReportList] = useState([]);
+  const [reportList, setReportList] = useState([]); // 정비 보고서 목록 상태
 
   useEffect(() => {
+    // 정비 보고서 목록 조회
     reportAllList()
       .then((res) => {
         setReportList(res);

@@ -38,7 +38,6 @@ export function ProfileEdit({ isLogin }) {
       setName(profile.userName || "");
       setPhone(profile.tel || "");
     } catch (e) {
-      console.error(e);
       alert("프로필을 불러오지 못했습니다. 다시 로그인해주세요.");
     }
   };
@@ -48,7 +47,6 @@ export function ProfileEdit({ isLogin }) {
       await updateProfile({ userId, userName: name, tel: phone });
       alert("정보가 수정되었습니다.");
     } catch (e) {
-      console.error(e);
       alert("정보 수정에 실패했습니다. 다시 시도해주세요.");
     }
   };
@@ -88,7 +86,6 @@ export function ProfileEdit({ isLogin }) {
       setConfirmPassword("");
       setShowPasswordForm(false);
     } catch (e) {
-      console.error(e);
       if (e.response?.data?.error) {
         setPasswordError(e.response.data.error);
       } else {

@@ -35,7 +35,8 @@ public class RepairServiceImpl implements RepairService {
 
     private final ModelMapper modelMapper;
 
-    // 오늘자 정비요청 리스트
+    // 금일 정비요청 리스트
+    // 정비요청 = work_id: 2, 5
     @Override
     public List<RepairResponseDTO> findTodayWorkInfo(){
 
@@ -201,7 +202,7 @@ public class RepairServiceImpl implements RepairService {
     // 정비 총금액
     @Override
     public List<ReportResponseDTO> repairAmount() {
-        List<ReportEntity> entities = repairDAO.repairAmount();
+        List<ReportEntity> entities = repairDAO.reportList();
 
         YearMonth thisMonth = YearMonth.now();
 

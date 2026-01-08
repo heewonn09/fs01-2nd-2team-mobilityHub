@@ -32,7 +32,6 @@ export default function MainMenu({ isLogin, onLogout }) {
         <button
           className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition"
           onClick={() => {
-            console.log("로그아웃 클릭됨");
             onLogout();
           }}
         >

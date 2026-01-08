@@ -6,8 +6,7 @@ import java.util.List;
 
 public interface RepairService {
 
-    // 정비요청 리스트
-//    List<RepairResponseDTO> repairList();
+    // 금일 정비요청 리스트
     List<RepairResponseDTO> findTodayWorkInfo();
 
     // 재고현황 리스트

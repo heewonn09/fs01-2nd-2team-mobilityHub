@@ -1,20 +1,28 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Car, CheckCircle, XCircle } from "lucide-react";
 
-import "../style/ParkingSection.css"; // CSS 분리
-import "../../App.css";
+// MQTT 훅
 import useMqtt from "../hook/useMqtt";
+
+// API
 import { getParkingList } from "../../api/parkingAPI";
 
-export default function ParkingSection() {
-  const [parkingList, setparkingList] = useState([]);
-  const { connectStatus, imageSrc, publish } = useMqtt();
+// 스타일
+import "../style/ParkingSection.css";
 
+// 주차 섹션 페이지
+export default function ParkingSection() {
+  const [parkingList, setparkingList] = useState([]); // 주차 구역 목록 상태
+  const { connectStatus, imageSrc, publish } = useMqtt(); // MQTT 훅 사용
+
+  // 컴포넌트 마운트 시 주차 구역 목록 조회 및 MQTT 퍼블리시 설정
   useEffect(() => {
     if (connectStatus === "connected") {
+      // CCTV 스트리밍 시작 신호 전송
       publish("parking/web/parking/cam/control", "start");
     }
 
+    // 주차 구역 목록 조회
     getParkingList()
       .then((res) => {
         setparkingList(res);
@@ -22,6 +30,7 @@ export default function ParkingSection() {
       .catch((err) => console.error("조회실패: ", err));
 
     return () => {
+      // 컴포넌트 언마운트 시 CCTV 스트리밍 중지 신호 전송
       publish("/parking/web/parking/cam/control", "stop");
     };
   }, [connectStatus, publish]);
@@ -34,6 +43,7 @@ export default function ParkingSection() {
   const parkingSpots = parkingOnly.map((p) => {
     const isOccupied = p.carNumber !== null && p.entryTime !== null && p.exitTime === null;
 
+    // 주차 공간 객체 반환
     return {
       id: p.sectorId,
       soptNumber: p.sectorId,
@@ -47,6 +57,7 @@ export default function ParkingSection() {
   const totalCount = parkingSpots.length;
   const usedCount = parkingSpots.filter((p) => p.status === "사용중").length;
 
+  // 사용 가능 및 점유율 계산
   const availableCount = totalCount - usedCount;
   const occupancyRate = totalCount === 0 ? 0 : Math.round((usedCount / totalCount) * 100);
 
@@ -54,18 +65,6 @@ export default function ParkingSection() {
     <div className="page">
       {/* 통계 카드 */}
       <div className="status-card">
-        {/* <div className="status-component">
-          <div className="card-item">
-            <div>
-              <p className="text">전체 주차면</p>
-              <p className="count">{sectors.length}</p>
-            </div>
-            <div className="stat-icon bg-gray">
-              <Car />
-            </div>
-          </div>
-        </div> */}
-
         <div className="status-component">
           <div className="card-item">
             <div>
