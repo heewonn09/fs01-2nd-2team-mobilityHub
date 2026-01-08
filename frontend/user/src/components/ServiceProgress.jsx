@@ -260,7 +260,6 @@ export function ServiceProgress({ isLogin }) {
                   setAdditionalRequest("");
                   alert("서비스 요청이 접수되었습니다.");
                 } catch (e) {
-                  console.error("서비스 요청 에러:", e, e.response?.data);
                   const serverMessage =
                     e.response?.data?.error || e.response?.data?.message || null;
                   alert(serverMessage || "서비스 요청 중 오류가 발생했습니다. 다시 시도해주세요.");
@@ -338,8 +337,6 @@ export function ServiceProgress({ isLogin }) {
                         await callVehicle(progress.id);
                         alert("차량 호출 신호가 발행되었습니다. 차량이 출구로 이동합니다.");
                       } catch (error) {
-                        console.error("차량 호출 에러:", error);
-                        console.error("에러 응답:", error.response?.data);
                         const errorMessage =
                           error.response?.data?.error || "차량 호출 중 오류가 발생했습니다.";
                         alert(errorMessage);
