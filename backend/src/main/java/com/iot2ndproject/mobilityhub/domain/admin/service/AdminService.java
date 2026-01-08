@@ -11,7 +11,7 @@ public interface AdminService {
     // 관리자 전체조회
     List<AdminResponseDTO> adminList();
 
-    // 관리자 별 정보수정페이지(조회)
+    // 관리자 별 정보수정페이지
     AdminResponseDTO getAdminInfo(String adminId);
 
     // 정보수정
@@ -20,5 +20,4 @@ public interface AdminService {
     // 비밀번호 변경
     void changePassword(String adminId, AdminPassChangeRequest request);
 
-    void updatePassword(String adminId, String newPassword);
 }

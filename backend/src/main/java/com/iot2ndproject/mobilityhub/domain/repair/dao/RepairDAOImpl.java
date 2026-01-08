@@ -26,10 +26,6 @@ public class RepairDAOImpl implements RepairDAO {
     }
 
     // work_info테이블에서 오늘인 데이터만 추출
-//    @Override
-//    public List<WorkInfoEntity> findRequestAll() {
-//        return workInfoRepository.findAll();
-//    }
     @Override
     public List<WorkInfoEntity> findByRequestTimeBetween(LocalDateTime start, LocalDateTime end) {
         return workInfoRepository.findByRequestTimeBetween(start, end);
@@ -87,10 +83,5 @@ public class RepairDAOImpl implements RepairDAO {
     @Override
     public void deleteReport(String reportId) {
         repairReportRepository.deleteByReportId(reportId);
-    }
-
-    @Override
-    public List<ReportEntity> repairAmount() {
-        return repairReportRepository.findAll();
     }
 }

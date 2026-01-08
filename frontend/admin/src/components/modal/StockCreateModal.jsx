@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
+// API
 import { createStock } from "../../api/repairAPI";
 
+// 재고추가 모달
 export default function StockCreateModal({ onClose, refreshStockList }) {
+  // 폼 데이터 상태
   const [formData, setFormData] = useState({
     inventoryId: "",
     productName: "",
@@ -12,24 +16,31 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
     stockUnits: "",
   });
 
+  // 입력 필드 변경 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // 업데이트
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
+  // 재고 추가 핸들러
   const handleCreate = async (e) => {
     e.preventDefault();
 
-    const isEmptyField = Object.values(formData).some((value) => value === "" || value === null || value == undefined);
+    // 빈 칸 확인
+    const isEmptyField = Object.values(formData).some(
+      (value) => value === "" || value === null || value == undefined
+    );
 
     if (isEmptyField) {
       alert("모든 항목을 입력해주세요.");
       return;
     }
 
+    // 요청 본문 구성
     const requestBody = {
       inventoryId: formData.inventoryId,
       productName: formData.productName,
@@ -40,6 +51,7 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
       stockUnits: formData.stockUnits,
     };
 
+    // 재고 추가 API 호출
     try {
       const response = await createStock(requestBody);
 
@@ -123,7 +135,8 @@ export default function StockCreateModal({ onClose, refreshStockList }) {
                   name="stockUnits"
                   value={formData.stockUnits}
                   onChange={handleChange}
-                  className="input-inventory-quantity">
+                  className="input-inventory-quantity"
+                >
                   <option value="EA">EA (개)</option>
                   <option value="L">L (리터)</option>
                 </select>

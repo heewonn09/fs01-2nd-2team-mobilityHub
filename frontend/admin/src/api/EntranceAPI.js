@@ -46,3 +46,8 @@ export const getRegisteredCars = () => backendServer.get("/admin/registered-cars
 // 등록 차량 기준 입차 승인
 export const approveRegisteredCar = (userCarId) =>
   backendServer.post(`/entrance/approve/registered/${userCarId}`);
+
+export const getCurrentEntranceCar = async (nodeId) => {
+  const res = await backendServer.get(`/entrance/current?nodeId=${nodeId}`);
+  return res.data;
+};

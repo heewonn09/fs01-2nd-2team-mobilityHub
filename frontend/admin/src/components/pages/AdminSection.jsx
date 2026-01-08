@@ -1,12 +1,19 @@
 import { User, Mail, Phone, Shield } from "lucide-react";
-import "../style/AdminSection.css";
 import { useEffect, useState } from "react";
+
+// API
 import { getAdminList } from "../../api/repairAPI";
 
-export default function AdminSection() {
-  const [adminList, setAdminList] = useState([]);
+// 스타일
+import "../style/AdminSection.css";
 
+// 관리자 섹션 페이지
+export default function AdminSection() {
+  const [adminList, setAdminList] = useState([]); // 관리자 목록 상태 관리
+
+  // 관리자 목록 조회
   useEffect(() => {
+    // 관리자 정보 조회 API 호출
     getAdminList()
       .then((res) => {
         setAdminList(res);
@@ -35,27 +42,19 @@ export default function AdminSection() {
             </thead>
 
             <tbody>
+              {/* 관리자 목록 */}
               {adminList.map((admin) => (
-                <tr
-                  key={admin.adminId}
-                  className={admin.isCurrentUser ? "highlight-row" : ""}
-                >
+                <tr key={admin.adminId} className={admin.isCurrentUser ? "highlight-row" : ""}>
                   <td>
                     <div className="id-cell">
-                      {admin.isCurrentUser && (
-                        <Shield className="icon-shield" />
-                      )}
+                      {admin.isCurrentUser && <Shield className="icon-shield" />}
                       {admin.adminId}
                     </div>
                   </td>
 
                   <td>
                     <div className="name-cell">
-                      <div
-                        className={`avatar ${
-                          admin.isCurrentUser ? "main" : ""
-                        }`}
-                      >
+                      <div className={`avatar ${admin.isCurrentUser ? "main" : ""}`}>
                         <User className="avatar-icon" />
                       </div>
                       {admin.adminName}
@@ -65,10 +64,10 @@ export default function AdminSection() {
                   <td>
                     <span>
                       {{
-                        P: "주차 관리자",
-                        R: "정비 관리자",
-                        W: "세차 관리자",
-                        T: "최고 관리자",
+                        P: "주차장",
+                        R: "정비소",
+                        W: "세차장",
+                        T: "총관리자",
                       }[admin.adminId?.[0]] ?? "알 수 없음"}
                     </span>
                   </td>

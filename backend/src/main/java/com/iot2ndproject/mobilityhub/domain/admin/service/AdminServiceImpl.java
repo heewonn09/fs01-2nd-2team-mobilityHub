@@ -20,6 +20,7 @@ public class AdminServiceImpl implements AdminService {
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
 
+    // 관리자 전체조회
     @Override
     public List<AdminResponseDTO> adminList() {
         List<AdminEntity> adminList = adminDAO.findAll();
@@ -28,6 +29,7 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
+    // 관리자 별 정보수정페이지
     @Override
     public AdminResponseDTO getAdminInfo(String adminId) {
         AdminEntity entity = adminDAO.findByAdminId(adminId);
@@ -35,6 +37,7 @@ public class AdminServiceImpl implements AdminService {
         return modelMapper.map(entity, AdminResponseDTO.class);
     }
 
+    // 정보수정
     @Override
     public AdminResponseDTO updateInfo(String adminId, AdminUpdateRequest request) {
         AdminEntity entity = adminDAO.findByAdminId(adminId);
@@ -46,6 +49,7 @@ public class AdminServiceImpl implements AdminService {
         return modelMapper.map(adminDAO.updateAdminInfo(entity), AdminResponseDTO.class);
     }
 
+    // 비밀번호 변경
     @Override
     public void changePassword(String adminId, AdminPassChangeRequest request) {
         AdminEntity entity = adminDAO.findByAdminId(adminId);
@@ -55,20 +59,5 @@ public class AdminServiceImpl implements AdminService {
         }
 
         adminDAO.updatePassword(adminId, passwordEncoder.encode(request.getNewPassword()));
-    }
-
-    @Override
-    public void updatePassword(String adminId, String newPassword) {
-        AdminEntity admin = adminDAO.findByAdminId(adminId);
-
-        if (admin == null) {
-            throw new IllegalArgumentException("관리자 계정을 찾을 수 없음");
-        }
-
-        // bcrypt로 암호화
-        admin.setAdminPass(passwordEncoder.encode(newPassword));
-
-        // DAO를 통해 저장
-        adminDAO.save(admin);
     }
 }

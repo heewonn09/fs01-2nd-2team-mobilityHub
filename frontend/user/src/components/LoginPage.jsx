@@ -5,7 +5,6 @@ import { useEffect } from "react";
 
 export default function LoginPage({ isLogin }) {
   const navigate = useNavigate();
-  console.log(isLogin);
   useEffect(() => {
     if (isLogin()) {
       navigate("/main");
@@ -35,16 +34,13 @@ export default function LoginPage({ isLogin }) {
           setSignupData({ ...signupData, userId: "", password: "", userName: "", tel: "" });
         })
         .catch((error) => {
-          console.error(error);
           alert("회원가입 실패: 관리자에게 문의하세요.");
         });
     } else {
       // 로그인
       login(loginData)
         .then((data) => {
-          console.log("로그인 성공", data);
           if (data && data.accessToken) {
-            console.log("인증성공");
             localStorage.setItem("accessToken", data.accessToken);
             localStorage.setItem("userId", data.userId);
             localStorage.setItem("role", data.roles);
@@ -53,7 +49,6 @@ export default function LoginPage({ isLogin }) {
           }
         })
         .catch((error) => {
-          console.error(error);
           alert("로그인 실패: 아이디와 패스워드를 확인하세요.");
         });
     }

@@ -1,30 +1,36 @@
 import { useNavigate } from "react-router-dom";
-import "../style/AdminLogin.css";
 import { useState } from "react";
+
+// API
 import { adminLoginAPI } from "../../api/adminAPI";
 
+// 스타일
+import "../style/AdminLogin.css";
+
+// 관리자 로그인 페이지
 export default function AdminLogin() {
+  // 관리자 로그인 데이터 상태 관리
   const [adminLoginData, setAdminLoginData] = useState({
     adminId: "",
     adminPass: "",
   });
 
+  // 페이지 이동을 위한 useNavigate 훅
   const navigate = useNavigate();
 
+  // 로그인 폼 제출 핸들러
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 입력값 검증
     const currentAdminId = adminLoginData.adminId;
     if (!currentAdminId || !currentAdminId.trim()) return;
-
-    console.log(adminLoginData);
 
     // 로그인
     adminLoginAPI(adminLoginData)
       .then((data) => {
-        console.log("로그인 성공", data);
+        // 로그인 성공 시 토큰 및 정보 로컬 스토리지에 저장
         if (data && data.accessToken) {
-          console.log("인증성공");
           localStorage.setItem("accessToken", data.accessToken);
           localStorage.setItem("adminId", data.adminId);
           localStorage.setItem("role", data.roles);
@@ -57,6 +63,7 @@ export default function AdminLogin() {
               <input
                 id="adminId"
                 type="text"
+                // 입력값 변경 시 상태 업데이트
                 onChange={(e) =>
                   setAdminLoginData({
                     ...adminLoginData,
@@ -77,6 +84,7 @@ export default function AdminLogin() {
               <input
                 id="adminPass"
                 type="password"
+                // 입력값 변경 시 상태 업데이트
                 onChange={(e) =>
                   setAdminLoginData({
                     ...adminLoginData,
@@ -94,8 +102,6 @@ export default function AdminLogin() {
           </button>
         </form>
       </div>
-
-      {/* 로그인 실패 팝업 만들기*/}
     </div>
   );
 }

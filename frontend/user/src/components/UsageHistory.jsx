@@ -38,7 +38,6 @@ export function UsageHistory({ isLogin }) {
   const loadHistory = async (id) => {
     try {
       const data = await fetchServiceHistory(id);
-      console.log("확인", data);
       const mapped = data.map((item, idx) => ({
         id: `${idx}`,
         workId: item.id, // 백엔드에서 id 필드로 반환됨
@@ -55,12 +54,10 @@ export function UsageHistory({ isLogin }) {
       );
       setAvailableDates(dates);
     } catch (e) {
-      console.error(e);
       alert("이용 내역을 불러오지 못했습니다.");
     }
   };
 
-  console.log("이용내역", filteredHistory);
 
   const applyFilter = () => {
     let filtered = [...history];

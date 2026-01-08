@@ -21,7 +21,6 @@ public class RepairController {
     // 정비요청 리스트
     @GetMapping("/repair_list")
     public List<RepairResponseDTO> repairList(){
-//        return repairService.repairList();
         return repairService.findTodayWorkInfo();
     }
 
@@ -107,11 +106,7 @@ public class RepairController {
         return repairService.repairAmount();
     }
 
-    /**
-     * 정비 작업 완료 처리
-     * @param workInfoId 작업 정보 ID
-     * @return 성공 여부
-     */
+    // 정비 작업 완료 처리
     @PostMapping("/complete")
     public ResponseEntity<?> completeRepair(@RequestParam(name = "workInfoId") int workInfoId) {
         serviceRequestService.completeService(workInfoId, "repair");
