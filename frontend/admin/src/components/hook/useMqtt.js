@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import mqtt from "mqtt";
 
 // MQTT 브로커 주소 : 모든 페이지에서 동일하게 사용
-const BROKER_URL = "ws://192.168.14.73:9001";
+const BROKER_URL = "ws://192.168.14.69:9001";
 
 const useMqtt = () => {
   const [connectStatus, setConnectStatus] = useState("connecting");

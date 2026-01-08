@@ -33,13 +33,10 @@ export default function AdminLogin() {
 
           window.location.reload();
           navigate("/main");
-        } else {
-          alert("로그인 실패: 아이디와 패스워드를 확인하세요.");
         }
       })
       .catch((error) => {
         console.error(error);
-        alert("로그인 실패: 아이디와 패스워드를 확인하세요.");
       });
   };
 
