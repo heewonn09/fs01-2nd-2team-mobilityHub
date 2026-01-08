@@ -1,17 +1,16 @@
-// React와 recharts에서 필요한 컴포넌트들을 import합니다.
 import React, { useMemo } from "react";
 import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-// AmountChart 컴포넌트 정의
+
 const AmountChart = ({ data }) => {
-  // 이번 달 데이터 → 일별로 집계
+
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [];
 
     const dailyMap = {};
 
     data.forEach((item) => {
-      // reportId에서 날짜(YYYYMMDD) 추출
+      // reportId에서 날짜 추출
       const dayKey = item.reportId.substring(0, 8);
 
       // 일별 정비 건수 누적
@@ -27,7 +26,7 @@ const AmountChart = ({ data }) => {
       }));
   }, [data]);
 
-  // X축 표시 형식: DD일
+  // 차트 X축 표시 형식: DD일
   const formatXAxisLabel = (value) => `${value.substring(6, 8)}일`;
 
   return (

@@ -38,10 +38,6 @@ const Header = ({ onLogout }) => {
     window.location.reload();
   };
 
-  const handleProfileEdit = () => {
-    setShowProfileMenu(false);
-  };
-
   useEffect(() => {
     const storedAdminId = localStorage.getItem("adminId");
     if (storedAdminId) {
@@ -60,20 +56,20 @@ const Header = ({ onLogout }) => {
         </div>
 
         {/* 우측: 프로필 */}
-        <div className="relative">
+        <div className="profile-wrapper">
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-colors"
+            className="profile-btn"
           >
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
+            <div className="profile-icon">
+              <User className="profile-icon-svg" />
             </div>
           </button>
 
           {/* 드롭다운 */}
           {showProfileMenu && (
             <div className="profile-dropdown">
-              <div className="p-2">
+              <div className="profile-dropdown-inner">
                 <button onClick={handleLogout}>
                   <LogOut />
                   <span>로그아웃</span>

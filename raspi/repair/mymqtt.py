@@ -32,7 +32,7 @@ class MqttWorker:
         while self.is_streaming:
             try:
                 frame = self.camera.getStreaming()
-                publisher.single("parking/web/repair/cam/frame", frame, hostname="192.168.14.45")# 작업하는 사람 브로커 주소 넣기
+                publisher.single("parking/web/repair/cam/frame", frame, hostname="192.168.14.69")# 작업하는 사람 브로커 주소 넣기
                 
             except Exception as e:
                 #print("영상 전송 중 에러: ", e)
@@ -86,7 +86,7 @@ class MqttWorker:
     def mymqtt_connect(self):
         try:
             print("브로커 연결 시작하기")
-            self.client.connect("192.168.14.45", 1883, 60)
+            self.client.connect("192.168.14.69", 1883, 60)
 
             mymqtt_obj = Thread(target=self.client.loop_forever)
             mymqtt_obj.start()

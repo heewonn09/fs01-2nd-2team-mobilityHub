@@ -17,11 +17,8 @@ public class CarWashController {
     private final CarWashService carWashService;
     private final ServiceRequestService serviceRequestService;
 
-//    @GetMapping("/select")
-//    public List<WashResponse> washing(@RequestParam("workId")int workId){
-//        return  carWashService.findByWokrId(workId);
-//    }
 
+    // 세차장 목록 불러오기
     @GetMapping("/select")
     public List<WashResponse> washing(){
         return carWashService.findAll();

@@ -22,10 +22,6 @@ const CAR_STATE_INFO = {
 
 const CarWashSection = () => {
   const [carWashing, setCarWashing] = useState([]);
-  const [mqttLogs, setMqttLogs] = useState([]);
-
-  const [popupMessage, setPopupMessage] = useState(null);
-  const [isPopupVisible, setIsPopupVisible] = useState(false);
 
   const { connectStatus, imageSrc, publish } = useMqtt();
 
@@ -42,7 +38,7 @@ const CarWashSection = () => {
     day: "numeric",
   });
 
-  // API 호출
+  // API 호출 (세차작업 중인)
   useEffect(() => {
     getCarWashing()
       .then((res) => {
