@@ -21,20 +21,6 @@ export const getTodayExit = async () => {
    OCR / 입차 관련
 ========================= */
 
-// 최근 인식 번호판
-export const getLatestEntrance = async () => {
-  const res = await backendServer.get("/entrance/latest");
-  return res.data;
-};
-
-// OCR 번호 수정 (image 기준)
-export const updateOcrNumber = async (imageId, carNumber) => {
-  return backendServer.put(`/entrance/image/${imageId}/ocr`, {
-    carNumber,
-  });
-};
-// OCR 번호 저장??
-
 // 입차 승인
 export const approveEntrance = async (workId) => {
   return backendServer.post(`/entrance/${workId}/approve`);

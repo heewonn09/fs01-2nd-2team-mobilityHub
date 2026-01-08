@@ -34,9 +34,6 @@ class MqttWorker:
         # 출구 워커
         self.exit_worker = ExitWorker()
 
-        # ===== 세차장 =====
-        # self.pump = PumpController()
-
     # ==================================================
     # broker 연결 후 실행될 콜백
     # ==================================================
@@ -55,7 +52,7 @@ class MqttWorker:
         payload = message.payload.decode()
 
         # ===============================
-        # 🚪 입출구 영역
+        #  입출구 영역
         # ===============================
         if message.topic == "parking/web/entrance/cam/control":
             if payload == "start" and not self.is_streaming:
@@ -77,7 +74,7 @@ class MqttWorker:
 
         
     # ==================================================
-    # 📸 카메라 프레임 전송 (❗ 절대 수정 금지)
+    # 카메라 프레임 전송 
     # ==================================================
     def send_camera_frame(self):
         while self.is_streaming:
@@ -86,7 +83,7 @@ class MqttWorker:
                 publisher.single(
                     "parking/web/entrance/cam/frame",
                     frame,
-                    hostname="192.168.14.83"
+                    hostname="192.168.14.69"
                 )
             except Exception:
                 self.is_streaming = False
@@ -115,7 +112,7 @@ class MqttWorker:
         publisher.single(
             "parking/web/entrance/capture",
             frame,
-            hostname="192.168.14.83"
+            hostname="192.168.14.69"
         )
 
         meta = {
@@ -127,7 +124,7 @@ class MqttWorker:
         publisher.single(
             "parking/web/entrance/image",
             json.dumps(meta),
-            hostname="192.168.14.83"
+            hostname="192.168.14.69"
         )
 
         print("[ENT] 캡처 완료:", path)
@@ -144,7 +141,7 @@ class MqttWorker:
     #  출구 감지 콜백 
     # ==================================================
     def handle_exit_detected(self):
-        print("📤 출구 감지 → MQTT 전송")
+        print(" 출구 감지 → MQTT 전송")
 
         publisher.single(
             "parking/web/exit/detected",
@@ -152,10 +149,8 @@ class MqttWorker:
                 "gate": "EXIT",
                 "time": time.time()
             }),
-            hostname="192.168.14.83"
+            hostname="192.168.14.69"
         )
-
-
 
     # ==================================================
     # MQTT 연결
@@ -163,7 +158,7 @@ class MqttWorker:
     def mymqtt_connect(self):
         try:
             print("브로커 연결 시작하기")
-            self.client.connect("192.168.14.83", 1883, 60)
+            self.client.connect("192.168.14.69", 1883, 60)
 
             Thread(target=self.client.loop_forever, daemon=True).start()
 

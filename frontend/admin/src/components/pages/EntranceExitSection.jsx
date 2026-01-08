@@ -1,6 +1,7 @@
+// React 및 스타일
 import { useEffect, useState } from "react";
 import "../style/EntranceExitSection.css";
-
+// MQTT 훅
 import useMqtt from "../hook/useMqtt";
 import {
   getTodayEntry,
@@ -8,30 +9,25 @@ import {
   getCurrentEntranceCar,
   approveEntrance,
 } from "../../api/EntranceAPI";
-
-const MQTT_BROKER = "ws://192.168.14.83:9001";
-
+// 입출구 섹션 페이지
 export default function EntranceExitSection() {
-  const { connectStatus, imageSrc, capturedImage, publish } = useMqtt(MQTT_BROKER);
-
+  const { connectStatus, imageSrc, capturedImage, publish } = useMqtt();
+  // 입출구 섹션 상태
   const [currentCar, setCurrentCar] = useState(null); // 입구 대기 차량
   const [parkingList, setParkingList] = useState([]); // 현재 주차 중
   const [exitList, setExitList] = useState([]); // 출차 완료
 
-  /* =========================
-       데이터 로딩 함수 분리
-    ========================= */
-
+  /// 데이터 로딩 함수 분리
   const loadParking = async () => {
     const entry = await getTodayEntry();
     setParkingList(entry.filter((car) => !car.exitTime));
   };
-
+  // 출차 기록 로딩
   const loadExit = async () => {
     const exit = await getTodayExit();
     setExitList(exit);
   };
-
+  // 현재 입구 대기 차량 로딩
   const loadCurrentEntrance = async () => {
     try {
       const car = await getCurrentEntranceCar(1); // nodeId = 1 (입구)
@@ -41,14 +37,12 @@ export default function EntranceExitSection() {
       throw e;
     }
   };
-
+  // 모든 데이터 로딩
   const loadAll = async () => {
     await Promise.all([loadParking(), loadExit(), loadCurrentEntrance()]);
   };
 
-  /* =========================
-       초기 로딩
-    ========================= */
+  //초기 로딩
   useEffect(() => {
     const init = async () => {
       await loadAll();
@@ -56,9 +50,7 @@ export default function EntranceExitSection() {
     init();
   }, []);
 
-  /* =========================
-       CCTV 스트리밍 제어
-    ========================= */
+  // MQTT 연결 상태에 따른 CCTV 제어
   useEffect(() => {
     if (connectStatus === "connected") {
       publish("parking/web/entrance/cam/control", "start");
@@ -68,11 +60,7 @@ export default function EntranceExitSection() {
     };
   }, [publish, connectStatus]);
 
-  /* =========================
-       입차 승인
-       - entryTime ❌
-       - 승인 신호 + 차단기 OPEN
-    ========================= */
+  // 입차 승인 처리
   const handleApprove = async () => {
     if (!currentCar) return;
 
@@ -89,11 +77,10 @@ export default function EntranceExitSection() {
       // 입구 차량 제거
       setCurrentCar(null);
     } catch (e) {
-      console.error(e);
       alert("입차 승인 실패");
     }
   };
-
+  // 렌더링
   return (
     <div className="entrance-exit-section">
       <h2>구역 관리 : 입출구</h2>
