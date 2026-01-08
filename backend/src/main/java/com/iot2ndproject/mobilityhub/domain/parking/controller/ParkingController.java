@@ -20,6 +20,7 @@ public class ParkingController {
 
     private final ParkingService parkingService;
 
+    // 작업 구역에 들어온 목록 불러오기
     @GetMapping("/list")
     public List<ParkingDTO> getParkingList() {
         return parkingService.getParkingDtoList();

@@ -17,6 +17,7 @@ const SideMenu = () => {
   const [adminId, setAdminInfo] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
 
+  //현재 로그인한 관리자 정보
   useEffect(() => {
     const storedAdminId = localStorage.getItem("adminId");
     const storedAdminEmail = localStorage.getItem("email");
@@ -28,7 +29,7 @@ const SideMenu = () => {
 
   const location = useLocation();
 
-  // 현재 페이지 확인 후 active 클래스 도움
+
   const getClassName = (path) => {
     return location.pathname === path ? "menu-item active" : "menu-item";
   };
@@ -78,7 +79,6 @@ const SideMenu = () => {
         </nav>
         <div className="side-footer">
           <div className="side-info">
-            {/* 로그인한 관리자 name, mail로 변경 필요 */}
             <div className="side-profile">
               <User className="profile" />
             </div>

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Pie, PieChart, ResponsiveContainer, Tooltip, Legend, Cell } from "recharts";
 
+
+// 데이터 처리 방식은 UseByArea.jsx(Bar차트와 동일)
+// 차트 종류가 달라 각각 작업 진행
+
 const COLORS = {
   park: "#76A7FA",
   carwash: "#FFA500",
@@ -15,7 +19,7 @@ const UseByAreaPieChart = ({ workList }) => {
     if (!workList || workList.length === 0) return;
 
     const areaCountMap = workList.reduce((acc, item) => {
-      const types = (item.workType || "Unknown").split(",");
+      const types = (item.workType || "Unknown").split(",");  // 주차,세차 또는 주차, 정비
       types.forEach((type) => {
         const key = type.trim();
         acc[key] = (acc[key] || 0) + 1;
@@ -36,7 +40,7 @@ const UseByAreaPieChart = ({ workList }) => {
   }
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer width="100%" height={260}>
       <PieChart>
         <Pie
           data={chartData}

@@ -109,12 +109,13 @@ public class ParkingService {
         }
     }
 
+    // 출차하지 않고, 작업 구역에 들어간 차량 조회
     public List<ParkingDTO> getParkingDtoList() {
-        List<ParkingEntity> parkingList = parkingRepository.findAll();
-        List<WorkInfoEntity> workList = workInfoRepository.findAll();
+        List<ParkingEntity> parkingList = parkingRepository.findAll();   // 모든 주차 구역 조회
+        List<WorkInfoEntity> workList = workInfoRepository.findAll();    // 모든 작업 정보 조회
 
         return parkingList.stream().map(p -> {
-            // 1. 해당 ParkingEntity에 현재 주차 중인 WorkInfo 찾기 (exitTime == null)
+            // 작업 구역에 해당되면서 출차되지 않은 작업 정보
             WorkInfoEntity work = workList.stream()
                     .filter(w -> w.getSectorId() != null
                             && p.getSectorId().equals(w.getSectorId().getSectorId())
