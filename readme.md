@@ -147,10 +147,15 @@
 | `rccar/{carId}/service` | 서비스 완료 + 다음 경로 전달 |
 | `rccar/{carId}/call` | 출구 호출 경로 전달 |
 | `rccar/{carId}/position` | RC카 위치 보고 |
-| `parking/web/entrance/*` | 입구 카메라/차단기 제어 |
-| `parking/web/carwash/*` | 세차 카메라/펌프 제어 |
-| `parking/web/repair/*` | 정비 카메라/리프트 제어 |
-| `parking/web/parking/*` | 주차 카메라 제어 |
+| `parking/web/entrance/control` | 입구 카메라/차단기 제어 |
+| `parking/web/carwash/control` | 세차 카메라/펌프 제어 |
+| `parking/web/repair/control` | 정비 카메라/리프트 제어 |
+| `parking/web/parking/control` | 주차 카메라 제어 |
+| `parking/web/repair/lift/angle` | 정비 카메라/리프트 제어 |
+| `parking/web/entrance/frame` | 입구 카메라 영상 송신 이미지 |
+| `parking/web/carwash/frame` | 세차 카메라 영상 송신 이미지 |
+| `parking/web/repair/frame` | 정비 카메라 영상 송신 이미지 |
+| `parking/web/parking/frame` | 주차 카메라 영상 송신 이미지 |
 
 6. Raspberry Pi (Python)
 
