@@ -21,7 +21,7 @@
 | **목표** | RC카 라인트레이싱 기반 자동 이동 + IoT 장치 제어 + 웹 시스템 연동 프로토타입 구현 |
 | **주요성과** | 웹 서비스 요청 → RC카 경로 전달 → 구역 상태 갱신, MQTT 기반 카메라/게이트/펌프/리프트 제어 |
 | **기간** | (프로젝트 일정표 기준) |
-| **사용 장치/센서** | 라인트레이싱 센서, 초음파 센서, 서보모터(게이트/리프트), Pi 카메라, 워터펌프, LED |
+| **사용 장치/센서** | 라인트레이싱 센서, 초음파 센서, 서보모터(게이트),MG996R 중형 서보모터(정비소-리프트), 16채널 12비트 PWM/서보 드라이버(PCA9685), 5V 3A 아답터, DC 전원 젠더 암(2), MCP3008, 조이스틱, LED, RGB 3색 LED, Pi 카메라, LED, 워터펌프 모터, L9110 4채널 모터 드라이버 모듈 |
 | **산출물** | User/Admin Web, Spring Boot API, DB 스키마, RC카/IoT 스크립트, README, 시연 영상 |
 
 ---
@@ -34,7 +34,7 @@
 | --- | --- | --- |
 | **천경신** | 팀장 / RC카 및 Backend RC카 경로/상태 관리,  Spring Security + JWT 적용 사용자 로그인을 포함한 User Web 기능 구현 | [sthasq](https://github.com/sthasq) |
 | **노건우** | ERD 설계, 정비 파트 Backend 및 Frontend 구현 , Spring Security + JWT 적용 관리자 로그인 기능 구현 | [geonwoo1226](https://github.com/geonwoo1226) |
-| **이다온** | User/Admin 페이지 설계, Admin Web UI/대시보드, 세차/정비/통계 | [DaOn1072](https://github.com/DaOn1072) |
+| **이다온** | 프론트 admin/user 디자인 설계 및 기본틀 제작, 메인/주차장/세차/통계 파트 Backedn 및 Frontend 구현, 물펌프/리프트 장치 구현, 주차장 조형물 제작  | [DaOn1072](https://github.com/DaOn1072) |
 | **이희원** | 출입구(게이트/카메라), Backend 일부, Admin Web 보완| [heewonn09](https://github.com/heewonn09) |
 
 
