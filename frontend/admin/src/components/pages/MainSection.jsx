@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import "../style/MainSection.css";
-import { getWeatherInfo } from "../../api/weather";
-import { useLocation, useNavigate } from "react-router-dom";
 import { getTodayEntry, getTodayExit } from "../../api/EntranceAPI";
 import InOutLineChart from "../chart/InOutLineChart";
 import { getTodayWorkList, workInfoTotalList } from "../../api/workInfoAPI";

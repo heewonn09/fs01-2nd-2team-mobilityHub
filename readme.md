@@ -123,6 +123,7 @@
 | **기능** | 사용자/차량/작업/주차 구역/경로 정보 관리 |
 | **기술** | MySQL |
 | **연동** | - Backend(JPA)와 연동 |
+<img width="1054" height="862" alt="image" src="https://github.com/user-attachments/assets/607725fa-0dcb-4d93-92ee-08821a3e156c" />
 
 | 주요 테이블 | 설명 |
 | --- | --- |

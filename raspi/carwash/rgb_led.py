@@ -32,5 +32,3 @@ class RGBLed:
     def off(self):
         self.set_color(0, 0, 0)
         
-    
-## https://blog.naver.com/emperonics/221841256106
