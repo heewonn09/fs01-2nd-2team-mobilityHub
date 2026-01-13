@@ -36,7 +36,7 @@
 | **천경신** | **팀장**<br>RC카 및 Backend RC카 경로/상태 관리<br>Spring Security + JWT 적용 사용자 로그인을 포함한 User Web 기능 구현 | [sthasq](https://github.com/sthasq) |
 | **노건우** | 관리자 인증/인가 시스템 구현 (Spring Security + JWT)<br>정비 파트 Backend 개발 (재고·정비요청·리포트 CRUD)<br>관리자 계정 관리 및 비밀번호 암호화 처리 (BCrypt)<br>정비 파트 Frontend 개발 (API 연동 및 데이터 전처리)<br>MQTT 기반 다중 카메라 실시간 스트리밍 및 연결 관리 | [geonwoo1226](https://github.com/geonwoo1226) |
 | **이다온** | 프론트 admin/user 디자인 설계 및 기본틀 제작, 메인/주차장/세차/통계 파트 Backedn 및 Frontend 구현, 물펌프/리프트 장치 구현, 주차장 조형물 제작  | [DaOn1072](https://github.com/DaOn1072) |
-| **이희원** | 출입구(게이트/카메라), Backend 일부, Admin Web 보완 입출구 조형물 제작, 입출구 Backend 및 Frontend 구현(API 연동 및 데이터 전처리 |  [heewonn09](https://github.com/heewonn09) |
+| **이희원** | 출입구(게이트/카메라), Backend 일부, Admin Web 보완, 입출구 조형물 제작, 입출구 Backend 및 Frontend 구현(API 연동 및 데이터 전처리)| [heewonn09](https://github.com/heewonn09) |
 
 
 ---
